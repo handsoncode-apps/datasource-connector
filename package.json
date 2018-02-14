@@ -1,0 +1,22 @@
+{
+  "name": "datasource-connector",
+  "version": "1.0.0",
+  "description": "Handsontable plugin that connects with remote backend data source.",
+  "main": "datasourceConnectorPlugin.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/handsoncode-apps/datasource-connector.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/handsoncode-apps/datasource-connector/issues"
+  },
+  "homepage": "https://github.com/handsoncode-apps/datasource-connector#readme",
+  "dependencies": {
+    "handsontable": "^0.35.1"
+  }
+}
