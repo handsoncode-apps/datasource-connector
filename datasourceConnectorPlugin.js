@@ -135,7 +135,7 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
         }
 
         console.log('arrChanges', arrChanges)
-        this._sendData('afterchange', {changes: changes, source: source})
+        this._sendData('afterchange', {changes: arrChanges, source: source})
     }
 };
 
