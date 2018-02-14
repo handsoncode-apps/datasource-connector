@@ -132,9 +132,8 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
             arrChanges.push(obj)
         }
 
-        console.log('arrChanges', arrChanges)
-        var baseURL =this.hot.getSettings().datasourceConnector.baseURL;
-        this._sendData(baseURL, 'afterchange', {changes: changes, source: source})
+        let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+        this._sendData('afterchange', {changes: arrChanges, source: source})
     }
 };
 
