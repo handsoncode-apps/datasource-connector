@@ -20,13 +20,11 @@ function datasourceConnectorPlugin(hotInstance) {
     this.vocabularyArray = [];
 }
 
-datasourceConnectorPlugin._pluginConfig = { url: 'http://localhost:3005/users' }
-
 datasourceConnectorPlugin.prototype = Object.create(Handsontable.plugins.BasePlugin.prototype, {
     constructor: {
         writable: true,
         configurable: true,
-        value: datasourceConnectorPlugin
+        value: datasourceConnectorPlugin,
     }
 }
 );
@@ -35,13 +33,13 @@ datasourceConnectorPlugin.prototype = Object.create(Handsontable.plugins.BasePlu
  * Check if the plugin is enabled in the settings.
  */
 datasourceConnectorPlugin.prototype.isEnabled = function () {
-    return !!this.hot.getSettings().datasourceConnectorPlugin;
+    return !!this.hot.getSettings().datasourceConnector;
 };
 
 /**
  * Enable the plujgin.
  */
-datasourceConnectorPlugin.prototype.enablePlugin = function () {
+datasourceConnectorPlugin.prototype.enablePlugin = function () {   
     this.addHook('afterChange', this.onAfterChange.bind(this));
     this.addHook('afterInit', this.onAfterInit);
     
@@ -65,9 +63,9 @@ datasourceConnectorPlugin.prototype.updatePlugin = function () {
     this._superClass.prototype.updatePlugin.call(this);
 }
 
-datasourceConnectorPlugin.prototype._sendData = function (endpoint, data) {
+datasourceConnectorPlugin.prototype._sendData = function (baseURL, endpoint, data) {
     let xhr = datasourceConnectorPlugin._xhr();
-    xhr.open('post', datasourceConnectorPlugin._pluginConfig.url + '/' + endpoint);
+    xhr.open('post', baseURL + '/' + endpoint);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(data));
 }
@@ -135,12 +133,14 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
         }
 
         console.log('arrChanges', arrChanges)
-        this._sendData('afterchange', {changes: changes, source: source})
+        var baseURL =this.hot.getSettings().datasourceConnector.baseURL;
+        this._sendData(baseURL, 'afterchange', {changes: changes, source: source})
     }
 };
 
 datasourceConnectorPlugin.prototype.onAfterInit = function() {
-    datasourceConnectorPlugin._getData(datasourceConnectorPlugin._pluginConfig.url + '/data',(data)=>{
+    var baseURL =this.getSettings().datasourceConnector.baseURL;
+    datasourceConnectorPlugin._getData(baseURL + '/data',(data)=>{
         this.loadData(data);
     })
 };
