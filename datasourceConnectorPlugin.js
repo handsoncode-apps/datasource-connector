@@ -44,7 +44,8 @@ datasourceConnectorPlugin.prototype.isEnabled = function () {
 datasourceConnectorPlugin.prototype.enablePlugin = function () {
     this.addHook('afterChange', this.onAfterChange.bind(this));
     this.addHook('afterInit', this.onAfterInit);
-    
+    this.addHook('afterColumnSort', this.onAfterColumnSort.bind(this));
+
     this._superClass.prototype.enablePlugin.call(this);
 };
 
@@ -144,6 +145,10 @@ datasourceConnectorPlugin.prototype.onAfterInit = function() {
         this.loadData(data);
     })
 };
+
+datasourceConnectorPlugin.prototype.onAfterColumnSort = function(column, order) {
+    this._sendData('aftercolumnsort', {column: column, order: order})
+}
 
 /**
  * Destroy the plugin.
