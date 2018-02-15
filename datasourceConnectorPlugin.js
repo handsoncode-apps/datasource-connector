@@ -42,6 +42,7 @@ datasourceConnectorPlugin.prototype.isEnabled = function () {
 datasourceConnectorPlugin.prototype.enablePlugin = function () {   
     this.addHook('afterChange', this.onAfterChange.bind(this));
     this.addHook('afterInit', this.onAfterInit);
+    this.addHook('afterCreateRow', this.onAfterCreateRow.bind(this));
     
     this._superClass.prototype.enablePlugin.call(this);
 };
@@ -121,7 +122,6 @@ datasourceConnectorPlugin._xhr = function() {
 datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
     if (changes) {
         let arrChanges = []
-        console.log('changes', changes)
         for (let i = 0; i < changes.length; i++) {
             let obj = {
                 row: changes[i][0],
@@ -131,9 +131,8 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
             }
             arrChanges.push(obj)
         }
-
         let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-        this._sendData('afterchange', {changes: arrChanges, source: source})
+        this._sendData(baseURL, 'afterchange', {changes: arrChanges, source: source})
     }
 };
 
@@ -143,6 +142,16 @@ datasourceConnectorPlugin.prototype.onAfterInit = function() {
         this.loadData(data);
     })
 };
+
+datasourceConnectorPlugin.prototype.onAfterCreateRow = function(index, amount, source) {
+    let createRow = {
+        index: index,
+        amount: amount,
+        source: source
+    }
+    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    this._sendData(baseURL, 'aftercreaterow', createRow)
+}
 
 /**
  * Destroy the plugin.
