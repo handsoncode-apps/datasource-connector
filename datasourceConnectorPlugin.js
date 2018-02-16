@@ -43,7 +43,9 @@ datasourceConnectorPlugin.prototype.enablePlugin = function () {
     this.addHook('afterChange', this.onAfterChange.bind(this));
     this.addHook('afterInit', this.onAfterInit);
     this.addHook('afterCreateRow', this.onAfterCreateRow.bind(this));
-    
+    this.addHook('afterColumnSort', this.onAfterColumnSort.bind(this));
+    this.addHook('afterCreateCol', this.onAfterCreateCol.bind(this));
+
     this._superClass.prototype.enablePlugin.call(this);
 };
 
@@ -143,6 +145,10 @@ datasourceConnectorPlugin.prototype.onAfterInit = function() {
     })
 };
 
+datasourceConnectorPlugin.prototype.onAfterColumnSort = function(column, order) {
+    this._sendData('aftercolumnsort', {column: column, order: order})
+}
+
 datasourceConnectorPlugin.prototype.onAfterCreateRow = function(index, amount, source) {
     let createRow = {
         index: index,
@@ -153,6 +159,15 @@ datasourceConnectorPlugin.prototype.onAfterCreateRow = function(index, amount, s
     this._sendData(baseURL, 'aftercreaterow', createRow)
 }
 
+datasourceConnectorPlugin.prototype.onAfterCreateCol = function(index, amount, source) {
+    let createCol = {
+        index: index,
+        amount: amount,
+        source: source
+    }
+    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    this._sendData(baseURL, 'aftercreatecol', createCol)
+}
 /**
  * Destroy the plugin.
  */
