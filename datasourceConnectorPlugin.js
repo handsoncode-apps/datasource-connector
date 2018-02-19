@@ -146,7 +146,8 @@ datasourceConnectorPlugin.prototype.onAfterInit = function() {
 };
 
 datasourceConnectorPlugin.prototype.onAfterColumnSort = function(column, order) {
-    this._sendData('aftercolumnsort', {column: column, order: order})
+    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    this._sendData(baseURL, 'aftercolumnsort', {column: column, order: order})
 }
 
 datasourceConnectorPlugin.prototype.onAfterCreateRow = function(index, amount, source) {
