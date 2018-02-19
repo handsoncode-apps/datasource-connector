@@ -6,7 +6,7 @@ In your index.html file:
 
 - Add in head element:
 
-  ` <script>datasourceConnectorPlugin.js</script>`
+  ` <script src="datasourceConnectorPlugin.js"></script>`
 
 
 - In handsontable instance add the datasourceConnector property with your baseURL value (url that you are connecting to on server):
