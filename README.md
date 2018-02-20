@@ -1,30 +1,37 @@
-## **How to initialize  dataSourceConnectorPlugin**
+# datasource-connector
+Handsontable plugin that connects with remote backend data source.
 
-### On frontend:
+## Basic usage 
 
-In your index.html file:
+## HTML side initialization 
 
-- Add in head element:
+# Setup
+Embed this code inside your HTML file: 
+```html
+<script src="handsontable.full.js"></script>
+<script src="datasourceConnectorPlugin.js"></script>
+<link rel="stylesheet" media="screen" href="/dist/handsontable.full.css">
+```
 
-  ` <script src="datasourceConnectorPlugin.js"></script>`
+# Spreadsheet container
+Add an empty <div> element that will be turned into a spreadsheet. Let's give this element an "container" ID
 
+```html
+<div id="container"></div>
+```
 
-- In handsontable instance add the datasourceConnector property with your baseURL value (url that you are connecting to on server):
+# Initialize
+In the next step, pass a reference to that <div class="container"> and setup yor backend controller url by passing into baseURL option.
 
-example
+```javascript
+var container = document.getElementById('container');
 
-```bash
 var hot = new Handsontable(container, {
 rowHeaders: true,
 colHeaders: true,
 datasourceConnector: {
-baseURL: 'http://localhost:3005/users'
+baseURL: 'http://yourdomain.com/controller'
 }
 });
 ```
-
-### On backend:
-
-In your app.js file add line:
-
-app.use('name of your controller)
+## 
