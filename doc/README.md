@@ -6,7 +6,7 @@ To receive hot event in backend you should implement these methods:
 Method `POST /afterChange`
 Description: This event will be send to backend after change of value of any cells
 Request Body schema:
-`
+```javascript
 {
   changes:[
    { 
@@ -18,7 +18,7 @@ Request Body schema:
   ],
   source: string
  }
-`
+```
 Response `200 OK`
 
 ### After Create Col
