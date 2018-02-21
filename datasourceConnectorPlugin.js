@@ -42,6 +42,7 @@ datasourceConnectorPlugin.prototype.isEnabled = function () {
 datasourceConnectorPlugin.prototype.enablePlugin = function () {
     this.addHook('afterChange', this.onAfterChange.bind(this));
     this.addHook('afterInit', this.onAfterInit);
+    this.addHook('afterRender', this.onAfterRender.bind(this));
     this.addHook('afterCreateRow', this.onAfterCreateRow.bind(this));
     this.addHook('afterColumnSort', this.onAfterColumnSort.bind(this));
     this.addHook('afterCreateCol', this.onAfterCreateCol.bind(this));
@@ -140,9 +141,26 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
 
 datasourceConnectorPlugin.prototype.onAfterInit = function () {
     var baseURL = this.getSettings().datasourceConnector.baseURL;
-    datasourceConnectorPlugin._getData(baseURL + '/data', (data) => {
-        this.loadData(data);
+    datasourceConnectorPlugin._getData(baseURL + '/data', (response) => {
+        this.updateSettings({
+            colHeaders: response.columns
+        })
+        var temp = []
+        for (var i = 0; i < response.data.length; i++) {
+            temp.push(response.data[i].values)
+        }
+        this.loadData(temp);
+        for (var i = 0; i < response.data.length; i++) {
+            for (var j = 0; j < response.columns.length; j++) {
+                this.setCellMeta(i, j, 'row_id', response.data[i].key)
+                this.setCellMeta(i, j, 'column-name', response.columns[j])
+            }
+        }
     })
+};
+
+datasourceConnectorPlugin.prototype.onAfterRender = function () {
+    console.log('onAfterRender')
 };
 
 datasourceConnectorPlugin.prototype.onAfterColumnSort = function (column, order) {
