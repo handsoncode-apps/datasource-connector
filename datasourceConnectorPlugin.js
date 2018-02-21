@@ -39,7 +39,7 @@ datasourceConnectorPlugin.prototype.isEnabled = function () {
 /**
  * Enable the plujgin.
  */
-datasourceConnectorPlugin.prototype.enablePlugin = function () {   
+datasourceConnectorPlugin.prototype.enablePlugin = function () {
     this.addHook('afterChange', this.onAfterChange.bind(this));
     this.addHook('afterInit', this.onAfterInit);
     this.addHook('afterCreateRow', this.onAfterCreateRow.bind(this));
@@ -73,45 +73,45 @@ datasourceConnectorPlugin.prototype._sendData = function (baseURL, endpoint, dat
     xhr.send(JSON.stringify(data));
 }
 
-datasourceConnectorPlugin._getData= function(url, successHandler, errorHandler) {
-	var xhr = datasourceConnectorPlugin._xhr()
-	xhr.open('get', url, true);
-	xhr.onreadystatechange = function() {
-		var status;
-		var data;
-		// https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
-		if (xhr.readyState == 4) { // `DONE`
-			status = xhr.status;
-			if (status == 200) {
-				data = JSON.parse(xhr.responseText);
-				successHandler && successHandler(data);
-			} else {
-				errorHandler && errorHandler(status);
-			}
-		}
-	};
-	xhr.send();
+datasourceConnectorPlugin._getData = function (url, successHandler, errorHandler) {
+    var xhr = datasourceConnectorPlugin._xhr()
+    xhr.open('get', url, true);
+    xhr.onreadystatechange = function () {
+        var status;
+        var data;
+        // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
+        if (xhr.readyState == 4) { // `DONE`
+            status = xhr.status;
+            if (status == 200) {
+                data = JSON.parse(xhr.responseText);
+                successHandler && successHandler(data);
+            } else {
+                errorHandler && errorHandler(status);
+            }
+        }
+    };
+    xhr.send();
 };
 
-datasourceConnectorPlugin._xhr = function() {
+datasourceConnectorPlugin._xhr = function () {
     try {
         return new XMLHttpRequest();
-    } catch(e) {}
+    } catch (e) { }
     try {
         return new ActiveXObject("Msxml3.XMLHTTP");
-    } catch(e) {}
+    } catch (e) { }
     try {
         return new ActiveXObject("Msxml2.XMLHTTP.6.0");
-    } catch(e) {}
+    } catch (e) { }
     try {
         return new ActiveXObject("Msxml2.XMLHTTP.3.0");
-    } catch(e) {}
+    } catch (e) { }
     try {
         return new ActiveXObject("Msxml2.XMLHTTP");
-    } catch(e) {}
+    } catch (e) { }
     try {
         return new ActiveXObject("Microsoft.XMLHTTP");
-    } catch(e) {}
+    } catch (e) { }
     return null;
 }
 
@@ -134,23 +134,23 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
             arrChanges.push(obj)
         }
         let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-        this._sendData(baseURL, 'afterchange', {changes: arrChanges, source: source})
+        this._sendData(baseURL, 'afterchange', { changes: arrChanges, source: source })
     }
 };
 
-datasourceConnectorPlugin.prototype.onAfterInit = function() {
-    var baseURL =this.getSettings().datasourceConnector.baseURL;
-    datasourceConnectorPlugin._getData(baseURL + '/data',(data)=>{
+datasourceConnectorPlugin.prototype.onAfterInit = function () {
+    var baseURL = this.getSettings().datasourceConnector.baseURL;
+    datasourceConnectorPlugin._getData(baseURL + '/data', (data) => {
         this.loadData(data);
     })
 };
 
-datasourceConnectorPlugin.prototype.onAfterColumnSort = function(column, order) {
+datasourceConnectorPlugin.prototype.onAfterColumnSort = function (column, order) {
     let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-    this._sendData(baseURL, 'aftercolumnsort', {column: column, order: order})
+    this._sendData(baseURL, 'aftercolumnsort', { column: column, order: order })
 }
 
-datasourceConnectorPlugin.prototype.onAfterCreateRow = function(index, amount, source) {
+datasourceConnectorPlugin.prototype.onAfterCreateRow = function (index, amount, source) {
     let createRow = {
         index: index,
         amount: amount,
@@ -160,7 +160,7 @@ datasourceConnectorPlugin.prototype.onAfterCreateRow = function(index, amount, s
     this._sendData(baseURL, 'aftercreaterow', createRow)
 }
 
-datasourceConnectorPlugin.prototype.onAfterCreateCol = function(index, amount, source) {
+datasourceConnectorPlugin.prototype.onAfterCreateCol = function (index, amount, source) {
     let createCol = {
         index: index,
         amount: amount,
