@@ -46,7 +46,7 @@ datasourceConnectorPlugin.prototype.enablePlugin = function () {
     this.addHook('afterCreateRow', this.onAfterCreateRow.bind(this));
     this.addHook('afterColumnSort', this.onAfterColumnSort.bind(this));
     this.addHook('afterCreateCol', this.onAfterCreateCol.bind(this));
-
+    this.addHook('afterColumnMove', this.onAfterColumnMove.bind(this));
     this._superClass.prototype.enablePlugin.call(this);
 };
 
@@ -136,6 +136,7 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
         }
         let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
         this._sendData(baseURL, 'afterchange', { changes: arrChanges, source: source })
+        
     }
 };
 
@@ -187,11 +188,19 @@ datasourceConnectorPlugin.prototype.onAfterCreateCol = function (index, amount, 
     let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
     this._sendData(baseURL, 'aftercreatecol', createCol)
 }
+
+datasourceConnectorPlugin.prototype.onAfterColumnMove = function (columns, target) {
+    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    this._sendData(baseURL, 'aftercolumnmove', { columns: columns, target: target })
+    console.log(target)
+}
 /**
  * Destroy the plugin.
  */
 datasourceConnectorPlugin.prototype.destroy = function () {
     this._superClass.prototype.destroy.call(this);
 };
+
+
 
 Handsontable.plugins.registerPlugin('datasourceConnectorPlugin', datasourceConnectorPlugin);
