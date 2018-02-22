@@ -42,10 +42,11 @@ datasourceConnectorPlugin.prototype.isEnabled = function () {
 datasourceConnectorPlugin.prototype.enablePlugin = function () {
     this.addHook('afterChange', this.onAfterChange.bind(this));
     this.addHook('afterInit', this.onAfterInit);
-    this.addHook('afterColumnMove', this.onAfterColumnMove.bind(this))
+    this.addHook('afterRender', this.onAfterRender.bind(this));
+    this.addHook('afterCreateRow', this.onAfterCreateRow.bind(this));
     this.addHook('afterColumnSort', this.onAfterColumnSort.bind(this));
     this.addHook('afterCreateCol', this.onAfterCreateCol.bind(this));
-
+    this.addHook('afterColumnMove', this.onAfterColumnMove.bind(this));
     this._superClass.prototype.enablePlugin.call(this);
 };
 
@@ -135,14 +136,32 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
         }
         let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
         this._sendData(baseURL, 'afterchange', { changes: arrChanges, source: source })
+        
     }
 };
 
 datasourceConnectorPlugin.prototype.onAfterInit = function () {
     var baseURL = this.getSettings().datasourceConnector.baseURL;
-    datasourceConnectorPlugin._getData(baseURL + '/data', (data) => {
-        this.loadData(data);
+    datasourceConnectorPlugin._getData(baseURL + '/data', (response) => {
+        this.updateSettings({
+            colHeaders: response.columns
+        })
+        var temp = []
+        for (var i = 0; i < response.data.length; i++) {
+            temp.push(response.data[i].values)
+        }
+        this.loadData(temp);
+        for (var i = 0; i < response.data.length; i++) {
+            for (var j = 0; j < response.columns.length; j++) {
+                this.setCellMeta(i, j, 'row_id', response.data[i].key)
+                this.setCellMeta(i, j, 'column-name', response.columns[j])
+            }
+        }
     })
+};
+
+datasourceConnectorPlugin.prototype.onAfterRender = function () {
+    console.log('onAfterRender')
 };
 
 datasourceConnectorPlugin.prototype.onAfterColumnMove = function(columns, target) {
@@ -174,11 +193,19 @@ datasourceConnectorPlugin.prototype.onAfterCreateCol = function (index, amount, 
     let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
     this._sendData(baseURL, 'aftercreatecol', createCol)
 }
+
+datasourceConnectorPlugin.prototype.onAfterColumnMove = function (columns, target) {
+    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    this._sendData(baseURL, 'aftercolumnmove', { columns: columns, target: target })
+    console.log(target)
+}
 /**
  * Destroy the plugin.
  */
 datasourceConnectorPlugin.prototype.destroy = function () {
     this._superClass.prototype.destroy.call(this);
 };
+
+
 
 Handsontable.plugins.registerPlugin('datasourceConnectorPlugin', datasourceConnectorPlugin);
