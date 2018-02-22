@@ -160,13 +160,7 @@ datasourceConnectorPlugin.prototype.onAfterInit = function () {
     })
 };
 
-datasourceConnectorPlugin.prototype.onAfterRender = function () {
-    console.log('onAfterRender')
-};
-
-datasourceConnectorPlugin.prototype.onAfterColumnMove = function(columns, target) {
-    console.log('columns', columns)
-    console.log('target', target)
+datasourceConnectorPlugin.prototype.onAfterRender = function (isForced) {
 }
 
 datasourceConnectorPlugin.prototype.onAfterColumnSort = function (column, order) {
@@ -194,10 +188,14 @@ datasourceConnectorPlugin.prototype.onAfterCreateCol = function (index, amount, 
     this._sendData(baseURL, 'aftercreatecol', createCol)
 }
 
-datasourceConnectorPlugin.prototype.onAfterColumnMove = function (columns, target) {
+datasourceConnectorPlugin.prototype.onAfterColumnMove = function(columns, target) {
+    var colMoved = { columns: columns,
+                       target: target
+                     }
     let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-    this._sendData(baseURL, 'aftercolumnmove', { columns: columns, target: target })
-    console.log(target)
+    this._sendData(baseURL, 'aftercolumnmove', colMoved)
+    console.log('columns', columns)
+    console.log('target', target)
 }
 /**
  * Destroy the plugin.
