@@ -68,7 +68,7 @@ datasourceConnectorPlugin.prototype.updatePlugin = function () {
 }
 
 datasourceConnectorPlugin.prototype._sendData = function (baseURL, endpoint, data) {
-    let xhr = datasourceConnectorPlugin._xhr();
+    var xhr = datasourceConnectorPlugin._xhr();
     xhr.open('post', baseURL + '/' + endpoint);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(data));
@@ -125,9 +125,9 @@ datasourceConnectorPlugin._xhr = function () {
 datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
     
     if (changes) {
-        let arrChanges = []
-        for (let i = 0; i < changes.length; i++) {
-            let obj = {
+        var arrChanges = []
+        for (var i = 0; i < changes.length; i++) {
+            var obj = {
                 row: changes[i][0],
                 column: changes[i][1],
                 oldValue: changes[i][2],
@@ -138,7 +138,7 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
             arrChanges.push(obj)
         }
 
-        let baseURL = this.hot.getSettings().datasourceConnector.baseURL
+        var baseURL = this.hot.getSettings().datasourceConnector.baseURL
         this._sendData(baseURL, 'afterchange', { changes: arrChanges, source: source})  
         }
 };
@@ -167,27 +167,27 @@ datasourceConnectorPlugin.prototype.onAfterRender = function (isForced) {
 }
 
 datasourceConnectorPlugin.prototype.onAfterColumnSort = function (column, order) {
-    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
     this._sendData(baseURL, 'aftercolumnsort', { column: column, order: order })
 }
 
 datasourceConnectorPlugin.prototype.onAfterCreateRow = function (index, amount, source) {
-    let createRow = {
+    var createRow = {
         index: index,
         amount: amount,
         source: source
     }
-    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
     this._sendData(baseURL, 'aftercreaterow', createRow)
 }
 
 datasourceConnectorPlugin.prototype.onAfterCreateCol = function (index, amount, source) {
-    let createCol = {
+    var createCol = {
         index: index,
         amount: amount,
         source: source
     }
-    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
     this._sendData(baseURL, 'aftercreatecol', createCol)
 }
 
@@ -195,7 +195,7 @@ datasourceConnectorPlugin.prototype.onAfterColumnMove = function(columns, target
     var colMoved = { columns: columns,
                        target: target
                      }
-    let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
+    var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
     this._sendData(baseURL, 'aftercolumnmove', colMoved)
     console.log('columns', columns)
     console.log('target', target)
