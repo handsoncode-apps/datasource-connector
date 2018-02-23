@@ -123,6 +123,7 @@ datasourceConnectorPlugin._xhr = function () {
  * @param {String} source Describes the source of the change.
  */
 datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
+    
     if (changes) {
         let arrChanges = []
         for (let i = 0; i < changes.length; i++) {
@@ -130,14 +131,16 @@ datasourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
                 row: changes[i][0],
                 column: changes[i][1],
                 oldValue: changes[i][2],
-                newValue: changes[i][3]
+                newValue: changes[i][3],
+                meta: this.hot.getCellMeta(changes[i][0], changes[i][1])
             }
+            delete obj.meta['instance']
             arrChanges.push(obj)
         }
-        let baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-        this._sendData(baseURL, 'afterchange', { changes: arrChanges, source: source })
-        
-    }
+
+        let baseURL = this.hot.getSettings().datasourceConnector.baseURL
+        this._sendData(baseURL, 'afterchange', { changes: arrChanges, source: source})  
+        }
 };
 
 datasourceConnectorPlugin.prototype.onAfterInit = function () {
@@ -154,7 +157,7 @@ datasourceConnectorPlugin.prototype.onAfterInit = function () {
         for (var i = 0; i < response.data.length; i++) {
             for (var j = 0; j < response.columns.length; j++) {
                 this.setCellMeta(i, j, 'row_id', response.data[i].key)
-                this.setCellMeta(i, j, 'column-name', response.columns[j])
+                this.setCellMeta(i, j, 'col_id', response.columns[j])
             }
         }
     })
