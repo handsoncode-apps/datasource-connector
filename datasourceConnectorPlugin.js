@@ -196,6 +196,7 @@ datasourceConnectorPlugin.prototype.onAfterCreateRow = function(
     amount: amount,
     source: source
   };
+  console.log("create row", createRow);
   var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
   this._sendData(baseURL, "aftercreaterow", createRow);
 };
@@ -210,6 +211,7 @@ datasourceConnectorPlugin.prototype.onAfterCreateCol = function(
     amount: amount,
     source: source
   };
+  console.log("createCol", createCol);
   var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
   this._sendData(baseURL, "aftercreatecol", createCol);
 };
@@ -224,8 +226,6 @@ datasourceConnectorPlugin.prototype.onAfterColumnMove = function(
   };
   var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
   this._sendData(baseURL, "aftercolumnmove", colMoved);
-  console.log("columns", columns);
-  console.log("target", target);
 };
 /**
  * Destroy the plugin.
