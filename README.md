@@ -27,8 +27,8 @@ var container = document.getElementById('container');
 var hot = new Handsontable(container, {
 rowHeaders: true,
 colHeaders: true,
-datasourceConnector: {
-baseURL: 'http://yourdomain.com/controller'
+dataSourceConnector: {
+controllerUrl: 'http://yourdomain.com/controller'
 }
 });
 ```
