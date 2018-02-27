@@ -7,6 +7,15 @@ This connector allows you connect to the backend.
 
 ![overview](doc/overview.png)
 
+Components diagram shows the conection between frontend of your web app, where you have Handsontable and the backend.Datasouceconnector plugin is the communication link between HOT instance and the controller, that stores methods coressponding to events, in backend.
+
+Supported events:
+
+- afterChange
+- afterColumnMove
+- afterColumnSort
+- afterCreateCol
+- afterCreateRow
 
 ## Basic usage 
 
