@@ -1,6 +1,13 @@
 # datasource-connector
 Handsontable plugin that connects with remote backend data source.
 
+## Overview
+
+This connector allows you connect to the backend.
+
+![overview](doc/overview.png)
+
+
 ## Basic usage 
 
 ### Setup
