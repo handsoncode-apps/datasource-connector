@@ -43,7 +43,7 @@ dataSourceConnectorPlugin.prototype.isEnabled = function() {
  */
 dataSourceConnectorPlugin.prototype.enablePlugin = function() {
   this.addHook("afterChange", this.onAfterChange.bind(this));
-  this.addHook("afterInit", this.onAfterInit);
+  this.addHook("afterInit", this.onAfterInit.bind(this));
   this.addHook("afterRender", this.onAfterRender.bind(this));
   this.addHook("afterCreateRow", this.onAfterCreateRow.bind(this));
   this.addHook("afterColumnSort", this.onAfterColumnSort.bind(this));
@@ -175,19 +175,19 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
 };
 
 dataSourceConnectorPlugin.prototype.onAfterInit = function() {
-  var baseURL = this.getSettings().datasourceConnector.controllerUrl;
-  datasourceConnectorPlugin._getData(baseURL + "/settings", response => {
+  var baseURL = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  dataSourceConnectorPlugin._getData(baseURL + "/settings", response => {
     this.updateSettings(response.data)
   })
-  datasourceConnectorPlugin._getData(baseURL + "/data", response => {
+  dataSourceConnectorPlugin._getData(baseURL + "/data", response => {
     console.log('response', response)
-    res = response.data
+    var res = response.data
     var colHeaders = []
-    for(var key in res[0]) {
+    for (var key in res[0]) {
       colHeaders.push(key)
     }
 
-    this.updateSettings({
+    this.hot.updateSettings({
       colHeaders: colHeaders
     });
 
@@ -203,7 +203,7 @@ dataSourceConnectorPlugin.prototype.onAfterInit = function() {
       }
       data.push(keysArr)
     }
-    this.loadData(data);
+    this.hot.loadData(data);
     for (var i = 0; i < res.length; i++) {
     //   for (var j = 0; j < response.columns.length; j++) {
     //     this.setCellMeta(i, j, "row_id", response.data[i].key);
