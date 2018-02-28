@@ -23,7 +23,7 @@ Supported events:
 Embed this code inside your HTML file: 
 ```html
 <script src="handsontable.full.js"></script>
-<script src="datasourceConnectorPlugin.js"></script>
+<script src="dataSourceConnectorPlugin.js"></script>
 <link rel="stylesheet" media="screen" href="/dist/handsontable.full.css">
 ```
 
@@ -43,7 +43,7 @@ var container = document.getElementById('container');
 var hot = new Handsontable(container, {
 rowHeaders: true,
 colHeaders: true,
-dataSourceConnector: {
+datasourceConnector: {
 controllerUrl: 'http://yourdomain.com/controller'
 }
 });

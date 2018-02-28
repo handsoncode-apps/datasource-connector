@@ -8,7 +8,7 @@
  * @param hotInstance
  * @constructor
  */
-function dataSourceConnectorPlugin(hotInstance) {
+function datasourceConnectorPlugin(hotInstance) {
   Handsontable.plugins.BasePlugin.call(this, hotInstance);
   this._superClass = Handsontable.plugins.BasePlugin;
 
@@ -20,13 +20,13 @@ function dataSourceConnectorPlugin(hotInstance) {
   this.vocabularyArray = [];
 }
 
-dataSourceConnectorPlugin.prototype = Object.create(
+datasourceConnectorPlugin.prototype = Object.create(
   Handsontable.plugins.BasePlugin.prototype,
   {
     constructor: {
       writable: true,
       configurable: true,
-      value: dataSourceConnectorPlugin
+      value: datasourceConnectorPlugin
     }
   }
 );
@@ -34,14 +34,14 @@ dataSourceConnectorPlugin.prototype = Object.create(
 /**
  * Check if the plugin is enabled in the settings.
  */
-dataSourceConnectorPlugin.prototype.isEnabled = function() {
-  return !!this.hot.getSettings().dataSourceConnector;
+datasourceConnectorPlugin.prototype.isEnabled = function() {
+  return !!this.hot.getSettings().datasourceConnector;
 };
 
 /**
  * Enable the plujgin.
  */
-dataSourceConnectorPlugin.prototype.enablePlugin = function() {
+datasourceConnectorPlugin.prototype.enablePlugin = function() {
   this.addHook("afterChange", this.onAfterChange.bind(this));
   this.addHook("afterInit", this.onAfterInit);
   this.addHook("afterRender", this.onAfterRender.bind(this));
@@ -55,14 +55,14 @@ dataSourceConnectorPlugin.prototype.enablePlugin = function() {
 /**
  * Disable the plugin.
  */
-dataSourceConnectorPlugin.prototype.disablePlugin = function() {
+datasourceConnectorPlugin.prototype.disablePlugin = function() {
   this._superClass.prototype.disablePlugin.call(this);
 };
 
 /**
  * Update the plugin.
  */
-dataSourceConnectorPlugin.prototype.updatePlugin = function() {
+datasourceConnectorPlugin.prototype.updatePlugin = function() {
   this.disablePlugin();
   this.enablePlugin();
 
@@ -76,12 +76,12 @@ dataSourceConnectorPlugin.prototype.updatePlugin = function() {
  * @param {*} endpoint 
  * @param {*} data 
  */
-dataSourceConnectorPlugin.prototype._sendData = function(
+datasourceConnectorPlugin.prototype._sendData = function(
   controllerUrl,
   endpoint,
   data
 ) {
-  var xhr = dataSourceConnectorPlugin._xhr();
+  var xhr = datasourceConnectorPlugin._xhr();
   xhr.open("post", controllerUrl + "/" + endpoint);
   xhr.setRequestHeader("Content-Type", "application/json");
   xhr.send(JSON.stringify(data));
@@ -94,12 +94,12 @@ dataSourceConnectorPlugin.prototype._sendData = function(
  * @param {*} successHandler 
  * @param {*} errorHandler 
  */
-dataSourceConnectorPlugin._getData = function(
+datasourceConnectorPlugin._getData = function(
   url,
   successHandler,
   errorHandler
 ) {
-  var xhr = dataSourceConnectorPlugin._xhr();
+  var xhr = datasourceConnectorPlugin._xhr();
   xhr.open("get", url, true);
   xhr.onreadystatechange = function() {
     var status;
@@ -122,7 +122,7 @@ dataSourceConnectorPlugin._getData = function(
 /** 
  *  Itnitialize xhr based for different type of browser
  */
-dataSourceConnectorPlugin._xhr = function() {
+datasourceConnectorPlugin._xhr = function() {
   try {
     return new XMLHttpRequest();
   } catch (e) {}
@@ -150,7 +150,7 @@ dataSourceConnectorPlugin._xhr = function() {
  * @param {Array} changes Array of changes.
  * @param {String} source Describes the source of the change.
  */
-dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
+datasourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   if (changes) {
     var arrChanges = [];
     for (var i = 0; i < changes.length; i++) {
@@ -165,7 +165,7 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
       arrChanges.push(obj);
     }
 
-    var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+    var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
     this._sendData(controllerUrl, "afterchange", {
       changes: arrChanges,
       source: source
@@ -174,36 +174,47 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
 };
 
 /**
-
+ *  On after init event handler
  */
-  datasourceConnectorPlugin._getData(baseURL + "/settings", response => {
-      this.updateSettings(response.data)
-    })
-
-  datasourceConnectorPlugin._getData(baseURL + "/data", response => {
+datasourceConnectorPlugin.prototype.onAfterInit = function() {
+  var controllerUrl = this.getSettings().datasourceConnector.controllerUrl;
+  var settings = this.getSettings().datasourceConnector.settings;
+  console.log(settings)
+  
+  datasourceConnectorPlugin._getData(controllerUrl + "/data", response => {
     this.updateSettings({
       colHeaders: response.columns
     });
-    var temp = [];
-    for (var i = 0; i < response.data.length; i++) {
-      temp.push(response.data[i].values);
-    }
-    this.loadData(temp);
-    for (var i = 0; i < response.data.length; i++) {
-      for (var j = 0; j < response.columns.length; j++) {
-        this.setCellMeta(i, j, "row_id", response.data[i].key);
-        this.setCellMeta(i, j, "col_id", response.columns[j]);
-      }
-    }
   });
-};
+
+  datasourceConnectorPlugin._getData(controllerUrl + "/settings", response => {
+      this.updateSettings(response.data)
+    })
+
+  // datasourceConnectorPlugin._getData(controllerUrl + "/data", response => {
+  //   this.updateSettings({
+  //     colHeaders: response.columns
+  //   });
+  //   var temp = [];
+  //   for (var i = 0; i < response.data.length; i++) {
+  //     temp.push(response.data[i].values);
+  //   }
+  //   this.loadData(temp);
+  //   for (var i = 0; i < response.data.length; i++) {
+  //     for (var j = 0; j < response.columns.length; j++) {
+  //       this.setCellMeta(i, j, "row_id", response.data[i].key);
+  //       this.setCellMeta(i, j, "col_id", response.columns[j]);
+  //     }
+  //   }
+  // });
+}
 
 /**
  * On after render event handler
  * 
  * @param {*} isForced
  */
-dataSourceConnectorPlugin.prototype.onAfterRender = function(isForced) {};
+datasourceConnectorPlugin.prototype.onAfterRender = function(isForced) {};
 
 /**
  * On after Column Sort event handler
@@ -211,11 +222,11 @@ dataSourceConnectorPlugin.prototype.onAfterRender = function(isForced) {};
  * @param {*} column 
  * @param {*} order 
  */
-dataSourceConnectorPlugin.prototype.onAfterColumnSort = function(
+datasourceConnectorPlugin.prototype.onAfterColumnSort = function(
   column,
   order
 ) {
-  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercolumnsort", { column: column, order: order });
   return false;
 };
@@ -227,7 +238,7 @@ dataSourceConnectorPlugin.prototype.onAfterColumnSort = function(
  * @param {*} amount 
  * @param {*} source 
  */
-dataSourceConnectorPlugin.prototype.onAfterCreateRow = function(
+datasourceConnectorPlugin.prototype.onAfterCreateRow = function(
   index,
   amount,
   source
@@ -237,7 +248,7 @@ dataSourceConnectorPlugin.prototype.onAfterCreateRow = function(
     amount: amount,
     source: source
   };
-  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercreaterow", createRow);
 };
 
@@ -248,7 +259,7 @@ dataSourceConnectorPlugin.prototype.onAfterCreateRow = function(
  * @param {*} amount 
  * @param {*} source 
  */
-dataSourceConnectorPlugin.prototype.onAfterCreateCol = function(
+datasourceConnectorPlugin.prototype.onAfterCreateCol = function(
   index,
   amount,
   source
@@ -258,7 +269,7 @@ dataSourceConnectorPlugin.prototype.onAfterCreateCol = function(
     amount: amount,
     source: source
   };
-  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercreatecol", createCol);
 };
 
@@ -268,7 +279,7 @@ dataSourceConnectorPlugin.prototype.onAfterCreateCol = function(
  * @param {*} columns 
  * @param {*} target 
  */
-dataSourceConnectorPlugin.prototype.onAfterColumnMove = function(
+datasourceConnectorPlugin.prototype.onAfterColumnMove = function(
   columns,
   target
 ) {
@@ -276,17 +287,17 @@ dataSourceConnectorPlugin.prototype.onAfterColumnMove = function(
     columns: columns,
     target: target
   };
-  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercolumnmove", colMoved);
 };
 /**
  * Destroy the plugin.
  */
-dataSourceConnectorPlugin.prototype.destroy = function() {
+datasourceConnectorPlugin.prototype.destroy = function() {
   this._superClass.prototype.destroy.call(this);
 };
 
 Handsontable.plugins.registerPlugin(
-  "dataSourceConnectorPlugin",
-  dataSourceConnectorPlugin
+  "datasourceConnectorPlugin",
+  datasourceConnectorPlugin
 );
