@@ -157,7 +157,12 @@ datasourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
 };
 
 datasourceConnectorPlugin.prototype.onAfterInit = function() {
+
   var baseURL = this.getSettings().datasourceConnector.baseURL;
+  datasourceConnectorPlugin._getData(baseURL + "/settings", response => {
+      this.updateSettings(response.data)
+    })
+
   datasourceConnectorPlugin._getData(baseURL + "/data", response => {
     this.updateSettings({
       colHeaders: response.columns
