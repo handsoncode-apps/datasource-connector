@@ -2,7 +2,7 @@
   "name": "datasource-connector",
   "version": "1.0.0",
   "description": "Handsontable plugin that connects with remote backend data source.",
-  "main": "datasourceConnectorPlugin.js",
+  "main": "dataSourceConnectorPlugin.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
