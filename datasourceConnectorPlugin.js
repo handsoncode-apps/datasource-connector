@@ -2,13 +2,13 @@
  * @plugin
  *
  * @description
- * Every time you type "Hello" in a cell, HelloWorldPlugins adds "World!" in the next cell.
- * Also, when you type "Handsontable", it adds "is awesome!" in the next cell.
+ * this plugin allow to connect the backend controller with your HandsOnTable instance.
+ * All user data are automatically taken from backend, and events are published to backend. 
  *
  * @param hotInstance
  * @constructor
  */
-function datasourceConnectorPlugin(hotInstance) {
+function dataSourceConnectorPlugin(hotInstance) {
   Handsontable.plugins.BasePlugin.call(this, hotInstance);
   this._superClass = Handsontable.plugins.BasePlugin;
 
@@ -20,13 +20,13 @@ function datasourceConnectorPlugin(hotInstance) {
   this.vocabularyArray = [];
 }
 
-datasourceConnectorPlugin.prototype = Object.create(
+dataSourceConnectorPlugin.prototype = Object.create(
   Handsontable.plugins.BasePlugin.prototype,
   {
     constructor: {
       writable: true,
       configurable: true,
-      value: datasourceConnectorPlugin
+      value: dataSourceConnectorPlugin
     }
   }
 );
@@ -34,14 +34,14 @@ datasourceConnectorPlugin.prototype = Object.create(
 /**
  * Check if the plugin is enabled in the settings.
  */
-datasourceConnectorPlugin.prototype.isEnabled = function() {
-  return !!this.hot.getSettings().datasourceConnector;
+dataSourceConnectorPlugin.prototype.isEnabled = function() {
+  return !!this.hot.getSettings().dataSourceConnector;
 };
 
 /**
  * Enable the plujgin.
  */
-datasourceConnectorPlugin.prototype.enablePlugin = function() {
+dataSourceConnectorPlugin.prototype.enablePlugin = function() {
   this.addHook("afterChange", this.onAfterChange.bind(this));
   this.addHook("afterInit", this.onAfterInit);
   this.addHook("afterRender", this.onAfterRender.bind(this));
@@ -55,37 +55,51 @@ datasourceConnectorPlugin.prototype.enablePlugin = function() {
 /**
  * Disable the plugin.
  */
-datasourceConnectorPlugin.prototype.disablePlugin = function() {
+dataSourceConnectorPlugin.prototype.disablePlugin = function() {
   this._superClass.prototype.disablePlugin.call(this);
 };
 
 /**
  * Update the plugin.
  */
-datasourceConnectorPlugin.prototype.updatePlugin = function() {
+dataSourceConnectorPlugin.prototype.updatePlugin = function() {
   this.disablePlugin();
   this.enablePlugin();
 
   this._superClass.prototype.updatePlugin.call(this);
 };
 
-datasourceConnectorPlugin.prototype._sendData = function(
-  baseURL,
+/**
+ * Post data to the controller side
+ * 
+ * @param {*} controllerUrl 
+ * @param {*} endpoint 
+ * @param {*} data 
+ */
+dataSourceConnectorPlugin.prototype._sendData = function(
+  controllerUrl,
   endpoint,
   data
 ) {
-  var xhr = datasourceConnectorPlugin._xhr();
-  xhr.open("post", baseURL + "/" + endpoint);
+  var xhr = dataSourceConnectorPlugin._xhr();
+  xhr.open("post", controllerUrl + "/" + endpoint);
   xhr.setRequestHeader("Content-Type", "application/json");
   xhr.send(JSON.stringify(data));
 };
 
-datasourceConnectorPlugin._getData = function(
+/**
+ * Get data from conroller
+ * 
+ * @param {*} url 
+ * @param {*} successHandler 
+ * @param {*} errorHandler 
+ */
+dataSourceConnectorPlugin._getData = function(
   url,
   successHandler,
   errorHandler
 ) {
-  var xhr = datasourceConnectorPlugin._xhr();
+  var xhr = dataSourceConnectorPlugin._xhr();
   xhr.open("get", url, true);
   xhr.onreadystatechange = function() {
     var status;
@@ -105,7 +119,10 @@ datasourceConnectorPlugin._getData = function(
   xhr.send();
 };
 
-datasourceConnectorPlugin._xhr = function() {
+/** 
+ *  Itnitialize xhr based for different type of browser
+ */
+dataSourceConnectorPlugin._xhr = function() {
   try {
     return new XMLHttpRequest();
   } catch (e) {}
@@ -133,7 +150,7 @@ datasourceConnectorPlugin._xhr = function() {
  * @param {Array} changes Array of changes.
  * @param {String} source Describes the source of the change.
  */
-datasourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
+dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   if (changes) {
     var arrChanges = [];
     for (var i = 0; i < changes.length; i++) {
@@ -148,17 +165,17 @@ datasourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
       arrChanges.push(obj);
     }
 
-    var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-    this._sendData(baseURL, "afterchange", {
+    var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+    this._sendData(controllerUrl, "afterchange", {
       changes: arrChanges,
       source: source
     });
   }
 };
 
-datasourceConnectorPlugin.prototype.onAfterInit = function() {
+/**
 
-  var baseURL = this.getSettings().datasourceConnector.baseURL;
+ */
   datasourceConnectorPlugin._getData(baseURL + "/settings", response => {
       this.updateSettings(response.data)
     })
@@ -181,17 +198,36 @@ datasourceConnectorPlugin.prototype.onAfterInit = function() {
   });
 };
 
-datasourceConnectorPlugin.prototype.onAfterRender = function(isForced) {};
+/**
+ * On after render event handler
+ * 
+ * @param {*} isForced
+ */
+dataSourceConnectorPlugin.prototype.onAfterRender = function(isForced) {};
 
-datasourceConnectorPlugin.prototype.onAfterColumnSort = function(
+/**
+ * On after Column Sort event handler
+ * 
+ * @param {*} column 
+ * @param {*} order 
+ */
+dataSourceConnectorPlugin.prototype.onAfterColumnSort = function(
   column,
   order
 ) {
-  var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-  this._sendData(baseURL, "aftercolumnsort", { column: column, order: order });
+  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  this._sendData(controllerUrl, "aftercolumnsort", { column: column, order: order });
+  return false;
 };
 
-datasourceConnectorPlugin.prototype.onAfterCreateRow = function(
+/**
+ * On after Create row event hanlder
+ * 
+ * @param {*} index 
+ * @param {*} amount 
+ * @param {*} source 
+ */
+dataSourceConnectorPlugin.prototype.onAfterCreateRow = function(
   index,
   amount,
   source
@@ -201,12 +237,18 @@ datasourceConnectorPlugin.prototype.onAfterCreateRow = function(
     amount: amount,
     source: source
   };
-  console.log("create row", createRow);
-  var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-  this._sendData(baseURL, "aftercreaterow", createRow);
+  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  this._sendData(controllerUrl, "aftercreaterow", createRow);
 };
 
-datasourceConnectorPlugin.prototype.onAfterCreateCol = function(
+/**
+ * On after create event handler
+ * 
+ * @param {*} index 
+ * @param {*} amount 
+ * @param {*} source 
+ */
+dataSourceConnectorPlugin.prototype.onAfterCreateCol = function(
   index,
   amount,
   source
@@ -216,12 +258,17 @@ datasourceConnectorPlugin.prototype.onAfterCreateCol = function(
     amount: amount,
     source: source
   };
-  console.log("createCol", createCol);
-  var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-  this._sendData(baseURL, "aftercreatecol", createCol);
+  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  this._sendData(controllerUrl, "aftercreatecol", createCol);
 };
 
-datasourceConnectorPlugin.prototype.onAfterColumnMove = function(
+/**
+ * On after column move handler
+ * 
+ * @param {*} columns 
+ * @param {*} target 
+ */
+dataSourceConnectorPlugin.prototype.onAfterColumnMove = function(
   columns,
   target
 ) {
@@ -229,17 +276,17 @@ datasourceConnectorPlugin.prototype.onAfterColumnMove = function(
     columns: columns,
     target: target
   };
-  var baseURL = this.hot.getSettings().datasourceConnector.baseURL;
-  this._sendData(baseURL, "aftercolumnmove", colMoved);
+  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+  this._sendData(controllerUrl, "aftercolumnmove", colMoved);
 };
 /**
  * Destroy the plugin.
  */
-datasourceConnectorPlugin.prototype.destroy = function() {
+dataSourceConnectorPlugin.prototype.destroy = function() {
   this._superClass.prototype.destroy.call(this);
 };
 
 Handsontable.plugins.registerPlugin(
-  "datasourceConnectorPlugin",
-  datasourceConnectorPlugin
+  "dataSourceConnectorPlugin",
+  dataSourceConnectorPlugin
 );
