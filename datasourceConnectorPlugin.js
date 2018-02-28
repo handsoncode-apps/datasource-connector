@@ -177,7 +177,7 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
 dataSourceConnectorPlugin.prototype.onAfterInit = function() {
   var baseURL = this.hot.getSettings().dataSourceConnector.controllerUrl;
   dataSourceConnectorPlugin._getData(baseURL + "/settings", response => {
-    this.updateSettings(response.data)
+    this.hot.updateSettings(response.data)
   })
   dataSourceConnectorPlugin._getData(baseURL + "/data", response => {
     console.log('response', response)
