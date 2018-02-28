@@ -175,8 +175,7 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
 };
 
 dataSourceConnectorPlugin.prototype.onAfterInit = function() {
-  console.log('gdfg')
-  var baseURL = this.getSettings().datasourceConnector.baseURL;
+  var baseURL = this.getSettings().datasourceConnector.controllerUrl;
   datasourceConnectorPlugin._getData(baseURL + "/settings", response => {
     this.updateSettings(response.data)
   })
