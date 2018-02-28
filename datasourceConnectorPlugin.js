@@ -173,18 +173,43 @@ datasourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   }
 };
 
-/**
- *  On after init event handler
- */
 datasourceConnectorPlugin.prototype.onAfterInit = function() {
+
   var controllerUrl = this.getSettings().datasourceConnector.controllerUrl;
-  var settings = this.getSettings().datasourceConnector.settings;
-  console.log(settings)
-  
+  datasourceConnectorPlugin._getData(controllerUrl + "/settings", response => {
+    this.updateSettings(response.data)
+  })
   datasourceConnectorPlugin._getData(controllerUrl + "/data", response => {
+  
+    res = response.data
+    var colHeaders = []
+    for(var key in res[0]) {
+      colHeaders.push(key)
+    }
+
     this.updateSettings({
-      colHeaders: response.columns
+      colHeaders: colHeaders
     });
+
+    var data = [];
+    for (var i = 0; i < res.length; i++) {
+      let keysArr = []
+      console.log("i", i)
+      var j = 1
+      for (var key in res[i]) {
+        console.log("j", j)
+        keysArr.push(res[i][key])
+        j++
+      }
+      data.push(keysArr)
+    }
+    this.loadData(data);
+    for (var i = 0; i < res.length; i++) {
+    //   for (var j = 0; j < response.columns.length; j++) {
+    //     this.setCellMeta(i, j, "row_id", response.data[i].key);
+    //     this.setCellMeta(i, j, "col_id", response.columns[j]);
+    //   }
+    }
   });
 
   datasourceConnectorPlugin._getData(controllerUrl + "/settings", response => {
