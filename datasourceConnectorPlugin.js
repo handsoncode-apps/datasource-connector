@@ -44,17 +44,22 @@ dataSourceConnectorPlugin.prototype.afterInit = false
  */
 dataSourceConnectorPlugin.prototype.enablePlugin = function() {
   if (!this.afterInit) {
-    this.addHook("afterChange", this.onAfterChange.bind(this));
     this.addHook("afterInit", this.onAfterInit.bind(this));
-    this.addHook("afterRender", this.onAfterRender.bind(this));
-    this.addHook("afterCreateRow", this.onAfterCreateRow.bind(this));
     this.addHook("beforeColumnSort", this.onBeforeColumnSort.bind(this));
     this.addHook("afterColumnSort", this.onAfterColumnSort.bind(this));
-    this.addHook("afterCreateCol", this.onAfterCreateCol.bind(this));
-    this.addHook("afterColumnMove", this.onAfterColumnMove.bind(this));
-    this._superClass.prototype.enablePlugin.call(this);
   }
+  this.addHook("afterChange", this.onAfterChange.bind(this));
+
+  this.addHook("afterRender", this.onAfterRender.bind(this));
+  this.addHook("afterCreateRow", this.onAfterCreateRow.bind(this));
+  this.addHook("afterCreateCol", this.onAfterCreateCol.bind(this));
+  this.addHook("afterColumnMove", this.onAfterColumnMove.bind(this));
+  this._superClass.prototype.enablePlugin.call(this);
+
 };
+
+dataSourceConnectorPlugin.prototype.data = []
+dataSourceConnectorPlugin.prototype.colHeaders = []
 
 /**
  * Disable the plugin.
@@ -158,12 +163,13 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   if (changes) {   
     var arrChanges = [];
     for (var i = 0; i < changes.length; i++) {
+      var meta = this.hot.getCellMeta(changes[i][0], changes[i][0])
       var obj = {
-        row: changes[i][0],
-        column: colHeaders[changes[i][1]],
+        row: meta.row,
+        column: changes[i][1],
         oldValue: changes[i][2],
         newValue: changes[i][3],
-        meta: this.hot.getCellMeta(changes[i][0], changes[i][1])
+        meta: meta
       };
       delete obj.meta["instance"];
       arrChanges.push(obj);
@@ -176,9 +182,6 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
     });
   }
 };
-
-dataSourceConnectorPlugin.prototype.data = []
-dataSourceConnectorPlugin.prototype.colHeaders = []
 
 dataSourceConnectorPlugin.prototype.onAfterInit = function() {
   var baseURL = this.hot.getSettings().dataSourceConnector.controllerUrl;
