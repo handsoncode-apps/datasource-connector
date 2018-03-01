@@ -153,15 +153,21 @@ dataSourceConnectorPlugin._xhr = function() {
 dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   if (changes) {
     console.log('changes', changes)
+    console.log('colHeaders', colHeaders)
+    
+    
     var arrChanges = [];
     for (var i = 0; i < changes.length; i++) {
       var obj = {
         row: changes[i][0],
-        column: changes[i][1],
+        column: colHeaders[changes[i][1]],
         oldValue: changes[i][2],
         newValue: changes[i][3],
         meta: this.hot.getCellMeta(changes[i][0], changes[i][1])
       };
+      console.log('changes[i][0]', changes[i][0])
+      console.log('changes[i][1]', changes[i][1])
+      console.log('obj', obj)
       delete obj.meta["instance"];
       arrChanges.push(obj);
     }
@@ -174,6 +180,9 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   }
 };
 
+var data = [];
+var colHeaders = []
+
 dataSourceConnectorPlugin.prototype.onAfterInit = function() {
   var baseURL = this.hot.getSettings().dataSourceConnector.controllerUrl;
   dataSourceConnectorPlugin._getData(baseURL + "/settings", response => {
@@ -182,7 +191,6 @@ dataSourceConnectorPlugin.prototype.onAfterInit = function() {
   dataSourceConnectorPlugin._getData(baseURL + "/data", response => {
     console.log('response', response)
     var res = response.data
-    var colHeaders = []
     for (var key in res[0]) {
       colHeaders.push(key)
     }
@@ -191,26 +199,22 @@ dataSourceConnectorPlugin.prototype.onAfterInit = function() {
       colHeaders: colHeaders
     });
 
-    var data = [];
+    // var data = [];
     for (var i = 0; i < res.length; i++) {
       let keysArr = []
-      console.log("i", i)
       var j = 1
       for (var key in res[i]) {
-        console.log("j", j)
         keysArr.push(res[i][key])
+        this.hot.setCellMeta(i, j, "row_id", i);
+        this.hot.setCellMeta(i, j, "col_id", j);
         j++
       }
       data.push(keysArr)
     }
+    console.log('dataaaaa', data)
     this.hot.loadData(data);
-    for (var i = 0; i < res.length; i++) {
-      // for (var j = 0; j < response.columns.length; j++) {
-      //   this.setCellMeta(i, j, "row_id", response.data[i].key);
-      //   this.setCellMeta(i, j, "col_id", response.columns[j]);
-      }
-    })
-  };
+  });
+};
 
 /**
  * On after render event handler
