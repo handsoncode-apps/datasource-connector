@@ -35,7 +35,7 @@ dataSourceConnectorPlugin.prototype = Object.create(
  * Check if the plugin is enabled in the settings.
  */
 dataSourceConnectorPlugin.prototype.isEnabled = function() {
-  return !!this.hot.getSettings().datasourceConnector;
+  return !!this.hot.getSettings().dataSourceConnector;
 };
 
 /**
@@ -166,7 +166,7 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
       arrChanges.push(obj);
     }
 
-    var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
+    var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
     this._sendData(controllerUrl, "afterchange", {
       changes: arrChanges,
       source: source
@@ -229,7 +229,7 @@ dataSourceConnectorPlugin.prototype.onAfterColumnSort = function(
   column,
   order
 ) {
-  var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
+  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercolumnsort", { column: column, order: order });
   return false;
 };
@@ -251,7 +251,7 @@ dataSourceConnectorPlugin.prototype.onAfterCreateRow = function(
     amount: amount,
     source: source
   };
-  var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
+  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercreaterow", createRow);
 };
 
@@ -272,7 +272,7 @@ dataSourceConnectorPlugin.prototype.onAfterCreateCol = function(
     amount: amount,
     source: source
   };
-  var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
+  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercreatecol", createCol);
 };
 
@@ -290,7 +290,7 @@ dataSourceConnectorPlugin.prototype.onAfterColumnMove = function(
     columns: columns,
     target: target
   };
-  var controllerUrl = this.hot.getSettings().datasourceConnector.controllerUrl;
+  var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercolumnmove", colMoved);
 };
 /**
