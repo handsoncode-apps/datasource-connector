@@ -38,19 +38,28 @@ dataSourceConnectorPlugin.prototype.isEnabled = function() {
   return !!this.hot.getSettings().dataSourceConnector;
 };
 
+dataSourceConnectorPlugin.prototype.afterInit = false
 /**
  * Enable the plujgin.
  */
 dataSourceConnectorPlugin.prototype.enablePlugin = function() {
+  if (!this.afterInit) {
+    this.addHook("afterInit", this.onAfterInit.bind(this));
+    this.addHook("beforeColumnSort", this.onBeforeColumnSort.bind(this));
+    this.addHook("afterColumnSort", this.onAfterColumnSort.bind(this));
+  }
   this.addHook("afterChange", this.onAfterChange.bind(this));
-  this.addHook("afterInit", this.onAfterInit.bind(this));
+
   this.addHook("afterRender", this.onAfterRender.bind(this));
   this.addHook("afterCreateRow", this.onAfterCreateRow.bind(this));
-  this.addHook("afterColumnSort", this.onAfterColumnSort.bind(this));
   this.addHook("afterCreateCol", this.onAfterCreateCol.bind(this));
   this.addHook("afterColumnMove", this.onAfterColumnMove.bind(this));
   this._superClass.prototype.enablePlugin.call(this);
+
 };
+
+dataSourceConnectorPlugin.prototype.data = []
+dataSourceConnectorPlugin.prototype.colHeaders = []
 
 /**
  * Disable the plugin.
@@ -151,21 +160,17 @@ dataSourceConnectorPlugin._xhr = function() {
  * @param {String} source Describes the source of the change.
  */
 dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
-  if (changes) {
-    console.log('changes', changes)
-    console.log('colHeaders', colHeaders)
-    
-    
+  if (changes) {   
     var arrChanges = [];
     for (var i = 0; i < changes.length; i++) {
+      var meta = this.hot.getCellMeta(changes[i][0], changes[i][0])
       var obj = {
-        row: changes[i][0],
-        column: colHeaders[changes[i][1]],
+        row: meta.row,
+        column: changes[i][1],
         oldValue: changes[i][2],
         newValue: changes[i][3],
-        meta: this.hot.getCellMeta(changes[i][0], changes[i][1])
+        meta: meta
       };
-      console.log(this.hot.getCellMeta(changes[i][0], changes[i][1]))
       delete obj.meta["instance"];
       arrChanges.push(obj);
 
@@ -179,26 +184,21 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   }
 };
 
-var data = [];
-var colHeaders = []
-
 dataSourceConnectorPlugin.prototype.onAfterInit = function() {
   var baseURL = this.hot.getSettings().dataSourceConnector.controllerUrl;
   dataSourceConnectorPlugin._getData(baseURL + "/settings", response => {
     this.hot.updateSettings(response.data)
   })
   dataSourceConnectorPlugin._getData(baseURL + "/data", response => {
-    console.log('response', response)
     var res = response.data
     for (var key in res[0]) {
-      colHeaders.push(key)
+      this.colHeaders.push(key)
     }
 
     this.hot.updateSettings({
-      colHeaders: colHeaders
+      colHeaders: this.colHeaders
     });
 
-    // var data = [];
     for (var i = 0; i < res.length; i++) {
       let keysArr = []
       var j = 1
@@ -206,12 +206,12 @@ dataSourceConnectorPlugin.prototype.onAfterInit = function() {
         keysArr.push(res[i][key])
         this.hot.setCellMeta(i, j, "row_id", i);
         this.hot.setCellMeta(i, j, "col_id", j);
-        j++
+        j++;
       }
-      data.push(keysArr)
+      this.data.push(keysArr)
     }
-    console.log('dataaaaa', data)
-    this.hot.loadData(data);
+    this.afterInit = true
+    this.hot.loadData(this.data);
   })}
 /**
  * On after render event handler
@@ -219,6 +219,14 @@ dataSourceConnectorPlugin.prototype.onAfterInit = function() {
  * @param {*} isForced
  */
 dataSourceConnectorPlugin.prototype.onAfterRender = function(isForced) {};
+
+// Prevent sorting on front-end side
+dataSourceConnectorPlugin.prototype.onBeforeColumnSort = function(
+  column,
+  order
+) {
+  return false
+};
 
 /**
  * On after Column Sort event handler
@@ -231,7 +239,18 @@ dataSourceConnectorPlugin.prototype.onAfterColumnSort = function(
   order
 ) {
   var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
-  this._sendData(controllerUrl, "aftercolumnsort", { column: column, order: order });
+  var params = { column: this.colHeaders[column], order: order }
+  var query = '?'
+  for (var key in params) {
+   query += key + "=" + params[key] + "&"
+  }
+  query = query.slice(0, -1)
+
+  dataSourceConnectorPlugin._getData(controllerUrl + "/aftercolumnsort" + query, response => {
+    data = response.data
+    this.hot.loadData(data)
+    return false;
+  })
   return false;
 };
 
