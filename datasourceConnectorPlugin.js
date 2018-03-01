@@ -213,8 +213,6 @@ dataSourceConnectorPlugin.prototype.onAfterInit = function() {
     }
     console.log('dataaaaa', data)
     this.hot.loadData(data);
-    })
-  };
 
 /**
  * On after render event handler
