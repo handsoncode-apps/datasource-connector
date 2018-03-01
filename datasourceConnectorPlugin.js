@@ -165,11 +165,10 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
         newValue: changes[i][3],
         meta: this.hot.getCellMeta(changes[i][0], changes[i][1])
       };
-      console.log('changes[i][0]', changes[i][0])
-      console.log('changes[i][1]', changes[i][1])
-      console.log('obj', obj)
+      console.log(this.hot.getCellMeta(changes[i][0], changes[i][1]))
       delete obj.meta["instance"];
       arrChanges.push(obj);
+
     }
 
     var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
