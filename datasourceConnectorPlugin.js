@@ -163,10 +163,10 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   if (changes) {   
     var arrChanges = [];
     for (var i = 0; i < changes.length; i++) {
-      var meta = this.hot.getCellMeta(changes[i][0], changes[i][0])
+      var meta = this.hot.getCellMeta(changes[i][0], changes[i][1])
       var obj = {
-        row: meta.row,
-        column: changes[i][1],
+        row: meta.row_id,
+        column: meta.col_id,
         oldValue: changes[i][2],
         newValue: changes[i][3],
         meta: meta
@@ -191,27 +191,40 @@ dataSourceConnectorPlugin.prototype.onAfterInit = function() {
   })
   dataSourceConnectorPlugin._getData(baseURL + "/data", response => {
     var res = response.data
-    for (var key in res[0]) {
-      this.colHeaders.push(key)
-    }
-
-    this.hot.updateSettings({
-      colHeaders: this.colHeaders
-    });
-
-    for (var i = 0; i < res.length; i++) {
-      let keysArr = []
-      var j = 1
-      for (var key in res[i]) {
-        keysArr.push(res[i][key])
-        this.hot.setCellMeta(i, j, "row_id", i);
-        this.hot.setCellMeta(i, j, "col_id", j);
-        j++;
+    //for (var key in res[0]) {
+    //  this.colHeaders.push(key)
+    //}
+    console.log()
+    var data = []
+    for (var rowId = 0; rowId < res.length; rowId++) {
+      var row =[]
+      for (var columnName in res[rowId]) {
+        row.push(res[rowId][columnName])
       }
-      this.data.push(keysArr)
+      data.push(row)
+    }
+    
+      var row =[]
+      for (var columnName in res[0]) {
+        row.push(columnName)
+      }
+      data.push(row)
+    
+
+
+    this.hot.loadData(data);
+
+    var columns = []
+    for (var columnName in res[0]) {
+      columns.push(columnName)
+    }
+    for (var rowId = 0; rowId < res.length; rowId++) {
+      for (var columnId = 0 ; columnId < columns.length; columnId++) {
+        this.hot.setCellMeta(rowId, columnId, "row_id", res[rowId][response.rowId]);
+        this.hot.setCellMeta(rowId, columnId, "col_id", columns[columnId]);
+      }
     }
     this.afterInit = true
-    this.hot.loadData(this.data);
   })}
 /**
  * On after render event handler
