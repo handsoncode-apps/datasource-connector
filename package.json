@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/handsoncode-apps/datasource-connector#readme",
   "dependencies": {
-    "handsontable": "^0.35.1"
+    "handsontable": "^0.35.1",
+    "handsontable-pro": "^1.17.0"
   }
 }

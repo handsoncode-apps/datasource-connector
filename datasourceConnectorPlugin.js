@@ -49,11 +49,12 @@ dataSourceConnectorPlugin.prototype.enablePlugin = function() {
     this.addHook("afterColumnSort", this.onAfterColumnSort.bind(this));
   }
   this.addHook("afterChange", this.onAfterChange.bind(this));
-
   this.addHook("afterRender", this.onAfterRender.bind(this));
   this.addHook("afterCreateRow", this.onAfterCreateRow.bind(this));
   this.addHook("afterCreateCol", this.onAfterCreateCol.bind(this));
   this.addHook("afterColumnMove", this.onAfterColumnMove.bind(this));
+  this.addHook("beforeFilter", this.onBeforeFilter.bind(this))
+  this.addHook("afterFilter", this.onAfterFilter.bind(this))
   this._superClass.prototype.enablePlugin.call(this);
 
 };
@@ -313,6 +314,43 @@ dataSourceConnectorPlugin.prototype.onAfterColumnMove = function(
   var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
   this._sendData(controllerUrl, "aftercolumnmove", colMoved);
 };
+
+
+dataSourceConnectorPlugin.prototype.onBeforeFilter = function(
+  conditionsStack
+) {
+  return false;
+}
+
+dataSourceConnectorPlugin.prototype.onAfterFilter = function(
+  conditionsStack
+) {
+  if (conditionsStack.length > 0) {
+    var query = "?"
+    for (var i = 0; i < conditionsStack.length; i ++) {
+      for (let j = 0; j < conditionsStack[i].conditions.length; j++) {
+        if (conditionsStack[i].conditions[j].args.length != 0) {
+          for (let k = 0; k < conditionsStack[i].conditions[j].args[0].length; k++) {
+            query += "[" + this.colHeaders[conditionsStack[0].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0][k]
+            if (k !== conditionsStack[i].conditions[j].args[0].length - 1) {
+              query += "&"
+            }
+          }
+        } else {
+          query += "[" + this.colHeaders[conditionsStack[0].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=true"
+          if (j !== conditionsStack[i].conditions.length - 1) {
+            query += "&"
+          }
+        }
+      }
+    }
+    var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+    dataSourceConnectorPlugin._getData(controllerUrl + "/afterfilter" + query, response => {
+      this.hot.loadData(response.data)
+    })  
+  }
+}
+
 /**
  * Destroy the plugin.
  */
