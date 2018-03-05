@@ -342,36 +342,35 @@ dataSourceConnectorPlugin.prototype.onBeforeFilter = function(
 dataSourceConnectorPlugin.prototype.onAfterFilter = function(
   conditionsStack
 ) {
-  console.log('conditionsStack', conditionsStack)
   if (conditionsStack.length > 0) {
     var query = "?"
     for (var i = 0; i < conditionsStack.length; i ++) {
-      var operator = this.hot.getPlugin('filters').conditionCollection.columnTypes[conditionsStack[i].column]
-      console.log("operator", operator)
+      var operator = this.hot.getPlugin('filters').conditionCollection.columnTypes[conditionsStack[i].column] === 'conjunction' ? 'and' : 'or'
       for (let j = 0; j < conditionsStack[i].conditions.length; j++) {
-        console.log("conditionsStack[i].conditions", conditionsStack[i].conditions)
+        if (operator) {
+          conditionsStack[i].conditions[j].operator = operator
+        }
         if (conditionsStack[i].conditions[j].args.length != 0) {
           if (typeof conditionsStack[i].conditions[j].args[0] === 'string') {
-            query += "[" + this.colHeaders[conditionsStack[i].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0]
-            query += "&"
+            query += "[" + this.colHeaders[conditionsStack[i].column] + "][" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0] + "&"
           } else {
             for (let k = 0; k < conditionsStack[i].conditions[j].args[0].length; k++) {
-              query += "[" + this.colHeaders[conditionsStack[i].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0][k]
-              query += "&"  
+              query += "[" + this.colHeaders[conditionsStack[i].column] + "][" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0][k] + "&"
             }
           }
         } else {
-          query += "[" + this.colHeaders[conditionsStack[0].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=true"
-          query += "&"
+          query += "[" + this.colHeaders[conditionsStack[0].column] + "][" + conditionsStack[i].conditions[j].name + "]=true" + "&"
         }
+        if (j < conditionsStack[i].conditions.length - 1) {
+          query += "[" + this.colHeaders[conditionsStack[i].column] + "][operator]=" + conditionsStack[i].conditions[j].operator  + "&"
+        }
+        operator = ''
       }
     }
     query = query.slice(0, -1)
-    console.log('query', query)
     var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
     dataSourceConnectorPlugin._getData(controllerUrl + "/afterfilter" + query, response => {
       var data = response.data
-      console.log('response', data)
       var newData = []
       for (var i = 0; i < data.length; i++) {
         var tempArr = []
