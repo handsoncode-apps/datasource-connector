@@ -343,11 +343,9 @@ dataSourceConnectorPlugin.prototype.onAfterFilter = function(
   conditionsStack
 ) {
   var queryArr = []
-  console.log("conditionsStack", conditionsStack)
   if (conditionsStack.length > 0) {
     for (var i = 0; i < conditionsStack.length; i ++) {
       operator = this.hot.getPlugin('filters').conditionCollection.columnTypes[conditionsStack[i].column]
-      console.log('operator', operator)
       switch(operator) {
         case 'conjunction':
           operator = ['and']
@@ -381,9 +379,7 @@ dataSourceConnectorPlugin.prototype.onAfterFilter = function(
       }
       operatorWithVariable = false
     }
-    console.log("queryArr", queryArr)
     var query = "?" + queryArr.join('&')
-    console.log("correct query", query)
     var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
     dataSourceConnectorPlugin._getData(controllerUrl + "/afterfilter" + query, response => {
       var data = response.data
