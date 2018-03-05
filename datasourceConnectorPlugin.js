@@ -192,25 +192,29 @@ dataSourceConnectorPlugin.prototype.onAfterInit = function() {
   })
   dataSourceConnectorPlugin._getData(baseURL + "/data", response => {
     var res = response.data
-    //for (var key in res[0]) {
-    //  this.colHeaders.push(key)
-    //}
-    console.log()
+    for (var key in res[0]) {
+     this.colHeaders.push(key)
+    }
+    this.hot.updateSettings({
+      colHeaders: this.colHeaders
+    })
     var data = []
     for (var rowId = 0; rowId < res.length; rowId++) {
       var row =[]
       for (var columnName in res[rowId]) {
         row.push(res[rowId][columnName])
       }
+
       data.push(row)
     }
     
-      var row =[]
-      for (var columnName in res[0]) {
-        row.push(columnName)
-      }
-      data.push(row)
+      // var row =[]
+      // for (var columnName in res[0]) {
+      //   row.push(columnName)
+      // }
+      // data.push(row)
     
+      console.log('get data', data)
 
 
     this.hot.loadData(data);
@@ -338,28 +342,45 @@ dataSourceConnectorPlugin.prototype.onBeforeFilter = function(
 dataSourceConnectorPlugin.prototype.onAfterFilter = function(
   conditionsStack
 ) {
+  console.log('conditionsStack', conditionsStack)
   if (conditionsStack.length > 0) {
     var query = "?"
     for (var i = 0; i < conditionsStack.length; i ++) {
+      var operator = this.hot.getPlugin('filters').conditionCollection.columnTypes[conditionsStack[i].column]
+      console.log("operator", operator)
       for (let j = 0; j < conditionsStack[i].conditions.length; j++) {
+        console.log("conditionsStack[i].conditions", conditionsStack[i].conditions)
         if (conditionsStack[i].conditions[j].args.length != 0) {
-          for (let k = 0; k < conditionsStack[i].conditions[j].args[0].length; k++) {
-            query += "[" + this.colHeaders[conditionsStack[0].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0][k]
-            if (k !== conditionsStack[i].conditions[j].args[0].length - 1) {
-              query += "&"
+          if (typeof conditionsStack[i].conditions[j].args[0] === 'string') {
+            query += "[" + this.colHeaders[conditionsStack[i].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0]
+            query += "&"
+          } else {
+            for (let k = 0; k < conditionsStack[i].conditions[j].args[0].length; k++) {
+              query += "[" + this.colHeaders[conditionsStack[i].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0][k]
+              query += "&"  
             }
           }
         } else {
           query += "[" + this.colHeaders[conditionsStack[0].column] + "]" + "[" + conditionsStack[i].conditions[j].name + "]=true"
-          if (j !== conditionsStack[i].conditions.length - 1) {
-            query += "&"
-          }
+          query += "&"
         }
       }
     }
+    query = query.slice(0, -1)
+    console.log('query', query)
     var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
     dataSourceConnectorPlugin._getData(controllerUrl + "/afterfilter" + query, response => {
-      this.hot.loadData(response.data)
+      var data = response.data
+      console.log('response', data)
+      var newData = []
+      for (var i = 0; i < data.length; i++) {
+        var tempArr = []
+        for (var key in data[i]) {
+          tempArr.push(data[i][key])
+        }
+        newData.push(tempArr)
+      }
+      this.hot.loadData(newData)
     })  
   }
 }
