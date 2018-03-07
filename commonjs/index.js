@@ -20,29 +20,26 @@ function dataSourceConnectorPlugin(hotInstance) {
   this.vocabularyArray = [];
 }
 
-dataSourceConnectorPlugin.prototype = Object.create(
-  Handsontable.plugins.BasePlugin.prototype,
-  {
-    constructor: {
-      writable: true,
-      configurable: true,
-      value: dataSourceConnectorPlugin
-    }
+dataSourceConnectorPlugin.prototype = Object.create(Handsontable.plugins.BasePlugin.prototype, {
+  constructor: {
+    writable: true,
+    configurable: true,
+    value: dataSourceConnectorPlugin
   }
-);
+});
 
 /**
  * Check if the plugin is enabled in the settings.
  */
-dataSourceConnectorPlugin.prototype.isEnabled = function() {
+dataSourceConnectorPlugin.prototype.isEnabled = function () {
   return !!this.hot.getSettings().dataSourceConnector;
 };
 
-dataSourceConnectorPlugin.prototype.afterInit = false
+dataSourceConnectorPlugin.prototype.afterInit = false;
 /**
  * Enable the plujgin.
  */
-dataSourceConnectorPlugin.prototype.enablePlugin = function() {
+dataSourceConnectorPlugin.prototype.enablePlugin = function () {
   if (!this.afterInit) {
     this.addHook("afterInit", this.onAfterInit.bind(this));
     this.addHook("beforeColumnSort", this.onBeforeColumnSort.bind(this));
@@ -53,26 +50,25 @@ dataSourceConnectorPlugin.prototype.enablePlugin = function() {
   this.addHook("afterCreateRow", this.onAfterCreateRow.bind(this));
   this.addHook("afterCreateCol", this.onAfterCreateCol.bind(this));
   this.addHook("afterColumnMove", this.onAfterColumnMove.bind(this));
-  this.addHook("beforeFilter", this.onBeforeFilter.bind(this))
-  this.addHook("afterFilter", this.onAfterFilter.bind(this))
+  this.addHook("beforeFilter", this.onBeforeFilter.bind(this));
+  this.addHook("afterFilter", this.onAfterFilter.bind(this));
   this._superClass.prototype.enablePlugin.call(this);
-
 };
 
-dataSourceConnectorPlugin.prototype.data = []
-dataSourceConnectorPlugin.prototype.colHeaders = []
+dataSourceConnectorPlugin.prototype.data = [];
+dataSourceConnectorPlugin.prototype.colHeaders = [];
 
 /**
  * Disable the plugin.
  */
-dataSourceConnectorPlugin.prototype.disablePlugin = function() {
+dataSourceConnectorPlugin.prototype.disablePlugin = function () {
   this._superClass.prototype.disablePlugin.call(this);
 };
 
 /**
  * Update the plugin.
  */
-dataSourceConnectorPlugin.prototype.updatePlugin = function() {
+dataSourceConnectorPlugin.prototype.updatePlugin = function () {
   this.disablePlugin();
   this.enablePlugin();
 
@@ -86,11 +82,7 @@ dataSourceConnectorPlugin.prototype.updatePlugin = function() {
  * @param {*} endpoint 
  * @param {*} data 
  */
-dataSourceConnectorPlugin.prototype._sendData = function(
-  controllerUrl,
-  endpoint,
-  data
-) {
+dataSourceConnectorPlugin.prototype._sendData = function (controllerUrl, endpoint, data) {
   var xhr = dataSourceConnectorPlugin._xhr();
   xhr.open("post", controllerUrl + "/" + endpoint);
   xhr.setRequestHeader("Content-Type", "application/json");
@@ -104,14 +96,10 @@ dataSourceConnectorPlugin.prototype._sendData = function(
  * @param {*} successHandler 
  * @param {*} errorHandler 
  */
-dataSourceConnectorPlugin._getData = function(
-  url,
-  successHandler,
-  errorHandler
-) {
+dataSourceConnectorPlugin._getData = function (url, successHandler, errorHandler) {
   var xhr = dataSourceConnectorPlugin._xhr();
   xhr.open("get", url, true);
-  xhr.onreadystatechange = function() {
+  xhr.onreadystatechange = function () {
     var status;
     var data;
     // https://xhr.spec.whatwg.org/#dom-xmlhttprequest-readystate
@@ -132,7 +120,7 @@ dataSourceConnectorPlugin._getData = function(
 /** 
  *  Itnitialize xhr based for different type of browser
  */
-dataSourceConnectorPlugin._xhr = function() {
+dataSourceConnectorPlugin._xhr = function () {
   try {
     return new XMLHttpRequest();
   } catch (e) {}
@@ -160,11 +148,11 @@ dataSourceConnectorPlugin._xhr = function() {
  * @param {Array} changes Array of changes.
  * @param {String} source Describes the source of the change.
  */
-dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
-  if (changes) {   
+dataSourceConnectorPlugin.prototype.onAfterChange = function (changes, source) {
+  if (changes) {
     var arrChanges = [];
     for (var i = 0; i < changes.length; i++) {
-      var meta = this.hot.getCellMeta(changes[i][0], changes[i][1])
+      var meta = this.hot.getCellMeta(changes[i][0], changes[i][1]);
       var obj = {
         row: meta.row_id,
         column: meta.col_id,
@@ -174,7 +162,6 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
       };
       delete obj.meta["instance"];
       arrChanges.push(obj);
-
     }
 
     var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
@@ -185,65 +172,62 @@ dataSourceConnectorPlugin.prototype.onAfterChange = function(changes, source) {
   }
 };
 
-dataSourceConnectorPlugin.prototype.onAfterInit = function() {
+dataSourceConnectorPlugin.prototype.onAfterInit = function () {
   var baseURL = this.hot.getSettings().dataSourceConnector.controllerUrl;
   dataSourceConnectorPlugin._getData(baseURL + "/settings", response => {
-    this.hot.updateSettings(response.data)
-  })
+    this.hot.updateSettings(response.data);
+  });
   dataSourceConnectorPlugin._getData(baseURL + "/data", response => {
-    var res = response.data
+    var res = response.data;
     for (var key in res[0]) {
-     this.colHeaders.push(key)
+      this.colHeaders.push(key);
     }
     this.hot.updateSettings({
       colHeaders: this.colHeaders
-    })
-    var data = []
+    });
+    var data = [];
     for (var rowId = 0; rowId < res.length; rowId++) {
-      var row =[]
+      var row = [];
       for (var columnName in res[rowId]) {
-        row.push(res[rowId][columnName])
+        row.push(res[rowId][columnName]);
       }
 
-      data.push(row)
+      data.push(row);
     }
-    
-      // var row =[]
-      // for (var columnName in res[0]) {
-      //   row.push(columnName)
-      // }
-      // data.push(row)
-    
-      console.log('get data', data)
 
+    // var row =[]
+    // for (var columnName in res[0]) {
+    //   row.push(columnName)
+    // }
+    // data.push(row)
+
+    console.log('get data', data);
 
     this.hot.loadData(data);
 
-    var columns = []
+    var columns = [];
     for (var columnName in res[0]) {
-      columns.push(columnName)
+      columns.push(columnName);
     }
     for (var rowId = 0; rowId < res.length; rowId++) {
-      for (var columnId = 0 ; columnId < columns.length; columnId++) {
+      for (var columnId = 0; columnId < columns.length; columnId++) {
         this.hot.setCellMeta(rowId, columnId, "row_id", res[rowId][response.rowId]);
         this.hot.setCellMeta(rowId, columnId, "col_id", columns[columnId]);
       }
     }
-    this.afterInit = true
-  })}
+    this.afterInit = true;
+  });
+};
 /**
  * On after render event handler
  * 
  * @param {*} isForced
  */
-dataSourceConnectorPlugin.prototype.onAfterRender = function(isForced) {};
+dataSourceConnectorPlugin.prototype.onAfterRender = function (isForced) {};
 
 // Prevent sorting on front-end side
-dataSourceConnectorPlugin.prototype.onBeforeColumnSort = function(
-  column,
-  order
-) {
-  return false
+dataSourceConnectorPlugin.prototype.onBeforeColumnSort = function (column, order) {
+  return false;
 };
 
 /**
@@ -252,23 +236,20 @@ dataSourceConnectorPlugin.prototype.onBeforeColumnSort = function(
  * @param {*} column 
  * @param {*} order 
  */
-dataSourceConnectorPlugin.prototype.onAfterColumnSort = function(
-  column,
-  order
-) {
+dataSourceConnectorPlugin.prototype.onAfterColumnSort = function (column, order) {
   var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
-  var params = { column: this.colHeaders[column], order: order }
-  var query = '?'
+  var params = { column: this.colHeaders[column], order: order };
+  var query = '?';
   for (var key in params) {
-   query += key + "=" + params[key] + "&"
+    query += key + "=" + params[key] + "&";
   }
-  query = query.slice(0, -1)
+  query = query.slice(0, -1);
 
   dataSourceConnectorPlugin._getData(controllerUrl + "/aftercolumnsort" + query, response => {
-    data = response.data
-    this.hot.loadData(data)
+    data = response.data;
+    this.hot.loadData(data);
     return false;
-  })
+  });
   return false;
 };
 
@@ -279,11 +260,7 @@ dataSourceConnectorPlugin.prototype.onAfterColumnSort = function(
  * @param {*} amount 
  * @param {*} source 
  */
-dataSourceConnectorPlugin.prototype.onAfterCreateRow = function(
-  index,
-  amount,
-  source
-) {
+dataSourceConnectorPlugin.prototype.onAfterCreateRow = function (index, amount, source) {
   var createRow = {
     index: index,
     amount: amount,
@@ -300,11 +277,7 @@ dataSourceConnectorPlugin.prototype.onAfterCreateRow = function(
  * @param {*} amount 
  * @param {*} source 
  */
-dataSourceConnectorPlugin.prototype.onAfterCreateCol = function(
-  index,
-  amount,
-  source
-) {
+dataSourceConnectorPlugin.prototype.onAfterCreateCol = function (index, amount, source) {
   var createCol = {
     index: index,
     amount: amount,
@@ -320,10 +293,7 @@ dataSourceConnectorPlugin.prototype.onAfterCreateCol = function(
  * @param {*} columns 
  * @param {*} target 
  */
-dataSourceConnectorPlugin.prototype.onAfterColumnMove = function(
-  columns,
-  target
-) {
+dataSourceConnectorPlugin.prototype.onAfterColumnMove = function (columns, target) {
   var colMoved = {
     columns: columns,
     target: target
@@ -332,78 +302,70 @@ dataSourceConnectorPlugin.prototype.onAfterColumnMove = function(
   this._sendData(controllerUrl, "aftercolumnmove", colMoved);
 };
 
-
-dataSourceConnectorPlugin.prototype.onBeforeFilter = function(
-  conditionsStack
-) {
+dataSourceConnectorPlugin.prototype.onBeforeFilter = function (conditionsStack) {
   return false;
-}
+};
 
-dataSourceConnectorPlugin.prototype.onAfterFilter = function(
-  conditionsStack
-) {
-  var queryArr = []
+dataSourceConnectorPlugin.prototype.onAfterFilter = function (conditionsStack) {
+  var queryArr = [];
   if (conditionsStack.length > 0) {
-    for (var i = 0; i < conditionsStack.length; i ++) {
-      operator = this.hot.getPlugin('filters').conditionCollection.columnTypes[conditionsStack[i].column]
-      switch(operator) {
+    for (var i = 0; i < conditionsStack.length; i++) {
+      operator = this.hot.getPlugin('filters').conditionCollection.columnTypes[conditionsStack[i].column];
+      switch (operator) {
         case 'conjunction':
-          operator = ['and']
+          operator = ['and'];
           break;
         case 'disjunction':
-          operator = ['or']
+          operator = ['or'];
           break;
         case 'disjunctionAndVariable':
-          operator = ['or', 'and']
+          operator = ['or', 'and'];
           break;
       }
       for (let j = 0; j < conditionsStack[i].conditions.length; j++) {
         if (operator[j]) {
-          conditionsStack[i].conditions[j].operator = operator[j]
+          conditionsStack[i].conditions[j].operator = operator[j];
         }
         if (conditionsStack[i].conditions[j].args.length != 0) {
           if (typeof conditionsStack[i].conditions[j].args[0] === 'string') {
-            queryArr.push("[" + this.colHeaders[conditionsStack[i].column] + "][" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0])
+            queryArr.push("[" + this.colHeaders[conditionsStack[i].column] + "][" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0]);
           } else {
             for (let k = 0; k < conditionsStack[i].conditions[j].args[0].length; k++) {
-              queryArr.push("[" + this.colHeaders[conditionsStack[i].column] + "][" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0][k])
+              queryArr.push("[" + this.colHeaders[conditionsStack[i].column] + "][" + conditionsStack[i].conditions[j].name + "]=" + conditionsStack[i].conditions[j].args[0][k]);
             }
           }
         } else {
-          queryArr.push("[" + this.colHeaders[conditionsStack[0].column] + "][" + conditionsStack[i].conditions[j].name + "]=true")
+          queryArr.push("[" + this.colHeaders[conditionsStack[0].column] + "][" + conditionsStack[i].conditions[j].name + "]=true");
         }
         if (j < conditionsStack[i].conditions.length - 1) {
-          tempOperator = conditionsStack[i].conditions[j].operator || 'and'
-          queryArr.push("[" + this.colHeaders[conditionsStack[i].column] + "][operator]=" + tempOperator)
+          tempOperator = conditionsStack[i].conditions[j].operator || 'and';
+          queryArr.push("[" + this.colHeaders[conditionsStack[i].column] + "][operator]=" + tempOperator);
         }
       }
-      operatorWithVariable = false
+      operatorWithVariable = false;
     }
-    var query = "?" + queryArr.join('&')
+    var query = "?" + queryArr.join('&');
     var controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
     dataSourceConnectorPlugin._getData(controllerUrl + "/afterfilter" + query, response => {
-      var data = response.data
-      var newData = []
+      var data = response.data;
+      var newData = [];
       for (var i = 0; i < data.length; i++) {
-        var tempArr = []
+        var tempArr = [];
         for (var key in data[i]) {
-          tempArr.push(data[i][key])
+          tempArr.push(data[i][key]);
         }
-        newData.push(tempArr)
+        newData.push(tempArr);
       }
-      this.hot.loadData(newData)
-    })  
+      this.hot.loadData(newData);
+    });
   }
-}
+};
 
 /**
  * Destroy the plugin.
  */
-dataSourceConnectorPlugin.prototype.destroy = function() {
+dataSourceConnectorPlugin.prototype.destroy = function () {
   this._superClass.prototype.destroy.call(this);
 };
 
-Handsontable.plugins.registerPlugin(
-  "dataSourceConnectorPlugin",
-  dataSourceConnectorPlugin
-);
+Handsontable.plugins.registerPlugin("dataSourceConnectorPlugin", dataSourceConnectorPlugin);
