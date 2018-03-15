@@ -3,6 +3,6 @@ export default class Request {
     this.url = '';
     this.method = 'GET';
     this.headers = { 'Content-Type': 'application/json' };
-    this.body = {};
+    this.body = '';
   }
 }

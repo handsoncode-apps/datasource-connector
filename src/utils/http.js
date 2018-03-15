@@ -10,7 +10,7 @@ export default class Http {
 
     constructor(controllerUrl) {
         this.controllerUrl = controllerUrl;
-        this.listeners = new Map();
+        this.listeners = [];
     }
 
     addListener(callback) {
@@ -42,7 +42,7 @@ export default class Http {
 
         return this.request(request).then(
             value => {
-                this.onDataSend({ reqest: request, response: JSON.parse(value) });
+                this.onDataSend({ request: request, response: JSON.parse(value) });
                 return JSON.parse(value);
             }
         )
@@ -59,7 +59,7 @@ export default class Http {
 
         return this.request(request).then(
             value => {
-                this.onDataSend({ reqest: request, response: JSON.parse(value) });
+                this.onDataSend({ request: request, response: JSON.parse(value) });
                 return JSON.parse(value);
             }
         )
