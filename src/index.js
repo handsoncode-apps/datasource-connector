@@ -1,4 +1,4 @@
-const DataSourceConnector = (hotInstance) => {
+const DataSourceConnectorWrapper = () => {
   let SuperClass = Handsontable.plugins.BasePlugin
   /**
    * @plugin InternalPluginSkeleton
@@ -7,19 +7,19 @@ const DataSourceConnector = (hotInstance) => {
    * @description
    * Blank plugin template. It needs to inherit from the BasePlugin class.
    */
-  class DataSourceConnectorPlugin extends SuperClass {
+  class DataSourceConnector extends SuperClass {
 
     // The argument passed to the constructor is the currently processed Handsontable instance object.
     constructor(hotInstance) {
       super(hotInstance)
-      this.controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+      this.controllerUrl = '';
     }
 
     /**
      * Checks if the plugin is enabled in the settings.
      */
     isEnabled() {
-      console.log("enabled:", !!this.hot.getSettings().dataSourceConnector)
+      this.controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl
       return !!this.hot.getSettings().dataSourceConnector;
     }
 
@@ -165,7 +165,6 @@ const DataSourceConnector = (hotInstance) => {
     }
 
     onAfterInit() {
-      console.log('after init')
       this._get(this.controllerUrl + '/settings')
         .then(response => {
           this.hot.updateSettings(response.data)
@@ -255,13 +254,12 @@ const DataSourceConnector = (hotInstance) => {
       let request = new Request();
       request.url = url;
       request.method = 'POST';
-      request.body = data;
-      request.headers = ['application/json'];
+      request.body = JSON.stringify(data);
 
       return this._request(request).then(
         value => {
-          this.onDataSend({ reqest: request, response: JSSON.parse(value) });
-          return value;
+          this.onDataSend({ reqest: request, response: JSON.parse(value) });
+          return JSON.parse(value);
         }
       )
     }
@@ -275,12 +273,11 @@ const DataSourceConnector = (hotInstance) => {
 
       var request = new Request();
       request.url = url;
-      request.headers = ['application/json'];
 
       return this._request(request).then(
         value => {
-          this.onDataSend({ reqest: request, response: JSSON.parse(value) });
-          return value;
+          this.onDataSend({ reqest: request, response: JSON.parse(value) });
+          return JSON.parse(value);
         }
       )
     }
@@ -342,20 +339,13 @@ const DataSourceConnector = (hotInstance) => {
     constructor() {
       this.url = '';
       this.method = 'GET';
-      this.headers = [];
+      this.headers = { 'Content-Type' : 'application/json' };
       this.body = {};
     }
   }
 
-  return new DataSourceConnectorPlugin(hotInstance);
+  // register plugin
+  Handsontable.plugins.registerPlugin('DataSourceConnector',DataSourceConnector)
 }
 
-
-
-// registerPlugin('dataSourceConnectorPlugin', DataSourceConnectorPlugin);
-
-
-// You need to register your plugin in order to use it within Handsontable.
-// const instance = new DataSourceConnector({SuperClass:Handsontable.plugins.BasePlugin, hotInstance: hotInstance})
-
-export default DataSourceConnector;
+DataSourceConnectorWrapper();
