@@ -2,11 +2,11 @@ import URI from './utils/uri'
 import Http from './utils/http'
 
 /**
- * @plugin InternalPluginSkeleton
+ * @plugin DataSourceConnector
  * Note: keep in mind, that Handsontable instance creates one instance of the plugin class.
  *
  * @description
- * Blank plugin template. It needs to inherit from the BasePlugin class.
+ * This plugin enable the backend side data management for handsontable plugin
  */
 class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
@@ -75,6 +75,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       columns: columns,
       target: target
     };
+    // TODO this.colHeaders need to be reordered also
     this.http.post('/aftercolumnmove', colMoved);
   }
 
@@ -84,10 +85,11 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       amount: amount,
       source: source
     };
-    this.http.post('/aftercreatecol', payload).then(value => {
-      // TODO: setup meta for new created col
-      return value;
-    });
+    this.http.post('/aftercreatecol', payload)
+      .then(value => {
+        // TODO: setup meta for new created col
+        return value;
+      });
   }
 
   onAfterCreateRow(index, amount, source) {

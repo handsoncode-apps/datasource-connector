@@ -89,6 +89,4 @@ export default class Http {
             xhr.send(obj.body);
         });
     };
-
-
 }
