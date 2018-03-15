@@ -15,7 +15,7 @@ module.exports.create = function create(envArgs) {
   const config = {
     devtool: false,
     output: {
-      library: 'Handsontable',
+      library: 'DatasourceConector',
       libraryTarget: 'umd',
       libraryExport: 'default',
       umdNamedDefine: true,

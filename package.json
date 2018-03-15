@@ -2,7 +2,7 @@
   "name": "datasource-connector",
   "version": "1.0.0",
   "description": "Handsontable plugin that connects with remote backend data source.",
-  "main": "dataSourceConnectorPlugin.js",
+  "main": "dist/datasource-connector.js",
   "scripts": {
     "build": "cross-env BABEL_ENV=commonjs_dist env-cmd ./hot.config.js babel src --out-dir commonjs",
     "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development env-cmd ./hot.config.js webpack --hide-modules ./src/index.js"
@@ -66,6 +66,8 @@
     "webpack-cli": "^2.0.10"
   },
   "dependencies": {
-    "moment": "^2.21.0"
+    "handsontable": "^0.37.0",
+    "moment": "^2.21.0",
+    "pikaday": "^1.7.0"
   }
 }
