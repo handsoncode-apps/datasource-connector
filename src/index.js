@@ -59,8 +59,9 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
   onAfterFilter(conditionsStack) {
     conditionsStack.forEach((item, index, array) => {
-      array[index].column = this.colHeaders[index]
+      conditionsStack[index].column = this.colHeaders[conditionsStack[index].column]
     })
+
     this.filters = {filters:conditionsStack};
     let uri = new URI(Object.assign(this.order, this.filters));
     var query = uri.string();
