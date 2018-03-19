@@ -3,7 +3,7 @@ import Request from './request'
 /**
  * Send the xhr request to server 
  * 
- * @param {Reqest} obj Request object
+ * @param {Request} obj Request object
  * @returns {Promise}
  */
 export default class Http {
@@ -13,12 +13,22 @@ export default class Http {
         this.listeners = [];
     }
 
+    /**
+     * make a callback function that listen for HTTP events
+     * 
+     * @param {function} callback 
+     */
     addListener(callback) {
         if (typeof callback === 'function' || false) {
             this.listeners.push(callback);
         }
     }
 
+    /**
+     * this method emit the onDataSend event to listeners 
+     * 
+     * @param {any} args 
+     */
     onDataSend(...args){
         if (this.listeners && this.listeners.length) {
             this.listeners.forEach((listener) => {
@@ -65,10 +75,10 @@ export default class Http {
         )
     }
 
-    /**
-     * 
-     * @param {object} obj 
-     */
+   /**
+    * 
+    * @param {object} obj 
+    */
     request(obj) {
         return new Promise((resolve, reject) => {
             let xhr = new XMLHttpRequest();

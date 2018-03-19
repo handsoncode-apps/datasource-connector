@@ -6,7 +6,7 @@ import Http from './utils/http'
  * Note: keep in mind, that Handsontable instance creates one instance of the plugin class.
  *
  * @description
- * This plugin enable the backend side data management for handsontable plugin
+ * This plugin enable the backend side data management for handsontable instance
  */
 class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
@@ -51,12 +51,16 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterCreateRow', (index, amount, source) => this.onAfterCreateRow(index, amount, source));
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
-    this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack))
+    this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter())
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
   }
-
+  /**
+   * The onAfterFilter method is called after filtering .  
+   * 
+   * @param {array} conditionsStack 
+   */
   onAfterFilter(conditionsStack) {
     conditionsStack.forEach((item, index, array) => {
       conditionsStack[index].column = this.colHeaders[conditionsStack[index].column]
@@ -71,6 +75,12 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     })
   }
 
+  /**
+   * The onAfterColumnMove method is called after moving column.
+   * 
+   * @param {array} columns 
+   * @param {number} target 
+   */
   onAfterColumnMove(columns, target) {
     var colMoved = {
       columns: columns,
@@ -80,6 +90,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.http.post('/aftercolumnmove', colMoved);
   }
 
+  /**
+   * The onAfterCreateCol method is called after creating new column.
+   * 
+   * @param {number} index 
+   * @param {number} amount 
+   * @param {string} source 
+   */
   onAfterCreateCol(index, amount, source) {
     var payload = {
       index: index,
@@ -93,6 +110,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       });
   }
 
+  /**
+   * Method called after creating new row.
+   * 
+   * @param {number} index 
+   * @param {number} amount 
+   * @param {string} source 
+   */
   onAfterCreateRow(index, amount, source) {
     var payload = {
       index: index,
@@ -106,9 +130,10 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
   }
 
   /**
+   * Method called after sorting column, event will be passed to backend.
    * 
-   * @param {*} column 
-   * @param {*} order 
+   * @param {number} column 
+   * @param {boolean} order 
    */
   onAfterColumnSort(column, order) {
     this.order = order !== undefined ? { column: this.colHeaders[column], order: order } : {};
@@ -152,6 +177,9 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     }
   }
 
+  /**
+   * Method called after Handsontable instance initiation
+   */
   onAfterInit() {
     this.http.get('/settings')
       .then(response => {

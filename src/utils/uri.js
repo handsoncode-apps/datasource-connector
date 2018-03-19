@@ -3,7 +3,7 @@ export default class URI {
         this.object = object;
     }
 
-    _serialie(object, prefix) {
+    _serialize(object, prefix) {
         let queryStrings = [], property;
         for (property in object) {
             if (object.hasOwnProperty(property)) {
@@ -19,6 +19,6 @@ export default class URI {
         if (this.object === undefined) {
             return '';
         }
-        return '?' + this._serialie(this.object)
+        return '?' + this._serialize(this.object)
     }
 }
