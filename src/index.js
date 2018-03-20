@@ -1,5 +1,5 @@
-import URI from './utils/uri'
-import Http from './utils/http'
+import URI from './utils/uri';
+import Http from './utils/http';
 
 /**
  * @plugin DataSourceConnector
@@ -12,18 +12,18 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
   // The argument passed to the constructor is the currently processed Handsontable instance object.
   constructor(hotInstance) {
-    super(hotInstance)
-    this.http = {}
-    this.colHeaders = []
-    this.filters = {}
-    this.order = {}
+    super(hotInstance);
+    this.http = {};
+    this.colHeaders = [];
+    this.filters = {};
+    this.order = {};
   }
 
   /**
    * Checks if the plugin is enabled in the settings.
    */
   isEnabled() {
-    let enabled = !!this.hot.getSettings().dataSourceConnector
+    let enabled = !!this.hot.getSettings().dataSourceConnector;
     if (enabled) {
       let controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
       let onDataSend = this.hot.getSettings().dataSourceConnector.onDataSend;
@@ -40,9 +40,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    */
   enablePlugin() {
     // disable build in sort and filter functions
-    this.addHook('beforeColumnSort', () => { return false; });
-    this.addHook('beforeFilter', () => { return false; })
-    this.addHook('afterRender', (isForced) => { });
+    this.addHook('beforeColumnSort', () => false);
+    this.addHook('beforeFilter', () => false);
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
@@ -51,40 +50,40 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterCreateRow', (index, amount, source) => this.onAfterCreateRow(index, amount, source));
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
-    this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter())
+    this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
   }
   /**
-   * The onAfterFilter method is called after filtering .  
-   * 
-   * @param {array} conditionsStack 
+   * The onAfterFilter method is called after filtering.
+   *
+   * @param {array} conditionsStack
    */
   onAfterFilter(conditionsStack) {
-    conditionsStack.forEach((item, index, array) => {
-      conditionsStack[index].column = this.colHeaders[conditionsStack[index].column]
-    })
+    conditionsStack.forEach((item, index) => {
+      conditionsStack[index].column = this.colHeaders[conditionsStack[index].column];
+    });
 
-    this.filters = {filters:conditionsStack};
+    this.filters = { filters: conditionsStack };
     let uri = new URI(Object.assign(this.order, this.filters));
     var query = uri.string();
-    
-    this.http.get('/data' + query).then(response => {
-      this._loadData(response)
-    })
+
+    this.http.get(`/data${query}`).then((response) => {
+      this._loadData(response);
+    });
   }
 
   /**
    * The onAfterColumnMove method is called after moving column.
-   * 
-   * @param {array} columns 
-   * @param {number} target 
+   *
+   * @param {array} columns
+   * @param {number} target
    */
   onAfterColumnMove(columns, target) {
     var colMoved = {
-      columns: columns,
-      target: target
+      columns,
+      target
     };
     // TODO this.colHeaders need to be reordered also
     this.http.post('/aftercolumnmove', colMoved);
@@ -92,87 +91,90 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
   /**
    * The onAfterCreateCol method is called after creating new column.
-   * 
-   * @param {number} index 
-   * @param {number} amount 
-   * @param {string} source 
+   *
+   * @param {number} index
+   * @param {number} amount
+   * @param {string} source
    */
   onAfterCreateCol(index, amount, source) {
     var payload = {
-      index: index,
-      amount: amount,
-      source: source
+      index,
+      amount,
+      source
     };
     this.http.post('/aftercreatecol', payload)
-      .then(value => {
+      .then((value) =>
         // TODO: setup meta for new created col
-        return value;
-      });
+        value
+      );
   }
 
   /**
    * Method called after creating new row.
-   * 
-   * @param {number} index 
-   * @param {number} amount 
-   * @param {string} source 
+   *
+   * @param {number} index
+   * @param {number} amount
+   * @param {string} source
    */
   onAfterCreateRow(index, amount, source) {
     var payload = {
-      index: index,
-      amount: amount,
-      source: source
+      index,
+      amount,
+      source
     };
-    this.http.post('/aftercreaterow', payload).then(value => {
+    this.http.post('/aftercreaterow', payload).then((value) =>
       // TODO: setup meta for new created row
-      return value;
-    });
+      value
+    );
   }
 
   /**
    * Method called after sorting column, event will be passed to backend.
-   * 
-   * @param {number} column 
-   * @param {boolean} order 
+   *
+   * @param {number} column
+   * @param {boolean} order
    */
   onAfterColumnSort(column, order) {
-    this.order = order !== undefined ? { column: this.colHeaders[column], order: order } : {};
-    
+    this.order = order !== undefined ? { column: this.colHeaders[column], order } : {};
+
     let uri = new URI(Object.assign(this.order, this.filters));
-    this.http.get("/data" + uri.string())
-      .then(response => {
-        this._loadData(response)
-      })
+    this.http.get(`/data${uri.string()}`)
+      .then((response) => {
+        this._loadData(response);
+      });
   }
 
   /**
    * Load data and setup all dedicated metadata for backend sync
-   * @param {object} response 
+   * @param {object} response
    */
   _loadData(response) {
-    let responseData = response.data
-    let normalizedData = []
+    let responseData = response.data;
+    let normalizedData = [];
     for (let row = 0; row < responseData.length; row++) {
-      let item = []
-      for (let columnName in responseData[row]) {
-        item.push(responseData[row][columnName])
+      let item = [];
+      // eslint-disable-next-line guard-for-in
+      for (let columnName of responseData[row].values()) {
+        item.push(responseData[row][columnName]);
       }
-      normalizedData.push(item)
+      normalizedData.push(item);
     }
 
     this.hot.loadData(normalizedData);
 
-    let columnNames = []
+    let columnNames = [];
+
+    // eslint-disable-next-line guard-for-in
     for (let columnName in responseData[0]) {
-      columnNames.push(columnName)
+      columnNames.push(columnName);
     }
-    
+
     this.colHeaders = columnNames;
 
     for (let row = 0; row < responseData.length; row++) {
       for (let column = 0; column < columnNames.length; column++) {
-        this.hot.setCellMeta(row, column, "row_id", responseData[row][response.rowId]);
-        this.hot.setCellMeta(row, column, "col_id", columnNames[column]);
+        this.hot.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
+        this.hot.setCellMeta(row, column, 'col_id', columnNames[column]);
       }
     }
   }
@@ -182,13 +184,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    */
   onAfterInit() {
     this.http.get('/settings')
-      .then(response => {
-        this.hot.updateSettings(response.data)
-      })
+      .then((response) => {
+        this.hot.updateSettings(response.data);
+      });
     this.http.get('/data')
-      .then(response => {
-        this._loadData(response)
-      })
+      .then((response) => {
+        this._loadData(response);
+      });
   }
 
   /**
@@ -222,7 +224,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     if (changes) {
       let changeItems = [];
       for (let i = 0; i < changes.length; i++) {
-        let cellMeta = this.hot.getCellMeta(changes[i][0], changes[i][1])
+        let cellMeta = this.hot.getCellMeta(changes[i][0], changes[i][1]);
         let item = {
           row: cellMeta.row_id,
           column: cellMeta.col_id,
@@ -230,13 +232,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
           newValue: changes[i][3],
           meta: cellMeta
         };
-        delete item.meta["instance"];
+        delete item.meta.instance;
         changeItems.push(item);
       }
       this.http.post('/afterchange', {
         changes: changeItems,
-        source: source
-      })
+        source
+      });
     }
   }
 
@@ -249,7 +251,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
   }
 }
 
-export default DataSourceConnector
+export default DataSourceConnector;
 
 // register plugin
-Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector)
+Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
