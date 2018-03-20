@@ -35,7 +35,7 @@ Add an empty <div> element that will be turned into a spreadsheet. Let's give th
 ```
 
 ### Initialize
-In the next step, pass a reference to that `<div class="container">` and setup yor backend controller url by passing into baseURL option.
+In the next step, pass a reference to that `<div class="container">` and setup yor backend controller url by passing into controllerUrl option.
 
 ```javascript
 var container = document.getElementById('container');
