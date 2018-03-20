@@ -49,6 +49,9 @@ var hot = new Handsontable(container, {
 });
 ```
 
+You may to register for event what is emit on each xhr communication. Please read this [instruction](doc/onDataSend.md) in that case.
+
 The configured backend need to support methods described in  [Data specification](doc/README.md)
+
 
 If you have `Express.js` you may use the `datasource-node` package to generate the backend controller or see the `node` example.
