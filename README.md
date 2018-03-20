@@ -41,11 +41,11 @@ In the next step, pass a reference to that `<div class="container">` and setup y
 var container = document.getElementById('container');
 
 var hot = new Handsontable(container, {
-rowHeaders: true,
-colHeaders: true,
-datasourceConnector: {
-controllerUrl: 'http://yourdomain.com/controller'
-}
+  rowHeaders: true,
+  colHeaders: true,
+  datasourceConnector: {
+    controllerUrl: 'http://yourdomain.com/controller'
+  }
 });
 ```
 
