@@ -154,7 +154,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     for (let row = 0; row < responseData.length; row++) {
       let item = [];
       // eslint-disable-next-line guard-for-in
-      for (let columnName of responseData[row].values()) {
+      for (let columnName in responseData[row]) {
         item.push(responseData[row][columnName]);
       }
       normalizedData.push(item);
