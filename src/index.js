@@ -61,17 +61,34 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {array} conditionsStack
    */
   onAfterFilter(conditionsStack) {
-    conditionsStack.forEach((item, index) => {
-      conditionsStack[index].column = this.colHeaders[conditionsStack[index].column];
+    var conditions = hot.getPlugin('filters').conditionCollection.exportAllConditions();
+    conditions.forEach((item, index) => {
+      conditions[index].column = this.colHeaders[conditionsStack[index].column];
     });
 
-    this.filters = { filters: conditionsStack };
+    this.filters = { filters: conditions };
     let uri = new URI(Object.assign(this.order, this.filters));
     var query = uri.string();
 
     this.http.get(`/data${query}`).then((response) => {
       this._loadData(response);
     });
+  }
+
+  // move element in array from position to target
+  _move(array, from, to) {
+    if (to === from) {
+      return array;
+    }
+
+    var target = array[from];
+    var increment = to < from ? -1 : 1;
+
+    for (var k = from; k !== to; k += increment) {
+      array[k] = array[k + increment];
+    }
+    array[to] = target;
+    return array;
   }
 
   /**
@@ -81,11 +98,17 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} target
    */
   onAfterColumnMove(columns, target) {
+    var columnNames = [];
+    var i = 0;
+    for (i = 0; i < columns.length; i++) {
+      columnNames.push(this.colHeaders[columns[i]]);
+    }
+
     var colMoved = {
-      columns,
+      columnNames,
       target
     };
-    // TODO this.colHeaders need to be reordered also
+
     this.http.post('/aftercolumnmove', colMoved);
   }
 
@@ -102,11 +125,12 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       amount,
       source
     };
+    var sourceIndex = index === 0 ? 1 : 0;
     this.http.post('/aftercreatecol', payload)
-      .then((value) =>
-        // TODO: setup meta for new created col
-        value
-      );
+      .then((value) => {
+        this.hot.setCellMeta(row, index, 'row_id', this.hot.getCellMeta(row, sourceIndex).row_id);
+        this.hot.setCellMeta(row, index, 'col_id', value.name);
+      });
   }
 
   /**
