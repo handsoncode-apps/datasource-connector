@@ -15,7 +15,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     super(hotInstance);
     this.http = {};
     this.colHeaders = [];
-    this.filters = {};
+    this.filters = [];
     this.order = {};
   }
 
@@ -66,11 +66,9 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       conditions[index].column = this.colHeaders[conditionsStack[index].column];
     });
 
-    this.filters = { filters: conditions };
-    let uri = new URI(Object.assign(this.order, this.filters));
-    var query = uri.string();
-
-    this.http.get(`/data${query}`).then((response) => {
+    this.filters = conditions;
+    let uri = { order: this.order, filters: this.filters};
+    this.http.post('/data', uri).then((response) => {
       this._loadData(response);
     });
   }
@@ -169,10 +167,10 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {boolean} order
    */
   onAfterColumnSort(column, order) {
-    this.order = order !== undefined ? { column: this.colHeaders[column], order } : {};
+    this.order = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
 
-    let uri = new URI(Object.assign(this.order, this.filters));
-    this.http.get(`/data${uri.string()}`)
+    let uri = { order: this.order, filters: this.filters};
+    this.http.post(`/data`, uri)
       .then((response) => {
         this._loadData(response);
       });
@@ -221,7 +219,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       .then((response) => {
         this.hot.updateSettings(response.data);
       });
-    this.http.get('/data')
+    this.http.post('/data')
       .then((response) => {
         this._loadData(response);
       });
