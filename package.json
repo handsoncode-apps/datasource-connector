@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Handsontable plugin that connects with remote backend data source.",
   "main": "dist/datasource-connector.js",
+  "types": "index.d.ts",
   "scripts": {
     "lint": "eslint --rule \"no-restricted-globals: 0\"  src/",
     "build": "cross-env BABEL_ENV=commonjs_dist env-cmd ./hot.config.js babel src --out-dir commonjs",

@@ -45,12 +45,20 @@ Request Body schema:
   ```
 
 Response `200 OK`
+Expected Response body schema:
+```javascript
+{
+  name:column_name
+}
+```
+Where column_name is the string assigned to the column on backend side.
+
 
 ### After Create Row
 
 Method `POST /afterCreateRow`
 
-Description: Thi event will be send to backend after creating rows
+Description: This event will be send to backend after creating rows
 
 Request Body schema:
 
@@ -63,35 +71,57 @@ Request Body schema:
 ```
 
 Response `200 OK`
+Expected Response body schema:
+```javascript
+{
+  "data": {"key1":value1,"key2":value2 (..)},
+  "id":"id"
+}
+```
+Where:
+
+`Data` is object represents new created row:
+
+- `key1`, `key2` - Database names of column name 
+- `value1`, `value2` -  Database values for each cell
+
+There may be more columns in this object, but all need to have unique name.
+
+`id` is the of unique id column name.
+
 
 ## Data
 
-**data** is an array of objects that represent each row in table. Objects have two properties:
+### Pull data from backend 
+
+Method `GET /data`
+
+Request parameters:
+
+| Name | Description | Type | Required |
+--------------------------------------
+| column | Column name to be sorted | string | No |  
+| order | Ascending order direction | boolean | No |
+| filters | Condition filers array | Array of Conditions | No |
+
+Expected response `200 OK` 
+Response body format:
 
 ```javascript
-
 {
-    key: string,
-    values: any
+  "data": [
+    {"key1":value1,"key2":value2 (..)}
+    ],
+  "rowId":"id"
 }
 ```
-example of data format is:
+Where:
 
-```javascript
+`Data` is an array of object represents each row:
 
-var data = [
-   {
-    key: "key1",
-    value: "value1"
-   },
-  {
-    key: "key2",
-    value: "value3"
-   },
-   {
-    key: "key3",
-    value: "value3"
-   },
-  ];
+- `key1`, `key2` - Database names of column name 
+- `value1`, `value2` -  Database values for each cell
 
-```
+There may be more columns in this object, but all need to have unique name.
+
+`rowId` is the of unique id column name.
