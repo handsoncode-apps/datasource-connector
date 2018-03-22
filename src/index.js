@@ -128,8 +128,11 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     var sourceIndex = index === 0 ? 1 : 0;
     this.http.post('/aftercreatecol', payload)
       .then((value) => {
-        this.hot.setCellMeta(row, index, 'row_id', this.hot.getCellMeta(row, sourceIndex).row_id);
-        this.hot.setCellMeta(row, index, 'col_id', value.name);
+        var noOfRows = this.hot.getData().length;
+        for (var row = 0; row < noOfRows; row++) {
+          this.hot.setCellMeta(row, index, 'row_id', this.hot.getCellMeta(row, sourceIndex).row_id);
+          this.hot.setCellMeta(row, index, 'col_id', value.name);
+        }
       });
   }
 
