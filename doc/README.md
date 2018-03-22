@@ -4,7 +4,7 @@
 
 To receive hot event in backend you should implement these methods: 
 
-### After change
+### After change data
 
 Method `POST /afterChange`
 
@@ -28,7 +28,7 @@ Request Body schema:
 
 Response `200 OK`
 
-### After Create Col
+### After Create Column
 
 Method `POST /afterCreateCol`
 

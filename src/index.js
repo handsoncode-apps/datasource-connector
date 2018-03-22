@@ -148,10 +148,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     };
     this.http.post('/aftercreaterow', payload)
       .then((value) => {
-        this.hot.dataSource[index] = value.data;
-        for (var col = 0; col < this.hot.dataSource[index].length; row++) {
+        var row = this.hot.getData()[index];
+        var sourceIndex = index === 1 ? 2 : 1;
+        for (var col = 0; col < row.length; col++) {
+          var column = this.hot.getCellMeta(sourceIndex, col).col_id;
           this.hot.setCellMeta(index, col, 'row_id', value.id);
-          this.hot.setCellMeta(index, col, 'col_id', this.hot.getCellMeta(sourceIndex, col).col_id);
+          this.hot.setCellMeta(index, col, 'col_id', column);
+          this.hot.setDataAtCell(index, col, value.data[column]);
         }
       });
   }
