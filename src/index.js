@@ -107,7 +107,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       target
     };
 
-    this.http.post('/aftercolumnmove', colMoved);
+    this.http.post('/move/column', colMoved);
   }
 
   /**
@@ -124,7 +124,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       source
     };
     var sourceIndex = index === 0 ? 1 : 0;
-    this.http.post('/aftercreatecol', payload)
+    this.http.post('/create/column', payload)
       .then((value) => {
         var noOfRows = this.hot.getData().length;
         for (var row = 0; row < noOfRows; row++) {
@@ -147,7 +147,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       amount,
       source
     };
-    this.http.post('/aftercreaterow', payload)
+    this.http.post('/create/row', payload)
       .then((value) => {
         var row = this.hot.getData()[index];
         var sourceIndex = index === 1 ? 2 : 1;
@@ -267,7 +267,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
         delete item.meta.instance;
         changeItems.push(item);
       }
-      this.http.post('/afterchange', {
+      this.http.post('/update', {
         changes: changeItems,
         source
       });
