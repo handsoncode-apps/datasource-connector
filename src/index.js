@@ -42,6 +42,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     // disable build in sort and filter functions
     this.addHook('beforeColumnSort', () => false);
     this.addHook('beforeFilter', () => false);
+    // this.addHook('beforeRemoveCol', () => false);
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
@@ -52,6 +53,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
 
+    this.addHook('afterRemoveCol', (index, amount) => this.onAfterRemoveCol(index, amount))
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
   }
@@ -132,6 +134,27 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
           this.hot.setCellMeta(row, index, 'col_id', value.name);
         }
       });
+  }
+  /**
+   * The onAfterRemoveCol method is called after removing column.
+   *
+   * @param {number} index
+   * @param {number} amount
+   * */
+  onAfterRemoveCol(index, amount) {
+    var removedCol = []
+    for (var i = 0; i < amount; i++) {
+      removedCol.push(this.colHeaders[i+index])
+    }
+    this.http.post('/remove/column', removedCol)
+      .then((value) => {
+        if (value.data) {
+          this.http.post('/data')
+          .then((response) => {
+            this._loadData(response);
+          });
+        }
+      })
   }
 
   /**
