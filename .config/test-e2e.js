@@ -40,22 +40,14 @@ module.exports.create = function create(envArgs) {
         filename: path.resolve(__dirname, '../test/E2ERunner.html'),
         baseJasminePath: '../',
         externalCssFiles: [
-          'lib/normalize.css',
-          '../dist/handsontable.css',
-          'helpers/common.css',
+          '../test/lib/normalize.css',
+          '../node_modules/handsontable-pro/dist/handsontable.css',
+          '../test/spec/helpers/common.css',
         ],
         externalJsFiles: [
           '../test/lib/phantom-reporter.js',
-          'lib/jquery.min.js',
-          'lib/jquery.simulate.js',
-          'lib/lodash.underscore.js',
-          'lib/backbone.js',
-          '../dist/numbro/numbro.js',
-          '../dist/numbro/languages.js',
-          '../dist/moment/moment.js',
-          '../dist/pikaday/pikaday.js',
-          '../dist/handsontable.js',
-          '../dist/languages/all.js',
+          '..node_modules/handsontable-pro/dist/handsontable.full.js',
+          '../dist/datasource-connector.full.js'
         ],
       })
     );
