@@ -1,4 +1,3 @@
-import URI from './utils/uri';
 import Http from './utils/http';
 
 /**
@@ -8,6 +7,7 @@ import Http from './utils/http';
  * @description
  * This plugin enable the backend side data management for handsontable instance
  */
+/*eslint-disable*/
 class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
   // The argument passed to the constructor is the currently processed Handsontable instance object.
@@ -18,6 +18,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.filters = [];
     this.order = {};
   }
+  /* eslint-enable */
 
   /**
    * Checks if the plugin is enabled in the settings.
@@ -53,7 +54,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
 
-    this.addHook('afterRemoveCol', (index, amount) => this.onAfterRemoveCol(index, amount))
+    this.addHook('afterRemoveCol', (index, amount) => this.onAfterRemoveCol(index, amount));
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
   }
@@ -142,19 +143,19 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} amount
    * */
   onAfterRemoveCol(index, amount) {
-    var removedCol = []
+    var removedCol = [];
     for (var i = 0; i < amount; i++) {
-      removedCol.push(this.colHeaders[i+index])
+      removedCol.push(this.colHeaders[i + index]);
     }
     this.http.post('/remove/column', removedCol)
       .then((value) => {
         if (value.data) {
           this.http.post('/data')
-          .then((response) => {
-            this._loadData(response);
-          });
+            .then((response) => {
+              this._loadData(response);
+            });
         }
-      })
+      });
   }
 
   /**
@@ -193,7 +194,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.order = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
 
     let uri = { order: this.order, filters: this.filters};
-    this.http.post(`/data`, uri)
+    this.http.post('/data', uri)
       .then((response) => {
         this._loadData(response);
       });
@@ -307,6 +308,6 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 }
 
 export default DataSourceConnector;
-
+/* eslint-disable*/
 // register plugin
 Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);

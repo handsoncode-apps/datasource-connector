@@ -17,7 +17,7 @@ const ignoredE2ETestsPath = './mobile';
 
 [
   require.context('.', true, /\.spec\.js$/),
-  require.context('./../../../plugins', true, /\.e2e\.js$/),
+  require.context('./../../plugins', true, /\.e2e\.js$/),
 ].forEach((req) => {
   req.keys().forEach((filePath) => {
     if (filePath.includes(ignoredE2ETestsPath) === false) {

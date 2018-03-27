@@ -16,6 +16,7 @@ describe('Core_datachange', () => {
     var output = null;
 
     handsontable({
+
       afterChange(changes) {
         output = changes;
       }

@@ -1,13 +1,13 @@
-beforeEach(function () {
+beforeEach(() => {
   jasmine.addMatchers({
-    toBePlaying: function () {
+    toBePlaying() {
       return {
-        compare: function (actual, expected) {
+        compare(actual, expected) {
           var player = actual;
 
           return {
             pass: player.currentlyPlayingSong === expected && player.isPlaying
-          }
+          };
         }
       };
     }

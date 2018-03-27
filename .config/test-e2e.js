@@ -42,12 +42,13 @@ module.exports.create = function create(envArgs) {
         externalCssFiles: [
           '../test/lib/normalize.css',
           '../node_modules/handsontable-pro/dist/handsontable.css',
-          '../test/spec/helpers/common.css',
+          '../test/helpers/common.css',
         ],
         externalJsFiles: [
           '../test/lib/phantom-reporter.js',
-          '..node_modules/handsontable-pro/dist/handsontable.full.js',
-          '../dist/datasource-connector.full.js'
+          '../dist/datasource-connector.full.js',
+          '../test/lib/jquery.min.js',
+          '../node_modules/handsontable-pro/dist/handsontable.full.js'
         ],
       })
     );
