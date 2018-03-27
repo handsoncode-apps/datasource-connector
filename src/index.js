@@ -42,13 +42,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('beforeColumnSort', () => false);
     this.addHook('beforeFilter', () => false);
     this.addHook('beforeRemoveCol', (index, amount) => this.onRemoveCol(index, amount));
+    this.addHook('beforeRemoveRow', (index, amount) => this.onRemoveRow(index, amount));
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
     this.addHook('afterColumnSort', (column, order) => this.onAfterColumnSort(column, order));
 
     this.addHook('afterCreateRow', (index, amount, source) => this.onAfterCreateRow(index, amount, source));
-    this.addHook('afterRemoveRow', (index, amount) => this.onAfterRemoveRow(index, amount));
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
@@ -180,6 +180,25 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
           this.hot.setCellMeta(index, col, 'row_id', value.id);
           this.hot.setCellMeta(index, col, 'col_id', column);
           this.hot.setDataAtCell(index, col, value.data[column]);
+        }
+      });
+  }
+
+  /**
+   * Method called after creating new row.
+   *
+   * @param {number} index
+   * @param {number} amount
+   */
+  onRemoveRow(index, amount) {
+    var rowsRemoved = [];
+    for (var i = 0; i < amount; i++) {
+      rowsRemoved.push((this.hot.getCellMeta(i + index, 1).row_id));
+    }
+    this.http.post('/remove/row', rowsRemoved)
+      .then((value) => {
+        if (!value) {
+          return false;
         }
       });
   }
