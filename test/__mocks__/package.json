@@ -1,0 +1,15 @@
+{
+  "name": "mockbackend",
+  "version": "1.0.0",
+  "description": "mock backend for testing",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "\"git+https://github.com/handsoncode-apps/datasource-connector.git\""
+  },
+  "author": "\"\"",
+  "license": "MIT"
+}
