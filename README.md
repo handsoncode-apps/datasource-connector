@@ -11,11 +11,24 @@ Components diagram shows the conection between frontend of your web app, where y
 
 Supported events:
 
+- afterinit
 - afterChange
 - afterColumnMove
 - afterColumnSort
+- afterRemoveCol
 - afterCreateCol
 - afterCreateRow
+- afterRemoveRow
+- afterFilter
+
+Supported features:
+
+| Supported feature | Description |
+|:-----------------:|:----------:|
+| Filtering | Display rows that meet your criteria and hide the rest. |
+| Moving | Drag rows or columns to swap them within the table |
+| Sortting data | Sort data in ascending or descending order throughout the column. |
+
 
 ## Basic usage 
 
