@@ -7,7 +7,6 @@ import Http from './utils/http';
  * @description
  * This plugin enable the backend side data management for handsontable instance
  */
-/*eslint-disable*/
 class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
   // The argument passed to the constructor is the currently processed Handsontable instance object.
@@ -18,7 +17,6 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.filters = [];
     this.order = {};
   }
-  /* eslint-enable */
 
   /**
    * Checks if the plugin is enabled in the settings.
@@ -43,7 +41,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     // disable build in sort and filter functions
     this.addHook('beforeColumnSort', () => false);
     this.addHook('beforeFilter', () => false);
-    // this.addHook('beforeRemoveCol', () => false);
+    this.addHook('beforeRemoveCol', (index, amount) => this.onRemoveCol(index, amount));
+    this.addHook('beforeRemoveRow', (index, amount) => this.onRemoveRow(index, amount));
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
@@ -53,8 +52,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
+    this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
 
-    this.addHook('afterRemoveCol', (index, amount) => this.onAfterRemoveCol(index, amount));
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
   }
@@ -110,7 +109,12 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       target
     };
 
-    this.http.post('/move/column', colMoved);
+    this.http.post('/move/column', colMoved)
+      .then((value) => {
+        this.colHeaders = value.data
+        // hot.updateSettings({colHeaders: value.data});
+        // console.log(hot.getSettings());
+      });
   }
 
   /**
@@ -142,20 +146,21 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} index
    * @param {number} amount
    * */
-  onAfterRemoveCol(index, amount) {
+  async onRemoveCol(index, amount) {
     var removedCol = [];
     for (var i = 0; i < amount; i++) {
       removedCol.push(this.colHeaders[i + index]);
     }
-    this.http.post('/remove/column', removedCol)
-      .then((value) => {
-        if (value.data) {
-          this.http.post('/data')
-            .then((response) => {
-              this._loadData(response);
-            });
-        }
-      });
+    try {
+      var value = await this.http.post('/remove/column', removedCol);
+      if (value.data) {
+        var response = await this.http.post('/data');
+        this._loadData(response);
+        return true;
+      }
+    } catch (err) {
+      return false;
+    }
   }
 
   /**
@@ -182,6 +187,43 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
           this.hot.setDataAtCell(index, col, value.data[column]);
         }
       });
+  }
+
+  /**
+   * Method called after creating new row.
+   *
+   * @param {number} index
+   * @param {number} amount
+   */
+  onRemoveRow(index, amount) {
+    var rowsRemoved = [];
+    for (var i = 0; i < amount; i++) {
+      rowsRemoved.push((this.hot.getCellMeta(i + index, 1).row_id));
+    }
+    this.http.post('/remove/row', rowsRemoved)
+      .then((value) => {
+        if (!value) {
+          return false;
+        }
+      });
+  }
+
+  /**
+  * Method called after moving row.
+  *
+  * @param {array} rows
+  * @param {number} target
+  */
+  onRowMove(rows, target) {
+    var rowsMoved = [];
+    for (var i = 0; i < rows.length; i++) {
+      rowsMoved.push(this.hot.getCellMeta(rows[i], 1).row_id);
+    };
+    var payload = {
+      rowsMoved,
+      target
+    };
+    this.http.post('/move/row', payload);
   }
 
   /**
@@ -308,6 +350,6 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 }
 
 export default DataSourceConnector;
-/* eslint-disable*/
+
 // register plugin
 Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
