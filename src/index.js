@@ -51,6 +51,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
+    this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
@@ -163,6 +164,24 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
           this.hot.setDataAtCell(index, col, value.data[column]);
         }
       });
+  }
+
+  /**
+   * Method called after moving row.
+   *
+   * @param {array} rows
+   * @param {number} target
+   */
+  onRowMove(rows, target) {
+    var rowsMoved = [];
+    for (var i = 0; i < rows.length; i++) {
+      rowsMoved.push(this.hot.getCellMeta(rows[i], 1).row_id);
+    };
+    var payload = {
+      rowsMoved,
+      target
+    };
+    this.http.post('/move/row', payload);
   }
 
   /**
