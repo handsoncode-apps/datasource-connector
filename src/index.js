@@ -1,4 +1,3 @@
-import URI from './utils/uri';
 import Http from './utils/http';
 
 /**
@@ -42,6 +41,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     // disable build in sort and filter functions
     this.addHook('beforeColumnSort', () => false);
     this.addHook('beforeFilter', () => false);
+    this.addHook('beforeRemoveCol', (index, amount) => this.onRemoveCol(index, amount));
+    this.addHook('beforeRemoveRow', (index, amount) => this.onRemoveRow(index, amount));
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
@@ -138,6 +139,28 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
         }
       });
   }
+  /**
+   * The onAfterRemoveCol method is called after removing column.
+   *
+   * @param {number} index
+   * @param {number} amount
+   * */
+  async onRemoveCol(index, amount) {
+    var removedCol = [];
+    for (var i = 0; i < amount; i++) {
+      removedCol.push(this.colHeaders[i + index]);
+    }
+    try {
+      var value = await this.http.post('/remove/column', removedCol);
+      if (value.data) {
+        var response = await this.http.post('/data');
+        this._loadData(response);
+        return true;
+      }
+    } catch (err) {
+      return false;
+    }
+  }
 
   /**
    * Method called after creating new row.
@@ -166,6 +189,25 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
   }
 
   /**
+   * Method called after creating new row.
+   *
+   * @param {number} index
+   * @param {number} amount
+   */
+  onRemoveRow(index, amount) {
+    var rowsRemoved = [];
+    for (var i = 0; i < amount; i++) {
+      rowsRemoved.push((this.hot.getCellMeta(i + index, 1).row_id));
+    }
+    this.http.post('/remove/row', rowsRemoved)
+      .then((value) => {
+        if (!value) {
+          return false;
+        }
+      });
+  }
+
+  /**
    * Method called after sorting column, event will be passed to backend.
    *
    * @param {number} column
@@ -175,7 +217,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.order = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
 
     let uri = { order: this.order, filters: this.filters};
-    this.http.post(`/data`, uri)
+    this.http.post('/data', uri)
       .then((response) => {
         this._loadData(response);
       });
