@@ -11,5 +11,9 @@
     "url": "\"git+https://github.com/handsoncode-apps/datasource-connector.git\""
   },
   "author": "\"\"",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3",
+    "morgan": "^1.9.0"
+  }
 }

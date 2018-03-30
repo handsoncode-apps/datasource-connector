@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 27/03/2018 13:45:05)
+ * Release date: 01/03/2018 (built at 29/03/2018 10:50:14)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -94,6 +94,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  * @description
  * This plugin enable the backend side data management for handsontable instance
  */
+/*eslint-disable*/
 class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
   // The argument passed to the constructor is the currently processed Handsontable instance object.
@@ -104,6 +105,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.filters = [];
     this.order = {};
   }
+  /* eslint-enable */
 
   /**
    * Checks if the plugin is enabled in the settings.
@@ -386,7 +388,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (DataSourceConnector);
-
+/* eslint-disable*/
 // register plugin
 Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
 
