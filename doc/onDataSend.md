@@ -26,15 +26,17 @@ var hot = new Handsontable(container, {
 Where **data** represents object: 
 
 ```javascript
- {
-   request: {
-     url: 'http://' 
-     method: (GET|POST)
-     body: any
-     headers: {'header':'value'}
-   },
-   response: any
- }
+  {
+    [
+      request: {
+        url: 'http://' 
+        method: (GET|POST)
+        body: any
+        headers: {'header':'value'}
+      },
+      response: any
+    ]
+  }
 ```
 
 | Element name | Description |

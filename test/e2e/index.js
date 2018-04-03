@@ -16,8 +16,8 @@ if (typeof __ENV_ARGS__ === 'object' && __ENV_ARGS__.testPathPattern) {
 const ignoredE2ETestsPath = './mobile';
 
 [
-  require.context('.', true, /\.spec\.js$/),
-  require.context('./../../plugins', true, /\.e2e\.js$/),
+  require.context('.', true, /\.spec\.js$/)
+  // require.context('./../../plugins', true, /\.e2e\.js$/),
 ].forEach((req) => {
   req.keys().forEach((filePath) => {
     if (filePath.includes(ignoredE2ETestsPath) === false) {
@@ -28,4 +28,3 @@ const ignoredE2ETestsPath = './mobile';
   });
 });
 
-require('./MemoryLeakTest');

@@ -6,7 +6,7 @@ var jsonParser = bodyParser.json();
 var router = express.Router();
 
 var app = express();
-var port = 3005;
+var port = 5010;
 
 var settings = {
   rowHeaders: true,
@@ -22,7 +22,15 @@ var settings = {
   dropdownMenu: true,
 };
 
+var store = function(req, res, json) {
+  var reqMessages = {body: req.body, params: req.params, rawHeaders: req.rawHeaders, url: req.url, response: json};
+  requests.push(reqMessages);
+  res.json(json);
+};
+
 var colOrder = ['id', 'first_name', 'last_name', 'age', 'sex', 'phone'];
+
+var requests = [];
 
 var data = [{ id: 1,
   first_name: 'John',
@@ -55,12 +63,21 @@ var data = [{ id: 1,
   sex: 'male',
   phone: '+435223122' }];
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+
+  // Pass to next layer of middleware
+  next();
+});
+
 /**
  * @param {{e.RequestHandler}} jsonParser
  * @param {{changes:[{row:number,column:number,newValue:string,meta:{row:number,col:number,visualRow:number,visualCol:number,prop:number,row_id:number,col_id:any}}], source:String}} req.body
  */
 router.post('/update', jsonParser, (req, res, next) => {
-  res.json({ data: 'ok' });
+  store(req, res, { data: 'ok' });
 });
 
 /**
@@ -68,6 +85,7 @@ router.post('/update', jsonParser, (req, res, next) => {
  * @param {{createRow:{index:number,amount:number,source:string}}} req.body
  */
 router.post('/create/row', jsonParser, (req, res, next) => {
+  store(req, res, {data: row, id: row.id});
   var row = {
     id: 6,
     first_name: '',
@@ -75,7 +93,6 @@ router.post('/create/row', jsonParser, (req, res, next) => {
     age: '',
     sex: '',
     phone: ''};
-  res.json({data: row, id: row.id});
 });
 
 var num = 0;
@@ -85,8 +102,8 @@ var num = 0;
  * @param {{createCol:{index:number,amount:number,source:string}}} req.body
  */
 router.post('/create/column', jsonParser, (req, res, next) => {
+  store(req, res, {name: `dynamic_${num}`});
   num++;
-  res.json({name: `dynamic_${num}`});
 });
 /* eslint-disable */
 /**
@@ -94,6 +111,7 @@ router.post('/create/column', jsonParser, (req, res, next) => {
  * @param {{sort:[{key:string,values[any]}], filter:[key:string,value:string]}} req.query
  */
 router.post('/data', (req, res, next) => {
+  store(req, res, {data: "ok"});
   let dataOrderedFiltered = JSON.parse(JSON.stringify(data));
   if (req.query.hasOwnProperty('order')) {
     dataOrderedFiltered = dataOrderedFiltered.sort((a, b) => {
@@ -106,7 +124,6 @@ router.post('/data', (req, res, next) => {
   if (req.query.hasOwnProperty('filters')) {
     dataOrderedFiltered = dataOrderedFiltered.filter((a) => a.age > 18);
   }
-  res.json({ data: dataOrderedFiltered, meta: { colOrder }, rowId: 'id' });
 
 });
 
@@ -115,11 +132,21 @@ router.post('/data', (req, res, next) => {
  * @param {{tmp:{columns:array,target:number}}} req.body
  */
 router.post('/move/column', jsonParser, (req, res, next) => {
-  res.json({ data: colOrder });
+  store(req, res, { data: colOrder });
 });
 
 router.get('/settings', jsonParser, (req, res, next) => {
-  res.json({ data: settings });
+  store(req, res, { data: settings });
+});
+
+router.get('/messages', jsonParser, (req, res, next) => {
+  console.log(requests )
+
+});
+router.get('/reset', jsonParser, (req, res, next) => {
+  requests = []
+  store(req. res, { data: "ok" })
+  
 });
 
 app.use(logger('dev'));

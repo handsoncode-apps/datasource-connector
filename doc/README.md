@@ -6,7 +6,7 @@ To receive hot event in backend you should implement these methods:
 
 ### After change data
 
-Method `POST /afterChange`
+Method `POST /users/update`
 
 Description: This event will be send to backend after change of value of any cells
 
@@ -14,23 +14,33 @@ Request Body schema:
 
 ```javascript
 {
-  changes:[
-   {
-     row:number,
-     column:any,
-     oldValue:any,
-     newValue:any
-   }
-  ],
+  changes: [{
+      row: number,
+      column: any,
+      oldValue: any,
+      newValue: any,
+      meta: [{
+          metaName: metaValue,
+          ...
+        }
+      }
+    ]
+  }
+],
   source: string
- }
+}
 ```
-
 Response `200 OK`
+Expected Response body schema:
+```javascript
+{
+  data:"ok"
+}
+```
 
 ### After Create Column
 
-Method `POST /afterCreateCol`
+Method `POST /after/create/column`
 
 Description: This event will be send to backend after creating columns
 
@@ -53,10 +63,35 @@ Expected Response body schema:
 ```
 Where column_name is the string assigned to the column on backend side.
 
+### After Remove Column
+
+TODO
+
+Method `POST /data`
+
+Description: This event will be send to backend after removing columns
+
+Request Body schema:
+
+```javascript
+  {
+    index:number,
+    amount:number,
+  }
+  ```
+
+Response `200 OK`
+Expected Response body schema:
+```javascript
+{
+  name:column_name
+}
+```
+Where column_name is the string assigned to the column on backend side.
 
 ### After Create Row
 
-Method `POST /afterCreateRow`
+Method `POST /users/update`
 
 Description: This event will be send to backend after creating rows
 
@@ -64,9 +99,20 @@ Request Body schema:
 
 ```javascript
 {
-  index:number,
-  amount:number,
-  source:string
+  changes: [{
+      row: number,
+      column: any,
+      oldValue: any,
+      newValue: any,
+      meta: [{
+          metaName: metaValue,
+          ...
+        }
+      }
+    ]
+  }
+],
+  source: string
 }
 ```
 
@@ -96,29 +142,25 @@ There may be more columns in this object, but all need to have unique name.
 
 Method `POST /data`
 
-Request parameters:
+Request Body schema:
 
 ```javascript
-{  
-  "order":{  
-    "column":"first_name",
-    "order":"ASC"
+{
+  "order": {
+    "column": "first_name",
+    "order": "ASC"
   },
-  "filters":[  
-    {  
-      "column":"first_name",
-      "conditions":[  
-        {  
-          "name":"by_value",
-          "args":[  
-            [  
-              "Jane"
-            ]
-          ]
-        }
+  "filters": [{
+    "column": "first_name",
+    "conditions": [{
+      "name": "by_value",
+      "args": [
+        [
+          "Jane"
+        ]
       ]
-    }
-  ]
+    }]
+  }]
 }
 ```
 - `order` is not required object
@@ -141,7 +183,7 @@ Request parameters:
 
 
 Expected response `200 OK` 
-Response body format:
+Response body schemia:
 
 ```javascript
 {
@@ -160,5 +202,5 @@ Where:
 
 There may be more columns in this object, but all need to have unique name.
 
-`rowId` is the of unique id column name.
+`rowId` is the unique id for column name.
 
