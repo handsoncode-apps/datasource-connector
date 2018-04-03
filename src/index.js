@@ -29,7 +29,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       this.http = new Http(controllerUrl);
       this.http.defaultHeaders = this.hot.getSettings().dataSourceConnector.requestHeaders;
       this.http.addListener((...args) => {
-        this.hot.runHooks('onDataSend', args);
+        this.hot.runHooks('onDataSend', args[0]);
       });
     }
     return enabled;
@@ -114,7 +114,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
     this.http.post('/move/column', colMoved)
       .then((value) => {
-        this.colHeaders = value.data
+        this.colHeaders = value.data;
         // hot.updateSettings({colHeaders: value.data});
         // console.log(hot.getSettings());
       });
