@@ -11,6 +11,7 @@ export default class Http {
   constructor(controllerUrl) {
     this.controllerUrl = controllerUrl;
     this.listeners = [];
+    this.defaultHeaders = {};
   }
 
   /**
@@ -44,8 +45,7 @@ export default class Http {
      * @param {any} data
      */
   post(url, data) {
-
-    let request = new Request();
+    var request = new Request(this.defaultHeaders);
     request.url = this.controllerUrl + url;
     request.method = 'POST';
     request.body = JSON.stringify(data);
@@ -64,7 +64,7 @@ export default class Http {
      * @param {string} url
      */
   get(url) {
-    var request = new Request();
+    var request = new Request(this.defaultHeaders);
     request.url = this.controllerUrl + url;
 
     return this.request(request).then(

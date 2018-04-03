@@ -2,10 +2,10 @@
  * This class represents the http request call in xhr context
  */
 export default class Request {
-  constructor() {
+  constructor(headers) {
     this.url = '';
     this.method = 'GET';
-    this.headers = { 'Content-Type': 'application/json' };
+    this.headers = headers !== undefined ? headers : { 'Content-Type': 'application/json' };
     this.body = '';
   }
 }
