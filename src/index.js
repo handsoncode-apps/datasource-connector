@@ -43,7 +43,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     // disable build in sort and filter functions
     this.addHook('beforeColumnSort', () => false);
     this.addHook('beforeFilter', () => false);
-    // this.addHook('beforeRemoveCol', () => false);
+    this.addHook('beforeRemoveCol', (index, amount) => this.onRemoveCol(index, amount));
+    this.addHook('beforeRemoveRow', (index, amount) => this.onRemoveRow(index, amount));
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
@@ -54,7 +55,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
 
-    this.addHook('afterRemoveCol', (index, amount) => this.onAfterRemoveCol(index, amount));
+    // this.addHook('afterRemoveCol', (index, amount) => this.onAfterRemoveCol(index, amount));
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
   }
@@ -142,20 +143,21 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} index
    * @param {number} amount
    * */
-  onAfterRemoveCol(index, amount) {
+  async onRemoveCol(index, amount) {
     var removedCol = [];
     for (var i = 0; i < amount; i++) {
       removedCol.push(this.colHeaders[i + index]);
     }
-    this.http.post('/remove/column', removedCol)
-      .then((value) => {
-        if (value.data) {
-          this.http.post('/data')
-            .then((response) => {
-              this._loadData(response);
-            });
-        }
-      });
+    try {
+      var value = await this.http.post('/remove/column', removedCol);
+      if (value.data) {
+        var response = await this.http.post('/data');
+        this._loadData(response);
+        return true;
+      }
+    } catch (err) {
+      return false;
+    }
   }
 
   /**
@@ -180,6 +182,25 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
           this.hot.setCellMeta(index, col, 'row_id', value.id);
           this.hot.setCellMeta(index, col, 'col_id', column);
           this.hot.setDataAtCell(index, col, value.data[column]);
+        }
+      });
+  }
+
+  /**
+   * Method called after creating new row.
+   *
+   * @param {number} index
+   * @param {number} amount
+   */
+  onRemoveRow(index, amount) {
+    var rowsRemoved = [];
+    for (var i = 0; i < amount; i++) {
+      rowsRemoved.push((this.hot.getCellMeta(i + index, 1).row_id));
+    }
+    this.http.post('/remove/row', rowsRemoved)
+      .then((value) => {
+        if (!value) {
+          return false;
         }
       });
   }
