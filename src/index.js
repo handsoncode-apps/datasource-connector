@@ -25,9 +25,11 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     let enabled = !!this.hot.getSettings().dataSourceConnector;
     if (enabled) {
       let controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
-      let onDataSend = this.hot.getSettings().dataSourceConnector.onDataSend;
+      this.hot.addHook('onDataSend', this.hot.getSettings().dataSourceConnector.onDataSend);
       this.http = new Http(controllerUrl);
-      this.http.addListener(onDataSend);
+      this.http.addListener((...args) => {
+        this.hot.runHook('onDataSend', args);
+      });
     }
     return enabled;
   }
