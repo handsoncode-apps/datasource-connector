@@ -57,7 +57,8 @@ var hot = new Handsontable(container, {
   rowHeaders: true,
   colHeaders: true,
   datasourceConnector: {
-    controllerUrl: 'http://yourdomain.com/controller'
+    controllerUrl: 'http://yourdomain.com/controller',
+    requestHeaders: { 'Content-Type': 'application/json' }
   }
 });
 ```
