@@ -1,5 +1,7 @@
 # Communication specification
 
+To get formal specification go to [Handsontable Datasource Communication Models](communication.md)
+
 ## Events
 
 To receive hot event in backend you should implement these methods: 
