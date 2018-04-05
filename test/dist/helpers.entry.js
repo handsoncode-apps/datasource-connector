@@ -160,7 +160,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (immutable) */ __webpack_exports__["triggerTouchEvent"] = triggerTouchEvent;
 function sleep(delay = 100) {
   return Promise.resolve({
-    then(resolve) {
+    then: function (resolve) {
       setTimeout(resolve, delay);
     }
   });
@@ -696,6 +696,15 @@ const render = handsontableMethodFactory('render');
 
 const selectCell = handsontableMethodFactory('selectCell');
 /* harmony export (immutable) */ __webpack_exports__["selectCell"] = selectCell;
+
+const selectCells = handsontableMethodFactory('selectCells');
+/* harmony export (immutable) */ __webpack_exports__["selectCells"] = selectCells;
+
+const selectColumns = handsontableMethodFactory('selectColumns');
+/* harmony export (immutable) */ __webpack_exports__["selectColumns"] = selectColumns;
+
+const selectRows = handsontableMethodFactory('selectRows');
+/* harmony export (immutable) */ __webpack_exports__["selectRows"] = selectRows;
 
 const setCellMeta = handsontableMethodFactory('setCellMeta');
 /* harmony export (immutable) */ __webpack_exports__["setCellMeta"] = setCellMeta;

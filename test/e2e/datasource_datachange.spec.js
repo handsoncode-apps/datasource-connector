@@ -1,12 +1,12 @@
 
-describe('Core_datachange', () => {
+describe('datasource_datachange', () => {
 
   var id = 'testContainer';
   var url = 'http://localhost:5010/dummyusers';
 
   beforeEach(function() {
     this.$container = $(`<div id="${id}"></div>`).appendTo('body');
-    reset = $.ajax({url: `${url}/reset`});
+    var reset = $.ajax({url: `${url}/reset`});
   });
 
   afterEach(function() {

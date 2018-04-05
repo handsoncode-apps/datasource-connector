@@ -145,7 +145,7 @@ router.get('/messages', jsonParser, (req, res, next) => {
 });
 router.get('/reset', jsonParser, (req, res, next) => {
   requests = []
-  store(req. res, { data: "ok" })
+  store(req, res, { data: "ok" })
   
 });
 

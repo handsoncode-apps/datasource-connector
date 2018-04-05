@@ -41,14 +41,22 @@ module.exports.create = function create(envArgs) {
         baseJasminePath: '../',
         externalCssFiles: [
           '../test/lib/normalize.css',
-          '../node_modules/handsontable-pro/dist/handsontable.css',
+          '../node_modules/handsontable/dist/handsontable.css',
           '../test/helpers/common.css',
         ],
         externalJsFiles: [
           '../test/lib/phantom-reporter.js',
-          '../dist/datasource-connector.full.js',
           '../test/lib/jquery.min.js',
-          '../node_modules/handsontable-pro/dist/handsontable.full.js'
+          '../test/lib/jquery.simulate.js',
+          '../test/lib/lodash.underscore.js',
+          '../test/lib/backbone.js',
+          '../node_modules/handsontable/dist/numbro/numbro.js',
+          '../node_modules/handsontable/dist/numbro/languages.js',
+          '../node_modules/handsontable/dist/moment/moment.js',
+          '../node_modules/handsontable/dist/pikaday/pikaday.js',
+          '../node_modules/handsontable/dist/handsontable.js',
+          '../node_modules/handsontable/dist/languages/all.js',
+          '../dist/datasource-connector.js'
         ],
       })
     );
