@@ -245,10 +245,7 @@ API description for Handsontable backend
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | column | string | Unique column name. | No |
-| order | string | Specifies ascending or descending order of column values.  Sort order
- * `asc` - Ascending, from A to Z 
- * `desc` - Descending, from Z to A
- | No |
+| order | string | Specifies ascending or descending order of column values.  Sort order<br>* `asc` - Ascending, from A to Z <br>* `desc` - Descending, from Z to A | No |
 
 ### SettingsModel  
 
