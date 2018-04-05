@@ -1,208 +1,453 @@
-# Communication specification
+Handsontable Datasource Node
+============================
+API description for Handsontable backend
 
-To get formal specification go to [Handsontable Datasource Communication Models](communication.md)
+**Version:** 1.0.0
 
-## Events
+[Find out more about Handsontable](https://docs.handsontable.com/pro/1.18.1/tutorial-introduction.html)
 
-To receive hot event in backend you should implement these methods: 
+To receive HOT events on backend you should implement methods listed below. Each method has it's own request and response schema that is described with examples in [Models section](#models).
 
-### After change data
+**controllerName** is the custom name given to your controller, where all endpoints definitions are. F.e. /users
 
-Method `POST /users/update`
+### /controllerName/data
+---
+##### ***POST***
+**Summary:** Method that should return sorted and filtered data
 
-Description: This event will be send to backend after change of value of any cells
+**Parameters**
 
-Request Body schema:
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| DataModel | body | Object containing changes of filterng and order made by Handsontable user | Yes | [DataModel](#datamodel) |
 
-```javascript
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [DataResponseModel](#dataresponsemodel) |
+
+### /controllerName/update
+---
+##### ***POST***
+**Summary:** Method that should be used for update specific cell value
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| UpdateModel | body | Object containg all changes made by Handsontable user | Yes | [UpdateModel](#updatemodel) |
+
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
+
+### /controllerName/create/row
+---
+##### ***POST***
+**Summary:** Method that should handle creating a new row on a server side
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| CreateModel | body | Object containing information about created  rows | Yes | [CreateModel](#createmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [CreateRowResponseModel](#createrowresponsemodel) |
+
+### /controllerName/remove/row
+---
+##### ***POST***
+**Summary:** Method that should handle removing row on a server side
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| RemoveRowModel | body | Array that contains ids of removed rows | Yes | [ string ] |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
+
+### /controllerName/move/row
+---
+##### ***POST***
+**Summary:** Method that should be used for moving row to different position in dataset
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| MoveRowModel | body | Object containing informations about moved rows | Yes | [MoveRowModel](#moverowmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
+
+### /controllerName/create/col
+---
+##### ***POST***
+**Summary:** Method that should handle creating a new column on a server side
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| CreateModel | body |  | Yes | [CreateModel](#createmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [CreateColumnResponseModel](#createcolumnresponsemodel) |
+
+### /controllerName/remove/col
+---
+##### ***POST***
+**Summary:** Method that should handle removing column on a server side
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| RemoveColModel | body | Array that contains unique names of removed columns | Yes | [ string ] |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
+
+### /controllerName/move/col
+---
+##### ***POST***
+**Summary:** Method that should be used for moving column to different position in dataset
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| MoveRowModel | body |  | Yes | [MoveColModel](#movecolmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [MoveColumnResponseModel](#movecolumnresponsemodel) |
+
+### /controllerName/settings
+---
+##### ***GET***
+**Summary:** Method that should return all set options for Handsontable.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| SettingsModel | body |  | Yes | [SettingsModel](#settingsmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [MoveColumnResponseModel](#movecolumnresponsemodel) |
+
+### Models
+---
+
+### ChangeModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| row | string | Specifies the row unique name. Could be either number or string type. | Yes |
+| column | string | Specifies the column unique name. Could be either number or string type. | Yes |
+| oldValue | string | Previous value of the cell | Yes |
+| newValue | string | New value of the cell | Yes |
+
+e.g.
+```
+"changes": [
+    {
+      "row": "string",
+      "column": "string",
+      "oldValue": "string",
+      "newValue": "string"
+    }
+  ]
+```
+### ConditionModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| name | string | Name of filtering type. 
+ * `eq` - equal to
+ * `neq` - not equal to
+ * `empty` - is empty
+ * `not_empty` - is not empty
+ * `begins_with` - begins with
+ * `ends_with` - ends with
+ * `contains` - contains
+ * `not_contains` - does not contains
+ | No |
+| args | [ string ] |  | No |
+
+### CreateColumnResponseModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| name | object | Name of column granted by backend server. | Yes |
+
+e.g.
+```
 {
-  changes: [{
-      row: number,
-      column: any,
-      oldValue: any,
-      newValue: any,
-      meta: [{
-          metaName: metaValue,
-          ...
-        }
-      }
-    ]
-  }
-],
-  source: string
+  "name": {}
 }
 ```
-Response `200 OK`
-Expected Response body schema:
-```javascript
-{
-  data:"ok"
+
+### CreateModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| index | integer | Index of the created row/column. | Yes |
+| amount | integer | Amount of created rows/columns. | Yes |
+| source | string | Defines the source of the change. F.e "ContextMenu.rowBelow" | Yes |
+
+e.g.
+```{
+  "index": 0,
+  "amount": 0,
+  "source": "string"
 }
 ```
 
-### After Create Column
+### CreateRowResponseModel  
 
-Method `POST /after/create/column`
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| data | object | Object of your dataset scheme. Contains values of created row. | Yes |
+| id | string | Id granted by backend server to that row. | Yes |
 
-Description: This event will be send to backend after creating columns
-
-Request Body schema:
-
-```javascript
-  {
-    index:number,
-    amount:number,
-    source:string
-  }
-  ```
-
-Response `200 OK`
-Expected Response body schema:
-```javascript
-{
-  name:column_name
-}
+e.g.
 ```
-Where column_name is the string assigned to the column on backend side.
-
-### After Remove Column
-
-TODO
-
-Method `POST /data`
-
-Description: This event will be send to backend after removing columns
-
-Request Body schema:
-
-```javascript
-  {
-    index:number,
-    amount:number,
-  }
-  ```
-
-Response `200 OK`
-Expected Response body schema:
-```javascript
 {
-  name:column_name
-}
-```
-Where column_name is the string assigned to the column on backend side.
-
-### After Create Row
-
-Method `POST /users/update`
-
-Description: This event will be send to backend after creating rows
-
-Request Body schema:
-
-```javascript
-{
-  changes: [{
-      row: number,
-      column: any,
-      oldValue: any,
-      newValue: any,
-      meta: [{
-          metaName: metaValue,
-          ...
-        }
-      }
-    ]
-  }
-],
-  source: string
+  "data": {},
+  "id": "string"
 }
 ```
 
-Response `200 OK`
-Expected Response body schema:
-```javascript
-{
-  "data": {"key1":value1,"key2":value2 (..)},
-  "id":"id"
-}
+### DataModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| order | [OrderModel](#ordermodel) |  | No |
+| filters | [ [FilterModel](#filtermodel) ] |  | No |
+
+e.g
 ```
-Where:
-
-`Data` is object represents new created row:
-
-- `key1`, `key2` - Database names of column name 
-- `value1`, `value2` -  Database values for each cell
-
-There may be more columns in this object, but all need to have unique name.
-
-`id` is the of unique id column name.
-
-
-## Data
-
-### Pull data from backend 
-
-Method `POST /data`
-
-Request Body schema:
-
-```javascript
 {
   "order": {
-    "column": "first_name",
+    "column": "string",
     "order": "ASC"
   },
-  "filters": [{
-    "column": "first_name",
-    "conditions": [{
-      "name": "by_value",
-      "args": [
-        [
-          "Jane"
-        ]
+  "filters": [
+    {
+      "column": "string",
+      "conditions": [
+        {
+          "name": "eq",
+          "args": [
+            "string"
+          ]
+        }
       ]
-    }]
-  }]
+    }
+  ]
 }
 ```
-- `order` is not required object
-  - `column` (string): name of the column to sort by
-  - `order`: ASC for ascending or DESC for descending 
-- `filers` is not required array of objects with properties:
-  - `column` - value of column is name of the column to filer by 
-  - `conditions` - array of condition:
-    - `name` with one of values:
-      - "eq" - is equal to
-      - "neq" - is not equal to
-      - "empty" - is empty
-      - "not_empty" - is not empty
-      - "begins_with" - begins with
-      - "ends_with" - ends with
-      - "contains" - contains
-      - "not_contains" - does not contain
-      - "by_value" - by chosen values. In this case args array contains object where values of properties are chosen values. 
-    - `args` - array of array of string arguments
+### DataResponseModel  
 
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| data | [ object ] | Object of your dataset scheme. Contains values of created row. | Yes |
+| rowId | string | Unique name of key column. | Yes |
+| meta | object | Additional meta properties. Can contains order of columns. | No |
 
-Expected response `200 OK` 
-Response body schemia:
+e.g.
 
-```javascript
+```{
+  "data": [
+    {}
+  ],
+  "rowId": "string",
+  "meta": {
+    "colOrder": [
+      "id",
+      "first_name",
+      "last_name",
+      "age",
+      "sex"
+    ]
+  }
+}
+```
+
+### FilterModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| column | string | Unique column name. | No |
+| conditions | [ [ConditionModel](#conditionmodel) ] |  | No |
+
+e.g.
+```
+ "filters": [
+    {
+      "column": "string",
+      "conditions": [
+        {
+          "name": "eq",
+          "args": [
+            "string"
+          ]
+        }
+      ]
+    }
+  ]
+  ```
+
+### MoveColModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| colsMoved | [ string ] | Array that contains unique names of moved columns. | No |
+| target | integer | Target index in dataset for moved columns. | Yes |
+
+e.g.
+```
+{
+  "colsMoved": [
+    "string"
+  ],
+  "target": 0
+}
+```
+### MoveColumnResponseModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| data | [ string ] | Array that contains a current sequence of columns. | Yes |
+
+e.g.
+```
 {
   "data": [
-    {"key1":value1,"key2":value2 (..)}
-    ],
-  "rowId":"id"
+    "string"
+  ]
 }
 ```
-Where:
 
-`Data` is an array of object represents each row:
+### MoveRowModel  
 
-- `key1`, `key2` - Database names of column name 
-- `value1`, `value2` -  Database values for each cell
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| rowsMoved | [ integer ] | Array that contains Ids of moved rows | Yes |
+| target | integer | Target index in dataset for moved rows. | Yes |
 
-There may be more columns in this object, but all need to have unique name.
+e.g.
+```
+{
+  "rowsMoved": [
+    0
+  ],
+  "target": 0
+}
+```
 
-`rowId` is the unique id for column name.
+### OrderModel  
 
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| column | string | Unique column name. | No |
+| order | string | Specifies ascending or descending order of column values.  Sort order
+ * `asc` - Ascending, from A to Z 
+ * `desc` - Descending, from Z to A
+ | No |
+
+ e.g.
+ ```
+ "order": {
+    "column": "string",
+    "order": "ASC"
+  }
+```
+
+### SettingsModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| data | object | Object contains whole set of options for Handsontable. For all available option properties go to https://docs.handsontable.com/0.38.1/Options.html | Yes |
+
+e.g.
+```
+{
+  "data": {}
+}
+```
+
+### SimpleResponseModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| data | string | Response message. | Yes |
+
+e.g.
+```
+{
+  "data": "string"
+}
+```
+
+### UpdateModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| changes | [ [ChangeModel](#changemodel) ] | todo | Yes |
+| meta | object | Additional meta properties | Yes |
+| source | string | Defines the source of the changes. F.e. "edit" | Yes |
+
+e.g.
+
+```
+{
+  "changes": [
+    {
+      "row": "string",
+      "column": "string",
+      "oldValue": "string",
+      "newValue": "string"
+    }
+  ],
+  "meta": {
+    "row": 1,
+    "col": 1,
+    "visualRow": 1,
+    "visualCol": 1,
+    "prop": 1,
+    "row_id": 2,
+    "col_id": "first_name"
+  },
+  "source": "string"
+}
+```

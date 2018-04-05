@@ -29,7 +29,7 @@ paths:
         in: "body"
         schema:
           $ref: "#/definitions/DataModel"
-        required: true
+        required: false
       responses:
         200:
           description: "successful operation"
