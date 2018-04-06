@@ -8,7 +8,7 @@ API description for Handsontable backend
 
 To receive HOT events on backend you should implement methods listed below. Each method has it's own request and response schema that is described with examples in [Models section](#models).
 
-**controllerName** is the custom name given to your controller, where all endpoints definitions are. F.e. /users
+**controllerName** is the custom name given to your controller, where all endpoints definitions.
 
 ### /controllerName/data
 ---
@@ -71,7 +71,7 @@ To receive HOT events on backend you should implement methods listed below. Each
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| RemoveRowModel | body | Array that contains ids of removed rows | Yes | [ string ] |
+| RemoveRowModel | body | Array that contains ids of removed rows | Yes | [RemoveRowModel](#removerowmodel) |
 
 **Responses**
 
@@ -96,7 +96,7 @@ To receive HOT events on backend you should implement methods listed below. Each
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/create/col
+### /controllerName/create/column
 ---
 ##### ***POST***
 **Summary:** Method that should handle creating a new column on a server side
@@ -105,7 +105,7 @@ To receive HOT events on backend you should implement methods listed below. Each
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| CreateModel | body |  | Yes | [CreateModel](#createmodel) |
+| CreateModel | body | Object containing information about created columns | Yes | [CreateModel](#createmodel) |
 
 **Responses**
 
@@ -113,7 +113,7 @@ To receive HOT events on backend you should implement methods listed below. Each
 | ---- | ----------- | ------ |
 | 200 | successful operation | [CreateColumnResponseModel](#createcolumnresponsemodel) |
 
-### /controllerName/remove/col
+### /controllerName/remove/column
 ---
 ##### ***POST***
 **Summary:** Method that should handle removing column on a server side
@@ -130,7 +130,7 @@ To receive HOT events on backend you should implement methods listed below. Each
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/move/col
+### /controllerName/move/column
 ---
 ##### ***POST***
 **Summary:** Method that should be used for moving column to different position in dataset
@@ -139,7 +139,7 @@ To receive HOT events on backend you should implement methods listed below. Each
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| MoveRowModel | body |  | Yes | [MoveColModel](#movecolmodel) |
+| MoveColModel | body | Object containing array of moved columns unique names | Yes | [MoveColModel](#movecolmodel) |
 
 **Responses**
 
@@ -154,15 +154,13 @@ To receive HOT events on backend you should implement methods listed below. Each
 
 **Parameters**
 
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| SettingsModel | body |  | Yes | [SettingsModel](#settingsmodel) |
+No parameters required
 
 **Responses**
 
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
-| 200 | successful operation | [MoveColumnResponseModel](#movecolumnresponsemodel) |
+| 200 | successful operation | [SettingsModel](#movecolumnresponsemodel) |
 
 ### Models
 ---
@@ -391,6 +389,22 @@ e.g.
     "column": "string",
     "order": "ASC"
   }
+```
+
+### RemoveRowModel  
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| rowsRemoved | [ integer ] | Array that contains Ids of removed rows | Yes |
+
+
+e.g.
+```
+{
+  "rowsRemoved": [
+    0
+  ]
+}
 ```
 
 ### SettingsModel  
