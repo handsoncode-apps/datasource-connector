@@ -189,17 +189,8 @@ example:
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| name | string | Name of filtering type. 
- * `eq` - equal to
- * `neq` - not equal to
- * `empty` - is empty
- * `not_empty` - is not empty
- * `begins_with` - begins with
- * `ends_with` - ends with
- * `contains` - contains
- * `not_contains` - does not contains
- | No |
-| args | [ string ] |  | No |
+| name | string | Name of filtering type. <br>* `eq` - equal to<br> * `neq` - not equal to<br> * `empty` - is empty<br> * `not_empty` - is not empty<br> * `begins_with` - begins with<br> * `ends_with` - ends with<br> * `contains` - contains<br> * `not_contains` - does not contains | No |
+| args | [ string ] | array of arguments | No |
 
 ### CreateColumnResponseModel  
 
