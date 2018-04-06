@@ -6,6 +6,8 @@ API description for Handsontable datasource backend
 
 To receive HOT events on backend you should implement methods listed below. Each method has it's own request and response schema that is described with examples in [Models section](#models).
 
+You may get the [OpenAPI Specification](swagger.yaml) for this communication endpoint and models (for view it please use swagger editor).
+
 **controllerName** is the custom name given to your controller, where all endpoints definitions.
 
 ### /controllerName/data
