@@ -60,6 +60,7 @@
     "grunt-lib-phantomjs": "^1.1.0",
     "handsontable-pro": "^1.18.1",
     "html-webpack-plugin": "^2.30.1",
+    "jasmine-ajax": "^3.3.1",
     "jasmine-co": "^1.2.2",
     "jasmine-core": "2.5.2",
     "jasmine-terminal-reporter": "^1.0.3",

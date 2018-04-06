@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 05/04/2018 11:06:02)
+ * Release date: 01/03/2018 (built at 06/04/2018 21:03:16)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -117,8 +117,11 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       }
       this.http = new __WEBPACK_IMPORTED_MODULE_0__utils_http__["a" /* default */](controllerUrl);
       this.http.defaultHeaders = this.hot.getSettings().dataSourceConnector.requestHeaders;
+      var hotInstance = this.hot;
       this.http.addListener((...args) => {
-        this.hot.runHooks('onDataSend', args[0]);
+        if (hotInstance !== undefined) {
+          hotInstance.runHooks('onDataSend', args[0]);
+        }
       });
     }
     return enabled;
@@ -480,7 +483,9 @@ class Http {
   onDataSend(...args) {
     if (this.listeners && this.listeners.length) {
       this.listeners.forEach(listener => {
-        listener(...args);
+        setTimeout(() => {
+          listener(...args);
+        }, 1);
       });
     }
   }

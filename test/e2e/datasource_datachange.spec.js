@@ -1,179 +1,199 @@
+import { selectCell, mouseDown } from '../helpers/common';
+
+require('jasmine-ajax')
 
 describe('datasource_datachange', () => {
 
   var id = 'testContainer';
-  var url = 'http://localhost:5010/dummyusers';
+  var url = 'http://example.com/dummy';
+  var request;
 
-  beforeEach(function() {
-    this.$container = $(`<div id="${id}"></div>`).appendTo('body');
-    var reset = $.ajax({url: `${url}/reset`});
+  beforeEach(function(done) {
+    if(!this.$container) {
+      this.$container = $(`<div id="${id}"></div>`).appendTo('body');
+    }
+    jasmine.Ajax.install();
+    jasmine.Ajax.stubRequest(url + '/settings' ).andReturn({
+      response: JSON.stringify({data:{
+        rowHeaders: true,
+        colHeaders: true,
+        columnSorting: true,
+        contextMenu: true,
+        manualColumnMove: true,
+        manualRowMove: true,
+        sortIndicator: true,
+        filters: true,
+        dropdownMenu: true,
+        afterUpdateSettings: function(data){ console.log('settings', data) }
+      }})
+    });
+    jasmine.Ajax.stubRequest(url + '/update','','POST').andReturn({response:JSON.stringify({data:'ok'}) })
+    jasmine.Ajax.stubRequest(url + '/create/column','','POST').andReturn({response:JSON.stringify({name:'dynamic_1'}) })
+    jasmine.Ajax.stubRequest(url + '/create/row','','POST').andReturn({response:JSON.stringify({data:{ id: 10,
+      first_name: '',
+      last_name: '',
+      age: '',
+      sex: '',
+      phone: '' }, 'id':'id'}) })
+    jasmine.Ajax.stubRequest(url + '/data','','POST').andReturn({
+      status: 200,
+      contentType: 'application/json',
+      response: JSON.stringify({rowId:'id', data:[{ id: 1,
+        first_name: 'John',
+        last_name: 'Smith',
+        age: 10,
+        sex: 'male',
+        phone: '+435564656' },
+      { id: 2,
+        first_name: 'Kasia',
+        last_name: 'Sandwich',
+        age: 18,
+        sex: 'female',
+        phone: '+4325324' },
+      { id: 3,
+        first_name: 'Jane',
+        last_name: 'Walker',
+        age: 60,
+        sex: 'female',
+        phone: '+43553456' },
+      { id: 4,
+        first_name: 'Rafal',
+        last_name: 'Ek',
+        age: 34,
+        sex: 'male',
+        phone: '+4354324234' },
+      { id: 5,
+        first_name: 'Kam',
+        last_name: 'Dobrz',
+        age: 20,
+        sex: 'male',
+        phone: '+435223122' }]
+      })
+    });
+    done();
   });
 
   afterEach(function() {
     if (this.$container) {
+      jasmine.Ajax.uninstall();
       destroy();
       this.$container.remove();
     }
   });
 
-  it('should call onChange callback', () => {
-    var messages = null;
-
-    handsontable({
+  it('should call /settings ajax call on init', (done) => {  
+    var hot = handsontable({
       dataSourceConnector: {
-        controllerUrl: url
-      }
+        controllerUrl: url,
+        onDataSend: (req) => {
+          if(req.request.url === url + '/settings') {
+            request = jasmine.Ajax.requests.at(0);
+            expect(request.method).toBe('GET');
+            expect(request.url).toBe(url + '/settings');
+            setTimeout(() => {done();}, 50);
+          }
+        }
+      },
     });
-
-    var meta = getCellMeta(1, 2);
-    setDataAtCell(1, 2, 'test');
-    messages = $.ajax({url: `${url}/messages`});
-    console.log(messages);
-    
   });
 
-  // it('should use custom source for datachange', () => {
-  //   var output = null,
-  //     src = null;
+  it('should call /data ajax call on init', (done) => {  
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        onDataSend: (req) => {
+          if(req.request.url === url + '/data') {
+            request = jasmine.Ajax.requests.at(1);
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(url + '/data');
+            setTimeout(() => {done();}, 50);
+          }
+        }
+      },
+    });
+  });
 
-  //   handsontable({
-  //     afterChange(changes, source) {
-  //       output = changes;
-  //       src = source;
-  //     }
-  //   });
-  //   setDataAtCell(1, 2, 'abc', 'test');
+  it('should call /create/row ajax call after create row', (done) => {  
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          if(req.request.url === url + '/create/row') {
+            request = jasmine.Ajax.requests.filter(url + '/create/row')[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(url + '/create/row');
+            selectCell(3,0);
+            expect(getValue()).toBe(10);
+            setTimeout(() => {done();}, 50);
+          } else {
+            jasmine.Ajax.requests.reset();
+          }
 
-  //   expect(output[0][3]).toEqual('abc');
-  //   expect(src).toEqual('test');
-  // });
+        }
+      },
+    });
+    setTimeout( () =>{
+      selectCell(2, 2);
+      contextMenu();
+      $('.htContextMenu .ht_master .htCore')
+        .find('tbody td')
+        .not('.htSeparator')
+        .eq(1)
+        .simulate('mousedown');
 
-  // it('should use custom source for datachange with array', () => {
-  //   var output = null,
-  //     src = null;
+    }, 100);
+  });
 
-  //   handsontable({
-  //     afterChange(changes, source) {
-  //       output = changes;
-  //       src = source;
-  //     }
-  //   });
-  //   setDataAtCell([[1, 2, 'abc']], 'test');
+  it('should call /create/column ajax call after create col', (done) => {  
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          if(req.request.url === url + '/create/column') {
+            request = jasmine.Ajax.requests.filter(url + '/create/column')[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(url + '/create/column');
+            setTimeout(() => {done();}, 50);
+          } else {
+            jasmine.Ajax.requests.reset();
+          }
 
-  //   expect(output[0][3]).toEqual('abc');
-  //   expect(src).toEqual('test');
-  // });
+        }
+      },
+    });
+    setTimeout( () => {
+      selectCell(2, 2);
+      contextMenu();
+      $('.htContextMenu .ht_master .htCore')
+        .find('tbody td')
+        .not('.htSeparator')
+        .eq(3)
+        .simulate('mousedown');
 
-  // it('should trigger datachange event', () => {
-  //   var output = null;
+    }, 100);
+  });
 
-  //   handsontable();
-  //   Handsontable.hooks.add('afterChange', (changes) => {
-  //     output = changes;
-  //   });
-  //   setDataAtCell(1, 2, 'test');
-
-  //   expect(output[0][0]).toEqual(1);
-  //   expect(output[0][1]).toEqual(2);
-  //   expect(output[0][2]).toEqual(null);
-  //   expect(output[0][3]).toEqual('test');
-  // });
-
-  // it('this.rootElement should point to handsontable rootElement', function() {
-  //   var output = null;
-  //   var $container = this.$container;
-
-  //   handsontable({
-  //     afterChange() {
-  //       output = this.rootElement;
-  //     }
-  //   });
-  //   setDataAtCell(0, 0, 'test');
-
-  //   expect(output).toEqual($container[0]);
-  // });
-
-  // it('onChange should be triggered after data is rendered to DOM (init)', function() {
-  //   var output = null;
-  //   var $container = this.$container;
-
-  //   handsontable({
-  //     data: [
-  //       ['Joe Red']
-  //     ],
-  //     afterChange(changes, source) {
-  //       if (source === 'loadData') {
-  //         output = $container.find('table.htCore tbody td:first').html();
-  //       }
-  //     }
-  //   });
-
-  //   expect(output).toEqual('Joe Red');
-  // });
-
-  // it('onChange should be triggered after data is rendered to DOM (setDataAtCell)', function() {
-  //   var output = null;
-  //   var $container = this.$container;
-
-  //   handsontable({
-  //     data: [
-  //       ['Joe Red']
-  //     ],
-  //     afterChange(changes, source) {
-  //       if (source === 'edit') {
-  //         output = $container.find('table.htCore tbody td:first').html();
-  //       }
-  //     }
-  //   });
-  //   setDataAtCell(0, 0, 'Alice Red');
-
-  //   expect(output).toEqual('Alice Red');
-  // });
-
-  // it('onChange event object should contain documented keys and values when triggered by edit', () => {
-  //   var sampleData = [
-  //     {
-  //       col1: 'a',
-  //       col2: 'b',
-  //       col3: 'c'
-  //     }
-  //   ];
-  //   var event = null;
-
-  //   handsontable({
-  //     data: sampleData,
-  //     afterChange(changes, source) {
-  //       if (source === 'edit') {
-  //         event = changes.shift();
-  //       }
-  //     }
-  //   });
-  //   setDataAtCell(0, 0, 'test');
-
-  //   expect(event[0]).toEqual(0);
-  //   expect(event[1]).toEqual('col1');
-  //   expect(event[2]).toEqual('a');
-  //   expect(event[3]).toEqual('test');
-  // });
-
-  // it('source parameter should be `edit` when cell value is changed through editor', () => {
-  //   var sources = [];
-
-  //   handsontable({
-  //     data: [
-  //       ['Joe Red']
-  //     ],
-  //     afterChange(changes, source) {
-  //       sources.push(source);
-  //     }
-  //   });
-  //   selectCell(0, 0);
-
-  //   keyDown('enter');
-  //   document.activeElement.value = 'Ted';
-  //   keyDown('enter');
-
-  //   expect(sources).toEqual(['loadData', 'edit']); // loadData is always the first source
-  // });
-
+  it('should call /update ajax call on change', (done) => {
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        onDataSend: (req) => {
+          if(req.request.url === url + '/data') {
+            setDataAtCell(1, 2, 'test');
+            request = jasmine.Ajax.requests.mostRecent();
+            var data = JSON.parse(request.params);
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(url + '/update');
+            expect(data.changes[0].column).toBe('last_name');
+            expect(data.changes[0].newValue).toBe('test');
+            expect(data.changes[0].oldValue).toBe('Sandwich');
+            expect(data.changes[0].row).toBe(2);
+            setTimeout(() => {done();}, 50);      
+          }
+        }
+      },
+    });
+  });
 });

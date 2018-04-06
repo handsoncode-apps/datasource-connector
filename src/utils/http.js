@@ -33,7 +33,7 @@ export default class Http {
   onDataSend(...args) {
     if (this.listeners && this.listeners.length) {
       this.listeners.forEach((listener) => {
-        listener(...args);
+        setTimeout(() => { listener(...args); }, 1);
       });
     }
   }
