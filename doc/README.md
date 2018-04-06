@@ -1,8 +1,6 @@
-Handsontable Datasource Node
+Handsontable Datasource Communication
 ============================
-API description for Handsontable backend
-
-**Version:** 1.0.0
+API description for Handsontable datasource backend
 
 [Find out more about Handsontable](https://docs.handsontable.com/pro/1.18.1/tutorial-introduction.html)
 
@@ -174,8 +172,8 @@ No parameters required
 | oldValue | string | Previous value of the cell | Yes |
 | newValue | string | New value of the cell | Yes |
 
-e.g.
-```
+example:
+```json
 "changes": [
     {
       "row": "string",
@@ -205,12 +203,12 @@ e.g.
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| name | object | Name of column granted by backend server. | Yes |
+| name | string | Name of column granted by backend server. | Yes |
 
-e.g.
-```
+example:
+```json
 {
-  "name": {}
+  "name": "dynamic_1"
 }
 ```
 
@@ -222,8 +220,9 @@ e.g.
 | amount | integer | Amount of created rows/columns. | Yes |
 | source | string | Defines the source of the change. F.e "ContextMenu.rowBelow" | Yes |
 
-e.g.
-```{
+example:
+```json
+{
   "index": 0,
   "amount": 0,
   "source": "string"
@@ -237,8 +236,8 @@ e.g.
 | data | object | Object of your dataset scheme. Contains values of created row. | Yes |
 | id | string | Id granted by backend server to that row. | Yes |
 
-e.g.
-```
+example:
+```json
 {
   "data": {},
   "id": "string"
@@ -252,8 +251,8 @@ e.g.
 | order | [OrderModel](#ordermodel) |  | No |
 | filters | [ [FilterModel](#filtermodel) ] |  | No |
 
-e.g
-```
+example:
+```json
 {
   "order": {
     "column": "string",
@@ -282,9 +281,9 @@ e.g
 | rowId | string | Unique name of key column. | Yes |
 | meta | object | Additional meta properties. Can contains order of columns. | No |
 
-e.g.
-
-```{
+example:
+```json
+{
   "data": [
     {}
   ],
@@ -308,8 +307,8 @@ e.g.
 | column | string | Unique column name. | No |
 | conditions | [ [ConditionModel](#conditionmodel) ] |  | No |
 
-e.g.
-```
+example:
+```json
  "filters": [
     {
       "column": "string",
@@ -332,8 +331,8 @@ e.g.
 | colsMoved | [ string ] | Array that contains unique names of moved columns. | No |
 | target | integer | Target index in dataset for moved columns. | Yes |
 
-e.g.
-```
+example:
+```json
 {
   "colsMoved": [
     "string"
@@ -347,8 +346,8 @@ e.g.
 | ---- | ---- | ----------- | -------- |
 | data | [ string ] | Array that contains a current sequence of columns. | Yes |
 
-e.g.
-```
+example:
+```json
 {
   "data": [
     "string"
@@ -363,8 +362,8 @@ e.g.
 | rowsMoved | [ integer ] | Array that contains Ids of moved rows | Yes |
 | target | integer | Target index in dataset for moved rows. | Yes |
 
-e.g.
-```
+example:
+```json
 {
   "rowsMoved": [
     0
@@ -378,16 +377,13 @@ e.g.
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | column | string | Unique column name. | No |
-| order | string | Specifies ascending or descending order of column values.  Sort order
- * `asc` - Ascending, from A to Z 
- * `desc` - Descending, from Z to A
- | No |
+| order | string | Specifies ascending or descending order of column values.  Sort order<br>* `ASC` - Ascending, from A to Z<br>* `DESC` - Descending, from Z to A | No |
 
- e.g.
- ```
+ example:
+```json
  "order": {
     "column": "string",
-    "order": "ASC"
+    "order": "ASC|DESC"
   }
 ```
 
@@ -398,8 +394,8 @@ e.g.
 | rowsRemoved | [ integer ] | Array that contains Ids of removed rows | Yes |
 
 
-e.g.
-```
+example:
+```json
 {
   "rowsRemoved": [
     0
@@ -413,8 +409,8 @@ e.g.
 | ---- | ---- | ----------- | -------- |
 | data | object | Object contains whole set of options for Handsontable. For all available option properties go to https://docs.handsontable.com/0.38.1/Options.html | Yes |
 
-e.g.
-```
+example:
+```json
 {
   "data": {}
 }
@@ -426,8 +422,8 @@ e.g.
 | ---- | ---- | ----------- | -------- |
 | data | string | Response message. | Yes |
 
-e.g.
-```
+example:
+```json
 {
   "data": "string"
 }
@@ -441,9 +437,8 @@ e.g.
 | meta | object | Additional meta properties | Yes |
 | source | string | Defines the source of the changes. F.e. "edit" | Yes |
 
-e.g.
-
-```
+example:
+```json
 {
   "changes": [
     {
