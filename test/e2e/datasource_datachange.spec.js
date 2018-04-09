@@ -28,6 +28,7 @@ describe('datasource_datachange', () => {
       }})
     });
     jasmine.Ajax.stubRequest(url + '/update','','POST').andReturn({response:JSON.stringify({data:'ok'}) })
+    jasmine.Ajax.stubRequest(url + '/move/column','','POST').andReturn({response:JSON.stringify({name:'dynamic_1'}) })
     jasmine.Ajax.stubRequest(url + '/create/column','','POST').andReturn({response:JSON.stringify({name:'dynamic_1'}) })
     jasmine.Ajax.stubRequest(url + '/create/row','','POST').andReturn({response:JSON.stringify({data:{ id: 10,
       first_name: '',
@@ -145,6 +146,78 @@ describe('datasource_datachange', () => {
     }, 100);
   });
 
+  it('should call /data ajax call after filter', (done) => {  
+    var i =0;
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        dropdownMenu: true,
+        onDataSend: (req) => {
+          console.log(req);
+          if(req.request.url === url + '/data') {
+            i++;
+            if (i>1){
+              request = jasmine.Ajax.requests.filter(url + '/data')[0];
+              expect(request.method).toBe('POST');
+              expect(request.url).toBe(url + '/data');
+              setTimeout(() => {done();}, 50);
+            }
+          } 
+        }
+      },
+    });
+    setTimeout( () => {
+      //jasmine.Ajax.requests.reset();
+      
+      dropdownMenu(0);
+      $('.htDropdownMenu .ht_master .htCore').find('tbody :nth-child(9) td').simulate('mousedown');
+
+      setTimeout(function () {
+        // Begins with 'c'
+        document.activeElement.value = 'c';
+        $(document.activeElement).simulate('keyup');
+        $('.htDropdownMenu .ht_master .htCore').find('.htUIButton.htUIButtonOK input').simulate('click');
+        console.log('Click');
+      }, 200);
+    }, 10);
+  });
+  
+
+  it('should call /move/column ajax call after column move', (done) => {  
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        colHeaders: true,
+        manualColumnMove: true,
+        onDataSend: (req) => {
+          if(req.request.url === url + '/move/column') {
+            request = jasmine.Ajax.requests.filter(url + '/move/column')[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(url + '/move/column');
+            setTimeout(() => {done();}, 50);
+          } else {
+            jasmine.Ajax.requests.reset();
+          }
+
+        }
+      },
+    });
+    setTimeout(() =>{
+      var $container = $('#'+id);
+      var $rowsHeaders = $container.find('.ht_clone_top tr th');
+
+      $rowsHeaders.eq(2).simulate('mousedown');
+      $rowsHeaders.eq(2).simulate('mouseup');
+      $rowsHeaders.eq(2).simulate('mousedown');
+      $rowsHeaders.eq(1).simulate('mouseover');
+      $rowsHeaders.eq(1).simulate('mousemove');
+      $rowsHeaders.eq(1).simulate('mouseup');
+    },10);
+    
+    //}, 50);
+  });
+
   it('should call /create/column ajax call after create col', (done) => {  
     var hot = handsontable({
       dataSourceConnector: {
@@ -172,8 +245,9 @@ describe('datasource_datachange', () => {
         .eq(3)
         .simulate('mousedown');
 
-    }, 100);
+    }, 10);
   });
+
 
   it('should call /update ajax call on change', (done) => {
     var hot = handsontable({

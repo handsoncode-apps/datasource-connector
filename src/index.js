@@ -106,6 +106,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} target
    */
   onAfterColumnMove(columns, target) {
+
     var columnNames = [];
     var i = 0;
     for (i = 0; i < columns.length; i++) {
@@ -120,8 +121,6 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.http.post('/move/column', colMoved)
       .then((value) => {
         this.colHeaders = value.data;
-        // hot.updateSettings({colHeaders: value.data});
-        // console.log(hot.getSettings());
       });
   }
 
@@ -169,6 +168,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     } catch (err) {
       return false;
     }
+    return false;
   }
 
   /**
@@ -213,6 +213,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
         if (!value) {
           return false;
         }
+        return true;
       });
   }
 

@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 06/04/2018 21:03:16)
+ * Release date: 01/03/2018 (built at 07/04/2018 22:30:54)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -193,6 +193,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} target
    */
   onAfterColumnMove(columns, target) {
+
     var columnNames = [];
     var i = 0;
     for (i = 0; i < columns.length; i++) {
@@ -206,8 +207,6 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
     this.http.post('/move/column', colMoved).then(value => {
       this.colHeaders = value.data;
-      // hot.updateSettings({colHeaders: value.data});
-      // console.log(hot.getSettings());
     });
   }
 
@@ -485,7 +484,7 @@ class Http {
       this.listeners.forEach(listener => {
         setTimeout(() => {
           listener(...args);
-        }, 1);
+        }, 5);
       });
     }
   }

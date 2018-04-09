@@ -36,7 +36,7 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| UpdateModel | body | Object containg all changes made by Handsontable user | Yes | [UpdateModel](#updatemodel) |
+| UpdateModel | body | Object contains all changes made by Handsontable user | Yes | [UpdateModel](#updatemodel) |
 
 
 **Responses**
@@ -88,7 +88,7 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| MoveRowModel | body | Object containing informations about moved rows | Yes | [MoveRowModel](#moverowmodel) |
+| MoveRowModel | body | Object containing information about moved rows | Yes | [MoveRowModel](#moverowmodel) |
 
 **Responses**
 
