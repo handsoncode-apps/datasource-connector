@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 07/04/2018 22:30:54)
+ * Release date: 01/03/2018 (built at 10/04/2018 19:19:20)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -205,7 +205,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       target
     };
 
-    this.http.post('/move/column', colMoved).then(value => {
+    this.http.post('/column/move', colMoved).then(value => {
       this.colHeaders = value.data;
     });
   }
@@ -224,7 +224,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       source
     };
     var sourceIndex = index === 0 ? 1 : 0;
-    this.http.post('/create/column', payload).then(value => {
+    this.http.put('/column', payload).then(value => {
       var noOfRows = this.hot.getData().length;
       for (var row = 0; row < noOfRows; row++) {
         this.hot.setCellMeta(row, index, 'row_id', this.hot.getCellMeta(row, sourceIndex).row_id);
@@ -244,7 +244,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       removedCol.push(this.colHeaders[i + index]);
     }
     try {
-      var value = await this.http.post('/remove/column', removedCol);
+      var value = await this.http.delete('/column', removedCol);
       if (value.data) {
         var response = await this.http.post('/data');
         this._loadData(response);
@@ -253,6 +253,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     } catch (err) {
       return false;
     }
+    return false;
   }
 
   /**
@@ -268,7 +269,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       amount,
       source
     };
-    this.http.post('/create/row', payload).then(value => {
+    this.http.put('/row', payload).then(value => {
       var row = this.hot.getData()[index];
       var sourceIndex = index === 1 ? 2 : 1;
       for (var col = 0; col < row.length; col++) {
@@ -291,10 +292,11 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     for (var i = 0; i < amount; i++) {
       rowsRemoved.push(this.hot.getCellMeta(i + index, 1).row_id);
     }
-    this.http.post('/remove/row', rowsRemoved).then(value => {
+    this.http.delete('/row', rowsRemoved).then(value => {
       if (!value) {
         return false;
       }
+      return true;
     });
   }
 
@@ -313,7 +315,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       rowsMoved,
       target
     };
-    this.http.post('/move/row', payload);
+    this.http.post('/row/move', payload);
   }
 
   /**
@@ -487,6 +489,42 @@ class Http {
         }, 5);
       });
     }
+  }
+
+  /**
+   * make HTTP DELETE to url with payload data
+   *
+   * @param {string} url
+   * @param {any} data
+   */
+  delete(url, data) {
+    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'DELETE';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(value => {
+      this.onDataSend({ request, response: JSON.parse(value) });
+      return JSON.parse(value);
+    });
+  }
+
+  /**
+     * make HTTP PUT to url with payload data
+     *
+     * @param {string} url
+     * @param {any} data
+     */
+  put(url, data) {
+    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'PUT';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(value => {
+      this.onDataSend({ request, response: JSON.parse(value) });
+      return JSON.parse(value);
+    });
   }
 
   /**
