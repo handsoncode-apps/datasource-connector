@@ -118,7 +118,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       target
     };
 
-    this.http.post('/move/column', colMoved)
+    this.http.post('/column/move', colMoved)
       .then((value) => {
         this.colHeaders = value.data;
       });
@@ -138,7 +138,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       source
     };
     var sourceIndex = index === 0 ? 1 : 0;
-    this.http.post('/create/column', payload)
+    this.http.put('/column', payload)
       .then((value) => {
         var noOfRows = this.hot.getData().length;
         for (var row = 0; row < noOfRows; row++) {
@@ -159,7 +159,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       removedCol.push(this.colHeaders[i + index]);
     }
     try {
-      var value = await this.http.post('/remove/column', removedCol);
+      var value = await this.http.delete('/column', removedCol);
       if (value.data) {
         var response = await this.http.post('/data');
         this._loadData(response);
@@ -184,7 +184,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       amount,
       source
     };
-    this.http.post('/create/row', payload)
+    this.http.put('/row', payload)
       .then((value) => {
         var row = this.hot.getData()[index];
         var sourceIndex = index === 1 ? 2 : 1;
@@ -208,7 +208,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     for (var i = 0; i < amount; i++) {
       rowsRemoved.push((this.hot.getCellMeta(i + index, 1).row_id));
     }
-    this.http.post('/remove/row', rowsRemoved)
+    this.http.delete('/row', rowsRemoved)
       .then((value) => {
         if (!value) {
           return false;
@@ -232,7 +232,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       rowsMoved,
       target
     };
-    this.http.post('/move/row', payload);
+    this.http.post('/row/move', payload);
   }
 
   /**
