@@ -62,6 +62,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
     this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
     this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
     this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick))
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
@@ -274,6 +275,23 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       .then((response) => {
         this._loadData(response);
       });
+  }
+
+  /**
+   * Method called after merging cells, event will be passed to backend.
+   *
+   * @param {cellRange} CellRange
+   * @param {mergeParent} Object
+   * @param {auto} boolean
+   */
+  onMergeCell(cellRange, mergeParent, auto) {
+    let merge = {
+      fromColumn: this.hot.getCellMeta(cellRange.from.row, cellRange.from.col).col_id,
+      toColumn: this.hot.getCellMeta(cellRange.to.row, cellRange.to.col).col_id,
+      fromRow: this.hot.getCellMeta(cellRange.from.row, cellRange.from.col).row_id,
+      toRow: this.hot.getCellMeta(cellRange.to.row, cellRange.to.col).row_id
+    };
+    this.http.post('/cell/merge', merge);
   }
 
   /**
