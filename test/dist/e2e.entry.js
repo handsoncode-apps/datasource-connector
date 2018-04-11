@@ -10377,7 +10377,7 @@ describe('datasource_datachange', () => {
       this.$container = $(`<div id="${id}"></div>`).appendTo('body');
     }
     jasmine.Ajax.install();
-    jasmine.Ajax.stubRequest(url + '/settings').andReturn({
+    jasmine.Ajax.stubRequest(`${url}/settings`).andReturn({
       response: JSON.stringify({ data: {
           rowHeaders: true,
           colHeaders: true,
@@ -10387,25 +10387,26 @@ describe('datasource_datachange', () => {
           manualRowMove: true,
           sortIndicator: true,
           filters: true,
-          dropdownMenu: true,
-          afterUpdateSettings: function (data) {
-            console.log('settings', data);
-          }
+          dropdownMenu: true
         } })
     });
-    jasmine.Ajax.stubRequest(url + '/update', '', 'POST').andReturn({ response: JSON.stringify({ data: 'ok' }) });
-    jasmine.Ajax.stubRequest(url + '/move/column', '', 'POST').andReturn({ response: JSON.stringify({ name: 'dynamic_1' }) });
-    jasmine.Ajax.stubRequest(url + '/create/column', '', 'POST').andReturn({ response: JSON.stringify({ name: 'dynamic_1' }) });
-    jasmine.Ajax.stubRequest(url + '/create/row', '', 'POST').andReturn({ response: JSON.stringify({ data: { id: 10,
+    jasmine.Ajax.stubRequest(`${url}/row`, '', 'DELETE').andReturn({ response: JSON.stringify({ data: 'ok' }) });
+    jasmine.Ajax.stubRequest(`${url}/column`, '', 'DELETE').andReturn({ response: JSON.stringify({ name: 'dynamic_1' }) });
+    jasmine.Ajax.stubRequest(`${url}/update`, '', 'POST').andReturn({ response: JSON.stringify({ data: 'ok' }) });
+    jasmine.Ajax.stubRequest(`${url}/column/move`, '', 'POST').andReturn({ response: JSON.stringify({ name: 'dynamic_1' }) });
+    jasmine.Ajax.stubRequest(`${url}/column`, '', 'PUT').andReturn({ response: JSON.stringify({ name: 'dynamic_1' }) });
+    jasmine.Ajax.stubRequest(`${url}/row`, '', 'PUT').andReturn({ response: JSON.stringify({ data: { id: 10,
           first_name: '',
           last_name: '',
           age: '',
           sex: '',
-          phone: '' }, 'id': 'id' }) });
-    jasmine.Ajax.stubRequest(url + '/data', '', 'POST').andReturn({
+          phone: '' },
+        id: 'id' }) });
+    jasmine.Ajax.stubRequest(`${url}/data`, '', 'POST').andReturn({
       status: 200,
       contentType: 'application/json',
-      response: JSON.stringify({ rowId: 'id', data: [{ id: 1,
+      response: JSON.stringify({ rowId: 'id',
+        data: [{ id: 1,
           first_name: 'John',
           last_name: 'Smith',
           age: 10,
@@ -10449,10 +10450,10 @@ describe('datasource_datachange', () => {
       dataSourceConnector: {
         controllerUrl: url,
         onDataSend: req => {
-          if (req.request.url === url + '/settings') {
+          if (req.request.url === `${url}/settings`) {
             request = jasmine.Ajax.requests.at(0);
             expect(request.method).toBe('GET');
-            expect(request.url).toBe(url + '/settings');
+            expect(request.url).toBe(`${url}/settings`);
             setTimeout(() => {
               done();
             }, 50);
@@ -10467,10 +10468,10 @@ describe('datasource_datachange', () => {
       dataSourceConnector: {
         controllerUrl: url,
         onDataSend: req => {
-          if (req.request.url === url + '/data') {
+          if (req.request.url === `${url}/data`) {
             request = jasmine.Ajax.requests.at(1);
             expect(request.method).toBe('POST');
-            expect(request.url).toBe(url + '/data');
+            expect(request.url).toBe(`${url}/data`);
             setTimeout(() => {
               done();
             }, 50);
@@ -10480,16 +10481,16 @@ describe('datasource_datachange', () => {
     });
   });
 
-  it('should call /create/row ajax call after create row', done => {
+  it('should call PUT /row ajax call after create row', done => {
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
         contextMenu: true,
         onDataSend: req => {
-          if (req.request.url === url + '/create/row') {
-            request = jasmine.Ajax.requests.filter(url + '/create/row')[0];
-            expect(request.method).toBe('POST');
-            expect(request.url).toBe(url + '/create/row');
+          if (req.request.url === `${url}/row`) {
+            request = jasmine.Ajax.requests.filter(`${url}/row`)[0];
+            expect(request.method).toBe('PUT');
+            expect(request.url).toBe(`${url}/row`);
             Object(__WEBPACK_IMPORTED_MODULE_0__helpers_common__["selectCell"])(3, 0);
             expect(getValue()).toBe(10);
             setTimeout(() => {
@@ -10516,13 +10517,12 @@ describe('datasource_datachange', () => {
         contextMenu: true,
         dropdownMenu: true,
         onDataSend: req => {
-          console.log(req);
-          if (req.request.url === url + '/data') {
+          if (req.request.url === `${url}/data`) {
             i++;
             if (i > 1) {
-              request = jasmine.Ajax.requests.filter(url + '/data')[0];
+              request = jasmine.Ajax.requests.filter(`${url}/data`)[0];
               expect(request.method).toBe('POST');
-              expect(request.url).toBe(url + '/data');
+              expect(request.url).toBe(`${url}/data`);
               setTimeout(() => {
                 done();
               }, 50);
@@ -10532,32 +10532,31 @@ describe('datasource_datachange', () => {
       }
     });
     setTimeout(() => {
-      //jasmine.Ajax.requests.reset();
+      // jasmine.Ajax.requests.reset();
 
       dropdownMenu(0);
       $('.htDropdownMenu .ht_master .htCore').find('tbody :nth-child(9) td').simulate('mousedown');
 
-      setTimeout(function () {
+      setTimeout(() => {
         // Begins with 'c'
         document.activeElement.value = 'c';
         $(document.activeElement).simulate('keyup');
         $('.htDropdownMenu .ht_master .htCore').find('.htUIButton.htUIButtonOK input').simulate('click');
-        console.log('Click');
       }, 200);
     }, 10);
   });
 
-  it('should call /move/column ajax call after column move', done => {
+  it('should call /column/move ajax call after column move', done => {
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
         colHeaders: true,
         manualColumnMove: true,
         onDataSend: req => {
-          if (req.request.url === url + '/move/column') {
-            request = jasmine.Ajax.requests.filter(url + '/move/column')[0];
+          if (req.request.url === `${url}/column/move`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column/move`)[0];
             expect(request.method).toBe('POST');
-            expect(request.url).toBe(url + '/move/column');
+            expect(request.url).toBe(`${url}/column/move`);
             setTimeout(() => {
               done();
             }, 50);
@@ -10568,7 +10567,7 @@ describe('datasource_datachange', () => {
       }
     });
     setTimeout(() => {
-      var $container = $('#' + id);
+      var $container = $(`#${id}`);
       var $rowsHeaders = $container.find('.ht_clone_top tr th');
 
       $rowsHeaders.eq(2).simulate('mousedown');
@@ -10579,19 +10578,19 @@ describe('datasource_datachange', () => {
       $rowsHeaders.eq(1).simulate('mouseup');
     }, 10);
 
-    //}, 50);
+    // }, 50);
   });
 
-  it('should call /create/column ajax call after create col', done => {
+  it('should call PUT /column ajax call after create col', done => {
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
         contextMenu: true,
         onDataSend: req => {
-          if (req.request.url === url + '/create/column') {
-            request = jasmine.Ajax.requests.filter(url + '/create/column')[0];
-            expect(request.method).toBe('POST');
-            expect(request.url).toBe(url + '/create/column');
+          if (req.request.url === `${url}/column`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column`)[0];
+            expect(request.method).toBe('PUT');
+            expect(request.url).toBe(`${url}/column`);
             setTimeout(() => {
               done();
             }, 50);
@@ -10613,12 +10612,12 @@ describe('datasource_datachange', () => {
       dataSourceConnector: {
         controllerUrl: url,
         onDataSend: req => {
-          if (req.request.url === url + '/data') {
+          if (req.request.url === `${url}/data`) {
             setDataAtCell(1, 2, 'test');
             request = jasmine.Ajax.requests.mostRecent();
             var data = JSON.parse(request.params);
             expect(request.method).toBe('POST');
-            expect(request.url).toBe(url + '/update');
+            expect(request.url).toBe(`${url}/update`);
             expect(data.changes[0].column).toBe('last_name');
             expect(data.changes[0].newValue).toBe('test');
             expect(data.changes[0].oldValue).toBe('Sandwich');

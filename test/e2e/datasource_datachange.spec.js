@@ -117,16 +117,16 @@ describe('datasource_datachange', () => {
     });
   });
 
-  it('should call /create/row ajax call after create row', (done) => {
+  it('should call PUT /row ajax call after create row', (done) => {
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
         contextMenu: true,
         onDataSend: (req) => {
-          if (req.request.url === `${url}/create/row`) {
-            request = jasmine.Ajax.requests.filter(`${url}/create/row`)[0];
-            expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/create/row`);
+          if (req.request.url === `${url}/row`) {
+            request = jasmine.Ajax.requests.filter(`${url}/row`)[0];
+            expect(request.method).toBe('PUT');
+            expect(request.url).toBe(`${url}/row`);
             selectCell(3, 0);
             expect(getValue()).toBe(10);
             setTimeout(() => { done(); }, 50);
@@ -183,17 +183,17 @@ describe('datasource_datachange', () => {
     }, 10);
   });
 
-  it('should call /move/column ajax call after column move', (done) => {
+  it('should call /column/move ajax call after column move', (done) => {
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
         colHeaders: true,
         manualColumnMove: true,
         onDataSend: (req) => {
-          if (req.request.url === `${url}/move/column`) {
-            request = jasmine.Ajax.requests.filter(`${url}/move/column`)[0];
+          if (req.request.url === `${url}/column/move`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column/move`)[0];
             expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/move/column`);
+            expect(request.url).toBe(`${url}/column/move`);
             setTimeout(() => { done(); }, 50);
           } else {
             jasmine.Ajax.requests.reset();
@@ -217,16 +217,16 @@ describe('datasource_datachange', () => {
     // }, 50);
   });
 
-  it('should call /create/column ajax call after create col', (done) => {
+  it('should call PUT /column ajax call after create col', (done) => {
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
         contextMenu: true,
         onDataSend: (req) => {
-          if (req.request.url === `${url}/create/column`) {
-            request = jasmine.Ajax.requests.filter(`${url}/create/column`)[0];
-            expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/create/column`);
+          if (req.request.url === `${url}/column`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column`)[0];
+            expect(request.method).toBe('PUT');
+            expect(request.url).toBe(`${url}/column`);
             setTimeout(() => { done(); }, 50);
           } else {
             jasmine.Ajax.requests.reset();

@@ -41,6 +41,46 @@ export default class Http {
   }
 
   /**
+   * make HTTP DELETE to url with payload data
+   *
+   * @param {string} url
+   * @param {any} data
+   */
+  public delete(url: string, data: any) {
+    var request = new Request(this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'DELETE';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(
+      (value: any) => {
+        this.onDataSend(new Data(request, JSON.parse(value)));
+        return JSON.parse(value);
+      }
+    );
+  }
+
+  /**
+     * make HTTP PUT to url with payload data
+     *
+     * @param {string} url
+     * @param {any} data
+     */
+  put(url: string, data: object) {
+    var request = new Request(this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'PUT';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(
+      (value: any) => {
+        this.onDataSend(new Data(request, JSON.parse(value)));
+        return JSON.parse(value);
+      }
+    );
+  }
+
+  /**
      * make HTTP POST to url with payload data
      *
      * @param {string} url
