@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 07/04/2018 22:30:54)
+ * Release date: 01/03/2018 (built at 11/04/2018 09:47:42)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -253,6 +253,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     } catch (err) {
       return false;
     }
+    return false;
   }
 
   /**
@@ -295,6 +296,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       if (!value) {
         return false;
       }
+      return true;
     });
   }
 
