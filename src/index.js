@@ -201,6 +201,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       });
   }
 
+  /**
+   * Method called after resizing column.
+   *
+   * @param {number} currentColumn
+   * @param {number} newSize
+   * @param {boolean} isDoubleClick
+   */
   onColumnResize(currentColumn, newSize, isDoubleClick) {
     let uri = {
       column: this.hot.getCellMeta(1, currentColumn).col_id,
