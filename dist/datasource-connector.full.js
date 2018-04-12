@@ -1,1 +1,708 @@
-!function(t,e){"object"==typeof exports&&"object"==typeof module?module.exports=e():"function"==typeof define&&define.amd?define("DatasourceConector",[],e):"object"==typeof exports?exports.DatasourceConector=e():t.DatasourceConector=e()}(window,function(){return function(t){var e={};function o(r){if(e[r])return e[r].exports;var s=e[r]={i:r,l:!1,exports:{}};return t[r].call(s.exports,s,s.exports,o),s.l=!0,s.exports}return o.m=t,o.c=e,o.d=function(t,e,r){o.o(t,e)||Object.defineProperty(t,e,{configurable:!1,enumerable:!0,get:r})},o.r=function(t){Object.defineProperty(t,"__esModule",{value:!0})},o.n=function(t){var e=t&&t.__esModule?function(){return t.default}:function(){return t};return o.d(e,"a",e),e},o.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},o.p="",o(o.s=0)}([function(t,e,o){"use strict";o.r(e);class r{constructor(t){this.url="",this.method="GET",this.headers=void 0!==t?t:{"Content-Type":"application/json"},this.body=""}}class s{constructor(t){this.controllerUrl=t,this.listeners=[],this.defaultHeaders={}}addListener(t){"function"==typeof t&&this.listeners.push(t)}onDataSend(...t){this.listeners&&this.listeners.length&&this.listeners.forEach(e=>{setTimeout(()=>{e(...t)},5)})}delete(t,e){var o=new r(this.defaultHeaders);return o.url=this.controllerUrl+t,o.method="DELETE",o.body=JSON.stringify(e),this.request(o).then(t=>(this.onDataSend({request:o,response:JSON.parse(t)}),JSON.parse(t)))}put(t,e){var o=new r(this.defaultHeaders);return o.url=this.controllerUrl+t,o.method="PUT",o.body=JSON.stringify(e),this.request(o).then(t=>(this.onDataSend({request:o,response:JSON.parse(t)}),JSON.parse(t)))}post(t,e){var o=new r(this.defaultHeaders);return o.url=this.controllerUrl+t,o.method="POST",o.body=JSON.stringify(e),this.request(o).then(t=>(this.onDataSend({request:o,response:JSON.parse(t)}),JSON.parse(t)))}get(t){var e=new r(this.defaultHeaders);return e.url=this.controllerUrl+t,this.request(e).then(t=>(this.onDataSend({request:e,response:JSON.parse(t)}),JSON.parse(t)))}request(t){return new Promise((e,o)=>{let r=new XMLHttpRequest;r.open(t.method||"GET",t.url),t.headers&&Object.keys(t.headers).forEach(e=>{r.setRequestHeader(e,t.headers[e])}),r.onload=(()=>{r.status>=200&&r.status<300?e(r.response):o(r.statusText)}),r.onerror=(()=>o(r.statusText)),r.send(t.body)})}}class i extends Handsontable.plugins.BasePlugin{constructor(t){super(t),this.http={},this.colHeaders=[],this.filters=[],this.order={}}isEnabled(){let t=!!this.hot.getSettings().dataSourceConnector;if(t){let t=this.hot.getSettings().dataSourceConnector.controllerUrl;void 0!==this.hot.getSettings().dataSourceConnector.onDataSend&&this.hot.addHook("onDataSend",this.hot.getSettings().dataSourceConnector.onDataSend),this.http=new s(t),this.http.defaultHeaders=this.hot.getSettings().dataSourceConnector.requestHeaders;var e=this.hot;this.http.addListener((...t)=>{void 0!==e&&e.runHooks("onDataSend",t[0])})}return t}enablePlugin(){this.addHook("beforeColumnSort",()=>!1),this.addHook("beforeFilter",()=>!1),this.addHook("beforeRemoveCol",(t,e)=>this.onRemoveCol(t,e)),this.addHook("beforeRemoveRow",(t,e)=>this.onRemoveRow(t,e)),this.addHook("afterInit",()=>this.onAfterInit()),this.addHook("afterChange",(t,e)=>this.onAfterChange(t,e)),this.addHook("afterColumnSort",(t,e)=>this.onAfterColumnSort(t,e)),this.addHook("afterCreateRow",(t,e,o)=>this.onAfterCreateRow(t,e,o)),this.addHook("afterCreateCol",(t,e,o)=>this.onAfterCreateCol(t,e,o)),this.addHook("afterColumnMove",(t,e)=>this.onAfterColumnMove(t,e)),this.addHook("afterFilter",t=>this.onAfterFilter(t)),this.addHook("beforeRowMove",(t,e)=>this.onRowMove(t,e)),this.addHook("afterRowResize",(t,e,o)=>this.onRowResize(t,e,o)),this.addHook("afterMergeCells",(t,e,o)=>this.onMergeCell(t,e,o)),this.addHook("afterColumnResize",(t,e,o)=>this.onColumnResize(t,e,o)),this.addHook("beforeUnmergeCells",(t,e)=>this.onUnmergeCells(t,e)),super.enablePlugin()}onAfterFilter(t){var e=hot.getPlugin("filters").conditionCollection.exportAllConditions();e.forEach((o,r)=>{e[r].column=this.colHeaders[t[r].column]}),this.filters=e;let o={order:this.order,filters:this.filters};this.http.post("/data",o).then(t=>{this._loadData(t)})}_move(t,e,o){if(o===e)return t;for(var r=t[e],s=o<e?-1:1,i=e;i!==o;i+=s)t[i]=t[i+s];return t[o]=r,t}onAfterColumnMove(t,e){var o=[],r=0;for(r=0;r<t.length;r++)o.push(this.colHeaders[t[r]]);var s={columnNames:o,target:e};this.http.post("/column/move",s).then(t=>{this.colHeaders=t.data})}onAfterCreateCol(t,e,o){var r={index:t,amount:e,source:o},s=0===t?1:0;this.http.put("/column",r).then(e=>{for(var o=this.hot.getData().length,r=0;r<o;r++)this.hot.setCellMeta(r,t,"row_id",this.hot.getCellMeta(r,s).row_id),this.hot.setCellMeta(r,t,"col_id",e.name)})}async onRemoveCol(t,e){for(var o=[],r=0;r<e;r++)o.push(this.colHeaders[r+t]);try{if((await this.http.delete("/column",o)).data){var s=await this.http.post("/data");return this._loadData(s),!0}}catch(t){return!1}return!1}onAfterCreateRow(t,e,o){var r={index:t,amount:e,source:o};this.http.put("/row",r).then(e=>{for(var o=this.hot.getData()[t],r=1===t?2:1,s=0;s<o.length;s++){var i=this.hot.getCellMeta(r,s).col_id;this.hot.setCellMeta(t,s,"row_id",e.id),this.hot.setCellMeta(t,s,"col_id",i),this.hot.setDataAtCell(t,s,e.data[i])}})}onColumnResize(t,e,o){let r={column:this.hot.getCellMeta(1,t).col_id,size:e};this.http.post("/column/resize",r)}onRemoveRow(t,e){for(var o=[],r=0;r<e;r++)o.push(this.hot.getCellMeta(r+t,1).row_id);this.http.delete("/row",o).then(t=>!!t)}onRowMove(t,e){for(var o=[],r=0;r<t.length;r++)o.push(this.hot.getCellMeta(t[r],1).row_id);var s={rowsMoved:o,target:e};this.http.post("/row/move",s)}onRowResize(t,e,o){let r={row:this.hot.getCellMeta(t,1).row_id,size:e};this.http.post("/row/resize",r)}onAfterColumnSort(t,e){this.order=void 0!==e?{column:this.colHeaders[t],order:!0===e?"ASC":"DESC"}:{};let o={order:this.order,filters:this.filters};this.http.post("/data",o).then(t=>{this._loadData(t)})}onMergeCell(t,e,o){for(var r={column:this.hot.getCellMeta(e.row,e.col).col_id,row:this.hot.getCellMeta(e.row,e.col).row_id},s=[],i=this._normalizeRange(t),l=i.from.row;l<=i.to.row;l++)for(var n=i.from.col;n<=i.to.col;n++)s.push({column:this.hot.getCellMeta(l,n).col_id,row:this.hot.getCellMeta(l,n).row_id});this.http.post("/cell/merge",{mergedParent:r,mergedCells:s})}_normalizeRange(t){let e,o;return t.from.row<t.to.row?(e=t.from,o=t.to):t.from.row>t.to.row?(e=t.to,o=t.from):t.from.row===t.to.row&&(t.from.col>t.to.col?(e=t.to,o=t.from):(e=t.from,o=t.to)),{from:e,to:o}}onUnmergeCells(t,e){let o={column:this.hot.getCellMeta(t.highlight.row,t.highlight.col).col_id,row:this.hot.getCellMeta(t.highlight.row,t.highlight.col).row_id},r=[];for(let e=t.from.row;e<=t.to.row;e++)for(let o=t.from.col;o<=t.to.col;o++)r.push({column:this.hot.getCellMeta(e,o).col_id,row:this.hot.getCellMeta(e,o).row_id});this.http.post("/cell/unmerge",{mergedParent:o,mergedCells:r})}_loadData(t){let e=t.data,o=[];for(let t=0;t<e.length;t++){let r=[];for(let o in e[t])r.push(e[t][o]);o.push(r)}this.hot.loadData(o);let r=[];for(let t in e[0])r.push(t);this.colHeaders=r;for(let o=0;o<e.length;o++)for(let s=0;s<r.length;s++)this.hot.setCellMeta(o,s,"row_id",e[o][t.rowId]),this.hot.setCellMeta(o,s,"col_id",r[s])}onAfterInit(){this.http.get("/settings").then(t=>{this.hot.updateSettings(t.data)}),this.http.post("/data").then(t=>{this._loadData(t)})}disablePlugin(){super.disablePlugin()}updatePlugin(){this.disablePlugin(),this.enablePlugin(),super.updatePlugin()}onAfterChange(t,e){if(t){let o=[];for(let e=0;e<t.length;e++){let r=this.hot.getCellMeta(t[e][0],t[e][1]),s={row:r.row_id,column:r.col_id,oldValue:t[e][2],newValue:t[e][3],meta:r};delete s.meta.instance,o.push(s)}this.http.post("/update",{changes:o,source:e})}}destroy(){super.destroy()}}e.default=i;Handsontable.plugins.registerPlugin("DataSourceConnector",i)}]).default});
+/*!
+ * 
+ * Version: 1.0.0
+ * Release date: 01/03/2018 (built at 12/04/2018 12:41:57)
+ */
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define("DatasourceConector", [], factory);
+	else if(typeof exports === 'object')
+		exports["DatasourceConector"] = factory();
+	else
+		root["DatasourceConector"] = factory();
+})(typeof self !== 'undefined' ? self : this, function() {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_http__ = __webpack_require__(1);
+
+
+/**
+ * @plugin DataSourceConnector
+ * Note: keep in mind, that Handsontable instance creates one instance of the plugin class.
+ *
+ * @description
+ * This plugin enable the backend side data management for handsontable instance
+ */
+class DataSourceConnector extends Handsontable.plugins.BasePlugin {
+
+  // The argument passed to the constructor is the currently processed Handsontable instance object.
+  constructor(hotInstance) {
+    super(hotInstance);
+    this.http = {};
+    this.colHeaders = [];
+    this.filters = [];
+    this.order = {};
+  }
+
+  /**
+   * Checks if the plugin is enabled in the settings.
+   */
+  isEnabled() {
+    let enabled = !!this.hot.getSettings().dataSourceConnector;
+    if (enabled) {
+      let controllerUrl = this.hot.getSettings().dataSourceConnector.controllerUrl;
+      if (this.hot.getSettings().dataSourceConnector.onDataSend !== undefined) {
+        this.hot.addHook('onDataSend', this.hot.getSettings().dataSourceConnector.onDataSend);
+      }
+      this.http = new __WEBPACK_IMPORTED_MODULE_0__utils_http__["a" /* default */](controllerUrl);
+      this.http.defaultHeaders = this.hot.getSettings().dataSourceConnector.requestHeaders;
+      var hotInstance = this.hot;
+      this.http.addListener((...args) => {
+        if (hotInstance !== undefined) {
+          hotInstance.runHooks('onDataSend', args[0]);
+        }
+      });
+    }
+    return enabled;
+  }
+
+  /**
+   * The enablePlugin method is triggered on the beforeInit hook. It should contain your initial plugin setup, along with
+   * the hook connections.
+   * Note, that this method is run only if the statement in the isEnabled method is true.
+   */
+  enablePlugin() {
+    // disable build in sort and filter functions
+    this.addHook('beforeColumnSort', () => false);
+    this.addHook('beforeFilter', () => false);
+    this.addHook('beforeRemoveCol', (index, amount) => this.onRemoveCol(index, amount));
+    this.addHook('beforeRemoveRow', (index, amount) => this.onRemoveRow(index, amount));
+
+    this.addHook('afterInit', () => this.onAfterInit());
+    this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
+    this.addHook('afterColumnSort', (column, order) => this.onAfterColumnSort(column, order));
+
+    this.addHook('afterCreateRow', (index, amount, source) => this.onAfterCreateRow(index, amount, source));
+    this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
+    this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
+    this.addHook('afterFilter', conditionsStack => this.onAfterFilter(conditionsStack));
+    this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
+    this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
+    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
+
+    // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
+    super.enablePlugin();
+  }
+  /**
+   * The onAfterFilter method is called after filtering.
+   *
+   * @param {array} conditionsStack
+   */
+  onAfterFilter(conditionsStack) {
+    var conditions = hot.getPlugin('filters').conditionCollection.exportAllConditions();
+    conditions.forEach((item, index) => {
+      conditions[index].column = this.colHeaders[conditionsStack[index].column];
+    });
+
+    this.filters = conditions;
+    let uri = { order: this.order, filters: this.filters };
+    this.http.post('/data', uri).then(response => {
+      this._loadData(response);
+    });
+  }
+
+  // move element in array from position to target
+  _move(array, from, to) {
+    if (to === from) {
+      return array;
+    }
+
+    var target = array[from];
+    var increment = to < from ? -1 : 1;
+
+    for (var k = from; k !== to; k += increment) {
+      array[k] = array[k + increment];
+    }
+    array[to] = target;
+    return array;
+  }
+
+  /**
+   * The onAfterColumnMove method is called after moving column.
+   *
+   * @param {array} columns
+   * @param {number} target
+   */
+  onAfterColumnMove(columns, target) {
+
+    var columnNames = [];
+    var i = 0;
+    for (i = 0; i < columns.length; i++) {
+      columnNames.push(this.colHeaders[columns[i]]);
+    }
+
+    var colMoved = {
+      columnNames,
+      target
+    };
+
+    this.http.post('/column/move', colMoved).then(value => {
+      this.colHeaders = value.data;
+    });
+  }
+
+  /**
+   * The onAfterCreateCol method is called after creating new column.
+   *
+   * @param {number} index
+   * @param {number} amount
+   * @param {string} source
+   */
+  onAfterCreateCol(index, amount, source) {
+    var payload = {
+      index,
+      amount,
+      source
+    };
+    var sourceIndex = index === 0 ? 1 : 0;
+    this.http.put('/column', payload).then(value => {
+      var noOfRows = this.hot.getData().length;
+      for (var row = 0; row < noOfRows; row++) {
+        this.hot.setCellMeta(row, index, 'row_id', this.hot.getCellMeta(row, sourceIndex).row_id);
+        this.hot.setCellMeta(row, index, 'col_id', value.name);
+      }
+    });
+  }
+  /**
+   * The onAfterRemoveCol method is called after removing column.
+   *
+   * @param {number} index
+   * @param {number} amount
+   * */
+  async onRemoveCol(index, amount) {
+    var removedCol = [];
+    for (var i = 0; i < amount; i++) {
+      removedCol.push(this.colHeaders[i + index]);
+    }
+    try {
+      var value = await this.http.delete('/column', removedCol);
+      if (value.data) {
+        var response = await this.http.post('/data');
+        this._loadData(response);
+        return true;
+      }
+    } catch (err) {
+      return false;
+    }
+    return false;
+  }
+
+  /**
+   * Method called after creating new row.
+   *
+   * @param {number} index
+   * @param {number} amount
+   * @param {string} source
+   */
+  onAfterCreateRow(index, amount, source) {
+    var payload = {
+      index,
+      amount,
+      source
+    };
+    this.http.put('/row', payload).then(value => {
+      var row = this.hot.getData()[index];
+      var sourceIndex = index === 1 ? 2 : 1;
+      for (var col = 0; col < row.length; col++) {
+        var column = this.hot.getCellMeta(sourceIndex, col).col_id;
+        this.hot.setCellMeta(index, col, 'row_id', value.id);
+        this.hot.setCellMeta(index, col, 'col_id', column);
+        this.hot.setDataAtCell(index, col, value.data[column]);
+      }
+    });
+  }
+
+  onColumnResize(currentColumn, newSize, isDoubleClick) {
+    let uri = {
+      column: this.hot.getCellMeta(1, currentColumn).col_id,
+      size: newSize
+    };
+    this.http.post('/column/resize', uri);
+  }
+
+  /**
+   * Method called after creating new row.
+   *
+   * @param {number} index
+   * @param {number} amount
+   */
+  onRemoveRow(index, amount) {
+    var rowsRemoved = [];
+    for (var i = 0; i < amount; i++) {
+      rowsRemoved.push(this.hot.getCellMeta(i + index, 1).row_id);
+    }
+    this.http.delete('/row', rowsRemoved).then(value => {
+      if (!value) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  /**
+  * Method called after moving row.
+  *
+  * @param {array} rows
+  * @param {number} target
+  */
+  onRowMove(rows, target) {
+    var rowsMoved = [];
+    for (var i = 0; i < rows.length; i++) {
+      rowsMoved.push(this.hot.getCellMeta(rows[i], 1).row_id);
+    };
+    var payload = {
+      rowsMoved,
+      target
+    };
+    this.http.post('/row/move', payload);
+  }
+
+  /**
+   * Method called after resizing row, event will be passed to backend.
+   *
+   * @param {number} currentRow
+   * @param {number} newSize
+   * @param {boolean} isDoubleClick
+   */
+  onRowResize(currentRow, newSize, isDoubleClick) {
+    let uri = {
+      row: this.hot.getCellMeta(currentRow, 1).row_id,
+      size: newSize
+    };
+    this.http.post('/row/resize', uri);
+  }
+
+  /**
+   * Method called after sorting column, event will be passed to backend.
+   *
+   * @param {number} column
+   * @param {boolean} order
+   */
+  onAfterColumnSort(column, order) {
+    this.order = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
+
+    let uri = { order: this.order, filters: this.filters };
+    this.http.post('/data', uri).then(response => {
+      this._loadData(response);
+    });
+  }
+
+  /**
+   * Method called after merging cells, event will be passed to backend.
+   *
+   * @param {cellRange} CellRange
+   * @param {mergeParent} Object
+   * @param {auto} boolean
+   */
+  onMergeCell(cellRange, mergeParent, auto) {
+    var mergedParent = {
+      column: this.hot.getCellMeta(mergeParent.row, mergeParent.col).col_id,
+      row: this.hot.getCellMeta(mergeParent.row, mergeParent.col).row_id
+    };
+    var mergedCells = [];
+
+    var range = this._normalizeRange(cellRange);
+
+    for (var i = range.from.row; i <= range.to.row; i++) {
+      for (var j = range.from.col; j <= range.to.col; j++) {
+        mergedCells.push({ column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id });
+      }
+    }
+    this.http.post('/cell/merge', {
+      mergedParent,
+      mergedCells
+    });
+  }
+
+  /**
+   * Normalize cell range
+   * @param {*} cellRange 
+   */
+  _normalizeRange(cellRange) {
+    let from;
+    let to;
+    if (cellRange.from.row < cellRange.to.row) {
+      from = cellRange.from;
+      to = cellRange.to;
+    } else if (cellRange.from.row > cellRange.to.row) {
+      from = cellRange.to;
+      to = cellRange.from;
+    } else if (cellRange.from.row === cellRange.to.row) {
+      if (cellRange.from.col > cellRange.to.col) {
+        from = cellRange.to;
+        to = cellRange.from;
+      } else {
+        from = cellRange.from;
+        to = cellRange.to;
+      }
+    }
+    return { from, to };
+  }
+
+  onUnmergeCells(cellRange, auto) {
+    let mergedParent = {
+      column: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).col_id,
+      row: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).row_id
+    };
+    let mergedCells = [];
+    for (let i = cellRange.from.row; i <= cellRange.to.row; i++) {
+      for (let j = cellRange.from.col; j <= cellRange.to.col; j++) {
+        mergedCells.push({ column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id });
+      }
+    }
+    this.http.post('/cell/unmerge', {
+      mergedParent: mergedParent,
+      mergedCells: mergedCells
+    });
+  }
+
+  /**
+   * Load data and setup all dedicated metadata for backend sync
+   * @param {object} response
+   */
+  _loadData(response) {
+    let responseData = response.data;
+    let normalizedData = [];
+    for (let row = 0; row < responseData.length; row++) {
+      let item = [];
+      // eslint-disable-next-line guard-for-in
+      for (let columnName in responseData[row]) {
+        item.push(responseData[row][columnName]);
+      }
+      normalizedData.push(item);
+    }
+
+    this.hot.loadData(normalizedData);
+
+    let columnNames = [];
+
+    // eslint-disable-next-line guard-for-in
+    for (let columnName in responseData[0]) {
+      columnNames.push(columnName);
+    }
+
+    this.colHeaders = columnNames;
+
+    for (let row = 0; row < responseData.length; row++) {
+      for (let column = 0; column < columnNames.length; column++) {
+        this.hot.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
+        this.hot.setCellMeta(row, column, 'col_id', columnNames[column]);
+      }
+    }
+  }
+
+  /**
+   * Method called after Handsontable instance initiation
+   */
+  onAfterInit() {
+    this.http.get('/settings').then(response => {
+      this.hot.updateSettings(response.data);
+    });
+    this.http.post('/data').then(response => {
+      this._loadData(response);
+    });
+  }
+
+  /**
+   * The disablePlugin method is used to disable the plugin. Reset all of your classes properties to their default values here.
+   */
+  disablePlugin() {
+    // The super method takes care of clearing the hook connections and assigning the 'false' value to the 'this.enabled' property.
+    super.disablePlugin();
+  }
+
+  /**
+   * The updatePlugin method is called on the afterUpdateSettings hook (unless the updateSettings method turned the plugin off).
+   * It should contain all the stuff your plugin needs to do to work properly after the Handsontable instance settings were modified.
+   */
+  updatePlugin() {
+
+    // The updatePlugin method needs to contain all the code needed to properly re-enable the plugin. In most cases simply disabling and enabling the plugin should do the trick.
+    this.disablePlugin();
+    this.enablePlugin();
+
+    super.updatePlugin();
+  }
+
+  /**
+   * The afterChange hook callback.
+   *
+   * @param {Array} changes Array of changes.
+   * @param {String} source Describes the source of the change.
+   */
+  onAfterChange(changes, source) {
+    if (changes) {
+      let changeItems = [];
+      for (let i = 0; i < changes.length; i++) {
+        let cellMeta = this.hot.getCellMeta(changes[i][0], changes[i][1]);
+        let item = {
+          row: cellMeta.row_id,
+          column: cellMeta.col_id,
+          oldValue: changes[i][2],
+          newValue: changes[i][3],
+          meta: cellMeta
+        };
+        delete item.meta.instance;
+        changeItems.push(item);
+      }
+      this.http.post('/update', {
+        changes: changeItems,
+        source
+      });
+    }
+  }
+
+  /**
+   * The destroy method should de-assign all of your properties.
+   */
+  destroy() {
+    // The super method takes care of de-assigning the event callbacks, plugin hooks and clearing all the plugin properties.
+    super.destroy();
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (DataSourceConnector);
+
+// register plugin
+Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__request__ = __webpack_require__(2);
+
+
+/**
+ * Send the xhr request to server
+ *
+ * @param {Request} obj Request object
+ * @returns {Promise}
+ */
+class Http {
+
+  constructor(controllerUrl) {
+    this.controllerUrl = controllerUrl;
+    this.listeners = [];
+    this.defaultHeaders = {};
+  }
+
+  /**
+     * make a callback function that listen for HTTP events
+     *
+     * @param {function} callback
+     */
+  addListener(callback) {
+    if (typeof callback === 'function' || false) {
+      this.listeners.push(callback);
+    }
+  }
+
+  /**
+     * this method emit the onDataSend event to listeners
+     *
+     * @param {any} args
+     */
+  onDataSend(...args) {
+    if (this.listeners && this.listeners.length) {
+      this.listeners.forEach(listener => {
+        setTimeout(() => {
+          listener(...args);
+        }, 5);
+      });
+    }
+  }
+
+  /**
+   * make HTTP DELETE to url with payload data
+   *
+   * @param {string} url
+   * @param {any} data
+   */
+  delete(url, data) {
+    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'DELETE';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(value => {
+      this.onDataSend({ request, response: JSON.parse(value) });
+      return JSON.parse(value);
+    });
+  }
+
+  /**
+     * make HTTP PUT to url with payload data
+     *
+     * @param {string} url
+     * @param {any} data
+     */
+  put(url, data) {
+    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'PUT';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(value => {
+      this.onDataSend({ request, response: JSON.parse(value) });
+      return JSON.parse(value);
+    });
+  }
+
+  /**
+     * make HTTP POST to url with payload data
+     *
+     * @param {string} url
+     * @param {any} data
+     */
+  post(url, data) {
+    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'POST';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(value => {
+      this.onDataSend({ request, response: JSON.parse(value) });
+      return JSON.parse(value);
+    });
+  }
+
+  /**
+     * make HTTP GET call on url
+     *
+     * @param {string} url
+     */
+  get(url) {
+    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+
+    return this.request(request).then(value => {
+      this.onDataSend({ request, response: JSON.parse(value) });
+      return JSON.parse(value);
+    });
+  }
+
+  /**
+    *
+    * @param {object} obj
+    */
+  request(obj) {
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest();
+      xhr.open(obj.method || 'GET', obj.url);
+      if (obj.headers) {
+        Object.keys(obj.headers).forEach(key => {
+          xhr.setRequestHeader(key, obj.headers[key]);
+        });
+      }
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(xhr.response);
+        } else {
+          reject(xhr.statusText);
+        }
+      };
+      xhr.onerror = () => reject(xhr.statusText);
+      xhr.send(obj.body);
+    });
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Http;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/**
+ * This class represents the http request call in xhr context
+ */
+class Request {
+  constructor(headers) {
+    this.url = '';
+    this.method = 'GET';
+    this.headers = headers !== undefined ? headers : { 'Content-Type': 'application/json' };
+    this.body = '';
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Request;
+
+
+/***/ })
+/******/ ])["default"];
+});
