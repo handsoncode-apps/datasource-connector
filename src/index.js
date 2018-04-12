@@ -310,6 +310,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {*} cellRange 
    */
   _normalizeRange(cellRange) {
+    let from;
+    let to;
     if (cellRange.from.row < cellRange.to.row) {
       from = cellRange.from;
       to = cellRange.to;

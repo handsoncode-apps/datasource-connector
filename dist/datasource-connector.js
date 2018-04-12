@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 12/04/2018 12:16:20)
+ * Release date: 01/03/2018 (built at 12/04/2018 12:41:57)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -392,6 +392,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {*} cellRange 
    */
   _normalizeRange(cellRange) {
+    let from;
+    let to;
     if (cellRange.from.row < cellRange.to.row) {
       from = cellRange.from;
       to = cellRange.to;
