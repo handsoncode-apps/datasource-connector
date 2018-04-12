@@ -61,7 +61,10 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
     this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
+    this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
     this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
+    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick))
+    this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
@@ -198,6 +201,14 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       });
   }
 
+  onColumnResize(currentColumn, newSize, isDoubleClick) {
+    let uri = {
+      column: this.hot.getCellMeta(1, currentColumn).col_id,
+      size: newSize
+    };
+    this.http.post('/column/resize', uri);
+  }
+
   /**
    * Method called after creating new row.
    *
@@ -237,6 +248,21 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
   }
 
   /**
+   * Method called after resizing row, event will be passed to backend.
+   *
+   * @param {number} currentRow
+   * @param {number} newSize
+   * @param {boolean} isDoubleClick
+   */
+  onRowResize(currentRow, newSize, isDoubleClick) {
+    let uri = {
+      row: this.hot.getCellMeta(currentRow, 1).row_id,
+      size: newSize
+    };
+    this.http.post('/row/resize', uri);
+  }
+
+  /**
    * Method called after sorting column, event will be passed to backend.
    *
    * @param {number} column
@@ -260,13 +286,30 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {auto} boolean
    */
   onMergeCell(cellRange, mergeParent, auto) {
-    let mergedParent = {
+    var mergedParent = {
       column: this.hot.getCellMeta(mergeParent.row, mergeParent.col).col_id,
       row: this.hot.getCellMeta(mergeParent.row, mergeParent.col).row_id
     };
-    let mergedCells = [];
-    let from;
-    let to;
+    var mergedCells = [];
+
+    var range = this._normalizeRange(cellRange);
+
+    for (var i = range.from.row; i <= range.to.row; i++) {
+      for (var j = range.from.col; j <= range.to.col; j++) {
+        mergedCells.push({column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id});
+      }
+    }
+    this.http.post('/cell/merge', {
+      mergedParent,
+      mergedCells
+    });
+  }
+  
+  /**
+   * Normalize cell range
+   * @param {*} cellRange 
+   */
+  _normalizeRange(cellRange) {
     if (cellRange.from.row < cellRange.to.row) {
       from = cellRange.from;
       to = cellRange.to;
@@ -282,17 +325,26 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
         to = cellRange.to;
       }
     }
-    for (let i = from.row; i <= to.row; i++) {
-      for (let j = from.col; j <= to.col; j++) {
+    return {from, to};
+  }
+
+  onUnmergeCells(cellRange, auto) {
+    let mergedParent = {
+      column: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).col_id,
+      row: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).row_id
+    };
+    let mergedCells = [];
+    for (let i = cellRange.from.row; i <= cellRange.to.row; i++) {
+      for (let j = cellRange.from.col; j <= cellRange.to.col; j++) {
         mergedCells.push({column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id});
       }
     }
-    this.http.post('/cell/merge', {
+    this.http.post('/cell/unmerge', {
       mergedParent: mergedParent,
       mergedCells: mergedCells
     });
   }
-
+  
   /**
    * Load data and setup all dedicated metadata for backend sync
    * @param {object} response
