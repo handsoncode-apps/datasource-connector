@@ -285,13 +285,46 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {auto} boolean
    */
   onMergeCell(cellRange, mergeParent, auto) {
-    let merge = {
-      fromColumn: this.hot.getCellMeta(cellRange.from.row, cellRange.from.col).col_id,
-      toColumn: this.hot.getCellMeta(cellRange.to.row, cellRange.to.col).col_id,
-      fromRow: this.hot.getCellMeta(cellRange.from.row, cellRange.from.col).row_id,
-      toRow: this.hot.getCellMeta(cellRange.to.row, cellRange.to.col).row_id
+    var mergedParent = {
+      column: this.hot.getCellMeta(mergeParent.row, mergeParent.col).col_id,
+      row: this.hot.getCellMeta(mergeParent.row, mergeParent.col).row_id
     };
-    this.http.post('/cell/merge', merge);
+    var mergedCells = [];
+
+    var range = this._normalizeRange(cellRange);
+
+    for (var i = range.from.row; i <= range.to.row; i++) {
+      for (var j = range.from.col; j <= range.to.col; j++) {
+        mergedCells.push({column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id});
+      }
+    }
+    this.http.post('/cell/merge', {
+      mergedParent,
+      mergedCells
+    });
+  }
+  
+  /**
+   * Normalize cell range
+   * @param {*} cellRange 
+   */
+  _normalizeRange(cellRange) {
+    if (cellRange.from.row < cellRange.to.row) {
+      from = cellRange.from;
+      to = cellRange.to;
+    } else if (cellRange.from.row > cellRange.to.row) {
+      from = cellRange.to;
+      to = cellRange.from;
+    } else if (cellRange.from.row === cellRange.to.row) {
+      if (cellRange.from.col > cellRange.to.col) {
+        from = cellRange.to;
+        to = cellRange.from;
+      } else {
+        from = cellRange.from;
+        to = cellRange.to;
+      }
+    }
+    return {from, to};
   }
 
   /**
