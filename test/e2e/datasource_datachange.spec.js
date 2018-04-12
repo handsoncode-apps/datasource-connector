@@ -74,6 +74,7 @@ describe('datasource_datachange', () => {
           phone: '+435223122' }]
       })
     });
+    jasmine.Ajax.stubRequest(`${url}/cell/merge`, '', 'POST').andReturn({response: JSON.stringify({data: 'ok'}) });
     done();
   });
 
@@ -267,5 +268,32 @@ describe('datasource_datachange', () => {
         }
       },
     });
+  });
+
+  it('should call /cell/merge ajax call after merging cells', (done) => {
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          console.log("bla");
+          if (req.request.url === `${url}/cell/merge`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/merge`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/merge`);
+            setTimeout(() => { done(); }, 150);
+          } else {
+            jasmine.Ajax.requests.reset();
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      const plugin = hot.getPlugin('mergeCells');
+      hot.selectCell(0, 0, 2, 2);
+      plugin.mergeSelection();
+      //expect
+
+    }, 100);
   });
 });
