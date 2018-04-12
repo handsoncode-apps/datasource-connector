@@ -64,6 +64,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
     this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
     this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick))
+    this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
@@ -327,6 +328,23 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     return {from, to};
   }
 
+  onUnmergeCells(cellRange, auto) {
+    let mergedParent = {
+      column: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).col_id,
+      row: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).row_id
+    };
+    let mergedCells = [];
+    for (let i = cellRange.from.row; i <= cellRange.to.row; i++) {
+      for (let j = cellRange.from.col; j <= cellRange.to.col; j++) {
+        mergedCells.push({column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id});
+      }
+    }
+    this.http.post('/cell/unmerge', {
+      mergedParent: mergedParent,
+      mergedCells: mergedCells
+    });
+  }
+  
   /**
    * Load data and setup all dedicated metadata for backend sync
    * @param {object} response
