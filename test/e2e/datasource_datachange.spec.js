@@ -23,7 +23,8 @@ describe('datasource_datachange', () => {
         manualRowMove: true,
         sortIndicator: true,
         filters: true,
-        dropdownMenu: true
+        dropdownMenu: true,
+        mergeCells: true
       }})
     });
     jasmine.Ajax.stubRequest(`${url}/row`, '', 'DELETE').andReturn({response: JSON.stringify({data: 'ok'}) });
@@ -124,10 +125,10 @@ describe('datasource_datachange', () => {
         controllerUrl: url,
         contextMenu: true,
         onDataSend: (req) => {
-          if (req.request.url === `${url}/create/row`) {
-            request = jasmine.Ajax.requests.filter(`${url}/create/row`)[0];
-            expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/create/row`);
+          if (req.request.url === `${url}/row`) {
+            request = jasmine.Ajax.requests.filter(`${url}/row`)[0];
+            expect(request.method).toBe('PUT');
+            expect(request.url).toBe(`${url}/row`);
             selectCell(3, 0);
             expect(getValue()).toBe(10);
             setTimeout(() => { done(); }, 50);
@@ -191,10 +192,9 @@ describe('datasource_datachange', () => {
         colHeaders: true,
         manualColumnMove: true,
         onDataSend: (req) => {
-          if (req.request.url === `${url}/move/column`) {
-            request = jasmine.Ajax.requests.filter(`${url}/move/column`)[0];
+          if (req.request.url === `${url}/column/move`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column/move`)[0];
             expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/move/column`);
             setTimeout(() => { done(); }, 50);
           } else {
             jasmine.Ajax.requests.reset();
@@ -218,16 +218,15 @@ describe('datasource_datachange', () => {
     // }, 50);
   });
 
-  it('should call /create/column ajax call after create col', (done) => {
+  it('should call PUT /column ajax call after create col', (done) => {
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
         contextMenu: true,
         onDataSend: (req) => {
-          if (req.request.url === `${url}/create/column`) {
-            request = jasmine.Ajax.requests.filter(`${url}/create/column`)[0];
-            expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/create/column`);
+          if (req.request.url === `${url}/column`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column`)[0];
+            expect(request.method).toBe('PUT');
             setTimeout(() => { done(); }, 50);
           } else {
             jasmine.Ajax.requests.reset();
@@ -270,30 +269,32 @@ describe('datasource_datachange', () => {
     });
   });
 
-  it('should call /cell/merge ajax call after merging cells', (done) => {
+  it('should call /cell/merge ajax call after merging cells and /cell/unmerge ajax after spliting merged cells', (done) => {
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
         contextMenu: true,
+        mergeCells: true,
         onDataSend: (req) => {
-          console.log("bla");
           if (req.request.url === `${url}/cell/merge`) {
             request = jasmine.Ajax.requests.filter(`${url}/cell/merge`)[0];
             expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/cell/merge`);
-            setTimeout(() => { done(); }, 150);
-          } else {
-            jasmine.Ajax.requests.reset();
+            setTimeout(() => { 
+              const plugin = hot.getPlugin('mergeCells');
+              plugin.unmerge(0, 0, 2, 2);
+              request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
+              expect(request.method).toBe('POST');
+              done(); },
+            50);
           }
         }
       },
     });
     setTimeout(() => {
       const plugin = hot.getPlugin('mergeCells');
-      hot.selectCell(0, 0, 2, 2);
-      plugin.mergeSelection();
-      //expect
-
+      plugin.merge(0, 0, 2, 2);
     }, 100);
   });
+
+  
 });
