@@ -1,4 +1,4 @@
-import { selectCell, mouseDown } from '../helpers/common';
+import { selectCell, mouseDown, resizeColumn, colWidth } from '../helpers/common';
 
 require('jasmine-ajax');
 
@@ -20,6 +20,7 @@ describe('datasource_datachange', () => {
         columnSorting: true,
         contextMenu: true,
         manualColumnMove: true,
+        manualColumnResize: [100, 150, 180],
         manualRowMove: true,
         sortIndicator: true,
         filters: true,
@@ -76,6 +77,8 @@ describe('datasource_datachange', () => {
       })
     });
     jasmine.Ajax.stubRequest(`${url}/cell/merge`, '', 'POST').andReturn({response: JSON.stringify({data: 'ok'}) });
+    jasmine.Ajax.stubRequest(`${url}/cell/unmerge`, '', 'POST').andReturn({response: JSON.stringify({data: 'ok'}) });
+    jasmine.Ajax.stubRequest(`${url}/column/resize`, '', 'POST').andReturn({response: JSON.stringify({data: 'ok'}) });
     done();
   });
 
@@ -296,5 +299,23 @@ describe('datasource_datachange', () => {
     }, 100);
   });
 
-  
+  it('should call /column/resize ajax call after changing width of the column', (done) => {
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/column/resize`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column/resize`)[0];
+            expect(request.method).toBe('POST');
+            expect(colWidth($('#testContainer'), 0)).toBe(200);
+            setTimeout(() => { done(); }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      resizeColumn(1, 200);
+    }, 100);
+  });
 });
