@@ -15,7 +15,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.http = {};
     this.colHeaders = [];
     this.filters = [];
-    this.order = {};
+    this.sort = {};
   }
 
   /**
@@ -54,7 +54,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
-    this.addHook('afterColumnSort', (column, order) => this.onAfterColumnSort(column, order));
+    this.addHook('afterColumnSort', (column, sort) => this.onAfterColumnSort(column, sort));
 
     this.addHook('afterCreateRow', (index, amount, source) => this.onAfterCreateRow(index, amount, source));
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
@@ -81,7 +81,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     });
 
     this.filters = conditions;
-    let uri = { order: this.order, filters: this.filters};
+    let uri = { sort: this.sort, filters: this.filters};
     this.http.post('/data', uri).then((response) => {
       this._loadData(response);
     });
@@ -276,9 +276,9 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {boolean} order
    */
   onAfterColumnSort(column, order) {
-    this.order = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
+    this.sort = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
 
-    let uri = { order: this.order, filters: this.filters};
+    let uri = { sort: this.sort, filters: this.filters};
     this.http.post('/data', uri)
       .then((response) => {
         this._loadData(response);
