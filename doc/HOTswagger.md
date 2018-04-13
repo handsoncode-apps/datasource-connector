@@ -5,7 +5,7 @@ API description for Handsontable backend
 **Version:** 1.0.0
 
 [Find out more about Handsontable](https://docs.handsontable.com/pro/1.18.1/tutorial-introduction.html)
-### /controllerName/data
+### /data
 ---
 ##### ***POST***
 **Summary:** Method that should return sorted and filtered data
@@ -22,7 +22,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [DataResponseModel](#dataresponsemodel) |
 
-### /controllerName/update
+### /update
 ---
 ##### ***POST***
 **Summary:** Method that should be used for update specific cell value
@@ -39,9 +39,9 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/row/create
+### /row
 ---
-##### ***POST***
+##### ***PUT***
 **Summary:** Method that should handle creating a new row on a server side
 
 **Parameters**
@@ -56,8 +56,6 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [CreateRowResponseModel](#createrowresponsemodel) |
 
-### /controllerName/row/remove
----
 ##### ***DELETE***
 **Summary:** Method that should handle removing row on a server side
 
@@ -73,7 +71,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/row/move
+### /row/move
 ---
 ##### ***POST***
 **Summary:** Method that should be used for moving row to different position in dataset
@@ -90,7 +88,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/row/resize
+### /row/resize
 ---
 ##### ***POST***
 **Summary:** Method that should be used for setting new size of the row
@@ -107,9 +105,9 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/column/create
+### /column
 ---
-##### ***POST***
+##### ***PUT***
 **Summary:** Method that should handle creating a new column on a server side
 
 **Parameters**
@@ -124,8 +122,6 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [CreateColumnResponseModel](#createcolumnresponsemodel) |
 
-### /controllerName/column/remove
----
 ##### ***DELETE***
 **Summary:** Method that should handle removing column on a server side
 
@@ -141,7 +137,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/column/move
+### /column/move
 ---
 ##### ***POST***
 **Summary:** Method that should be used for moving column to different position in dataset
@@ -150,7 +146,7 @@ API description for Handsontable backend
 
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
-| MoveColumnModel | body |  | Yes | [MoveColumnModel](#movecolumnmodel) |
+| MoveRowModel | body |  | Yes | [MoveColModel](#movecolmodel) |
 
 **Responses**
 
@@ -158,7 +154,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [MoveColumnResponseModel](#movecolumnresponsemodel) |
 
-### /controllerName/column/resize
+### /column/resize
 ---
 ##### ***POST***
 **Summary:** Method that should be used for setting new size of column
@@ -175,7 +171,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/cell/meta
+### /cell/meta
 ---
 ##### ***POST***
 **Summary:** Method that should handle change of cell meta
@@ -192,7 +188,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/cell/merge
+### /cell/merge
 ---
 ##### ***POST***
 **Summary:** Method that should be used for merging selected cells
@@ -209,7 +205,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [MergeCellsResponseModel](#mergecellsresponsemodel) |
 
-### /controllerName/cell/unmerge
+### /cell/unmerge
 ---
 ##### ***POST***
 **Summary:** Method that should be used for spliting merged cells
@@ -226,7 +222,7 @@ API description for Handsontable backend
 | ---- | ----------- | ------ |
 | 200 | successful operation | [UnmergeCellsResponseModel](#unmergecellsresponsemodel) |
 
-### /controllerName/settings
+### /settings
 ---
 ##### ***GET***
 **Summary:** Method that should return all set options for Handsontable.
@@ -241,7 +237,7 @@ API description for Handsontable backend
 
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
-| 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
+| 200 | successful operation | [MoveColumnResponseModel](#movecolumnresponsemodel) |
 
 ### Models
 ---
@@ -268,15 +264,7 @@ API description for Handsontable backend
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| name | string | Name of filtering type. 
- * `eq` - equal to
- * `neq` - not equal to
- * `empty` - is empty
- * `not_empty` - is not empty
- * `begins_with` - begins with
- * `ends_with` - ends with
- * `contains` - contains
- * `not_contains` - does not contains
+| name | string | Name of filtering type. <br>* `eq` - equal to <br>* `neq` - not equal to <br>* `empty` - is empty <br>* `not_empty` - is not empty <br>* `begins_with` - begins with <br>* `ends_with` - ends with <br>* `contains` - contains <br>* `not_contains` - does not contains <br>
  | No |
 | args | [ string ] |  | No |
 
@@ -305,7 +293,7 @@ API description for Handsontable backend
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| order | [OrderModel](#ordermodel) |  | No |
+| sort | [OrderModel](#ordermodel) |  | No |
 | filters | [ [FilterModel](#filtermodel) ] |  | No |
 
 ### DataResponseModel  
@@ -362,7 +350,8 @@ API description for Handsontable backend
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
 | column | string | Unique column name. | No |
-| order | string | Specifies ascending or descending order of column values.  Sort order * `asc` - Ascending, from A to Z * `desc` - Descending, from Z to A | No |
+| order | string | Specifies ascending or descending order of column values. <br>Sort order <br>* `asc` - Ascending, from A to Z <br>* `desc` - Descending, from Z to A <br>
+ | No |
 
 ### ResizeColumnModel  
 
@@ -394,7 +383,7 @@ API description for Handsontable backend
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| cellRange | string |  | Yes |
+| cellRange | string | todo | Yes |
 
 ### UnmergeCellsResponseModel  
 
