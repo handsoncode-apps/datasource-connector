@@ -21,6 +21,7 @@ describe('datasource_datachange', () => {
         contextMenu: true,
         manualColumnMove: true,
         manualColumnResize: [100, 150, 180],
+        manualRowResize: [50, 40, 100],
         manualRowMove: true,
         sortIndicator: true,
         filters: true,
@@ -79,6 +80,7 @@ describe('datasource_datachange', () => {
     jasmine.Ajax.stubRequest(`${url}/cell/merge`, '', 'POST').andReturn({response: JSON.stringify({data: 'ok'}) });
     jasmine.Ajax.stubRequest(`${url}/cell/unmerge`, '', 'POST').andReturn({response: JSON.stringify({data: 'ok'}) });
     jasmine.Ajax.stubRequest(`${url}/column/resize`, '', 'POST').andReturn({response: JSON.stringify({data: 'ok'}) });
+    jasmine.Ajax.stubRequest(`${url}/row/resize`, '', 'POST').andReturn({response: JSON.stringify({data: 'ok'}) });
     done();
   });
 
@@ -317,5 +319,25 @@ describe('datasource_datachange', () => {
     setTimeout(() => {
       resizeColumn(1, 200);
     }, 100);
+  });
+
+  it('should call /row/resize ajax call after changing height of the row', (done) => {
+    var hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/row/resize`) {
+            request = jasmine.Ajax.requests.filter(`${url}/row/resize`)[0];
+            expect(request.method).toBe('POST');
+            expect(rowHeight($('#testContainer'), 0)).toBe(50);
+            setTimeout(() => { done(); }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      resizeRow(0, 50);
+    }, 50);
   });
 });
