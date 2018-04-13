@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 11/04/2018 09:47:42)
+ * Release date: 01/03/2018 (built at 12/04/2018 12:41:57)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -148,6 +148,10 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', conditionsStack => this.onAfterFilter(conditionsStack));
     this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
+    this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
+    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
@@ -205,7 +209,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       target
     };
 
-    this.http.post('/move/column', colMoved).then(value => {
+    this.http.post('/column/move', colMoved).then(value => {
       this.colHeaders = value.data;
     });
   }
@@ -224,7 +228,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       source
     };
     var sourceIndex = index === 0 ? 1 : 0;
-    this.http.post('/create/column', payload).then(value => {
+    this.http.put('/column', payload).then(value => {
       var noOfRows = this.hot.getData().length;
       for (var row = 0; row < noOfRows; row++) {
         this.hot.setCellMeta(row, index, 'row_id', this.hot.getCellMeta(row, sourceIndex).row_id);
@@ -244,7 +248,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       removedCol.push(this.colHeaders[i + index]);
     }
     try {
-      var value = await this.http.post('/remove/column', removedCol);
+      var value = await this.http.delete('/column', removedCol);
       if (value.data) {
         var response = await this.http.post('/data');
         this._loadData(response);
@@ -269,7 +273,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       amount,
       source
     };
-    this.http.post('/create/row', payload).then(value => {
+    this.http.put('/row', payload).then(value => {
       var row = this.hot.getData()[index];
       var sourceIndex = index === 1 ? 2 : 1;
       for (var col = 0; col < row.length; col++) {
@@ -279,6 +283,14 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
         this.hot.setDataAtCell(index, col, value.data[column]);
       }
     });
+  }
+
+  onColumnResize(currentColumn, newSize, isDoubleClick) {
+    let uri = {
+      column: this.hot.getCellMeta(1, currentColumn).col_id,
+      size: newSize
+    };
+    this.http.post('/column/resize', uri);
   }
 
   /**
@@ -292,7 +304,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     for (var i = 0; i < amount; i++) {
       rowsRemoved.push(this.hot.getCellMeta(i + index, 1).row_id);
     }
-    this.http.post('/remove/row', rowsRemoved).then(value => {
+    this.http.delete('/row', rowsRemoved).then(value => {
       if (!value) {
         return false;
       }
@@ -315,7 +327,22 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       rowsMoved,
       target
     };
-    this.http.post('/move/row', payload);
+    this.http.post('/row/move', payload);
+  }
+
+  /**
+   * Method called after resizing row, event will be passed to backend.
+   *
+   * @param {number} currentRow
+   * @param {number} newSize
+   * @param {boolean} isDoubleClick
+   */
+  onRowResize(currentRow, newSize, isDoubleClick) {
+    let uri = {
+      row: this.hot.getCellMeta(currentRow, 1).row_id,
+      size: newSize
+    };
+    this.http.post('/row/resize', uri);
   }
 
   /**
@@ -330,6 +357,75 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     let uri = { order: this.order, filters: this.filters };
     this.http.post('/data', uri).then(response => {
       this._loadData(response);
+    });
+  }
+
+  /**
+   * Method called after merging cells, event will be passed to backend.
+   *
+   * @param {cellRange} CellRange
+   * @param {mergeParent} Object
+   * @param {auto} boolean
+   */
+  onMergeCell(cellRange, mergeParent, auto) {
+    var mergedParent = {
+      column: this.hot.getCellMeta(mergeParent.row, mergeParent.col).col_id,
+      row: this.hot.getCellMeta(mergeParent.row, mergeParent.col).row_id
+    };
+    var mergedCells = [];
+
+    var range = this._normalizeRange(cellRange);
+
+    for (var i = range.from.row; i <= range.to.row; i++) {
+      for (var j = range.from.col; j <= range.to.col; j++) {
+        mergedCells.push({ column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id });
+      }
+    }
+    this.http.post('/cell/merge', {
+      mergedParent,
+      mergedCells
+    });
+  }
+
+  /**
+   * Normalize cell range
+   * @param {*} cellRange 
+   */
+  _normalizeRange(cellRange) {
+    let from;
+    let to;
+    if (cellRange.from.row < cellRange.to.row) {
+      from = cellRange.from;
+      to = cellRange.to;
+    } else if (cellRange.from.row > cellRange.to.row) {
+      from = cellRange.to;
+      to = cellRange.from;
+    } else if (cellRange.from.row === cellRange.to.row) {
+      if (cellRange.from.col > cellRange.to.col) {
+        from = cellRange.to;
+        to = cellRange.from;
+      } else {
+        from = cellRange.from;
+        to = cellRange.to;
+      }
+    }
+    return { from, to };
+  }
+
+  onUnmergeCells(cellRange, auto) {
+    let mergedParent = {
+      column: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).col_id,
+      row: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).row_id
+    };
+    let mergedCells = [];
+    for (let i = cellRange.from.row; i <= cellRange.to.row; i++) {
+      for (let j = cellRange.from.col; j <= cellRange.to.col; j++) {
+        mergedCells.push({ column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id });
+      }
+    }
+    this.http.post('/cell/unmerge', {
+      mergedParent: mergedParent,
+      mergedCells: mergedCells
     });
   }
 
@@ -489,6 +585,42 @@ class Http {
         }, 5);
       });
     }
+  }
+
+  /**
+   * make HTTP DELETE to url with payload data
+   *
+   * @param {string} url
+   * @param {any} data
+   */
+  delete(url, data) {
+    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'DELETE';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(value => {
+      this.onDataSend({ request, response: JSON.parse(value) });
+      return JSON.parse(value);
+    });
+  }
+
+  /**
+     * make HTTP PUT to url with payload data
+     *
+     * @param {string} url
+     * @param {any} data
+     */
+  put(url, data) {
+    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    request.url = this.controllerUrl + url;
+    request.method = 'PUT';
+    request.body = JSON.stringify(data);
+
+    return this.request(request).then(value => {
+      this.onDataSend({ request, response: JSON.parse(value) });
+      return JSON.parse(value);
+    });
   }
 
   /**
