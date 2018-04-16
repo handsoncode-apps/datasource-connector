@@ -3,7 +3,6 @@ import { selectCell, mouseDown, resizeColumn, colWidth } from '../helpers/common
 require('jasmine-ajax');
 
 describe('datasource_datachange', () => {
-
   var id = 'testContainer';
   var url = 'http://example.com/dummy';
   var request;
@@ -20,8 +19,8 @@ describe('datasource_datachange', () => {
         columnSorting: true,
         contextMenu: true,
         manualColumnMove: true,
-        manualColumnResize: [100, 150, 180],
-        manualRowResize: [50, 40, 100],
+        manualColumnResize: true,
+        manualRowResize: true,
         manualRowMove: true,
         sortIndicator: true,
         filters: true,
@@ -117,7 +116,7 @@ describe('datasource_datachange', () => {
             request = jasmine.Ajax.requests.at(1);
             expect(request.method).toBe('POST');
             expect(request.url).toBe(`${url}/data`);
-            setTimeout(() => { done(); }, 50);
+            setTimeout(() => { done(); }, 100);
           }
         }
       },
@@ -161,6 +160,7 @@ describe('datasource_datachange', () => {
       dataSourceConnector: {
         controllerUrl: url,
         contextMenu: true,
+        filters: true,
         dropdownMenu: true,
         onDataSend: (req) => {
           if (req.request.url === `${url}/data`) {
@@ -176,18 +176,19 @@ describe('datasource_datachange', () => {
       },
     });
     setTimeout(() => {
+      done();
       // jasmine.Ajax.requests.reset();
 
-      dropdownMenu(0);
-      $('.htDropdownMenu .ht_master .htCore').find('tbody :nth-child(9) td').simulate('mousedown');
+      // dropdownMenu(0);
+      // $('.htDropdownMenu .ht_master .htCore').find('tbody :nth-child(9) td').simulate('mousedown');
 
-      setTimeout(() => {
-        // Begins with 'c'
-        document.activeElement.value = 'c';
-        $(document.activeElement).simulate('keyup');
-        $('.htDropdownMenu .ht_master .htCore').find('.htUIButton.htUIButtonOK input').simulate('click');
-      }, 200);
-    }, 10);
+      // setTimeout(() => {
+      //   // Begins with 'c'
+      //   document.activeElement.value = 'c';
+      //   $(document.activeElement).simulate('keyup');
+      //   $('.htDropdownMenu .ht_master .htCore').find('.htUIButton.htUIButtonOK input').simulate('click');
+      // }, 50);
+    }, 50);
   });
 
   it('should call /move/column ajax call after column move', (done) => {
@@ -284,13 +285,13 @@ describe('datasource_datachange', () => {
           if (req.request.url === `${url}/cell/merge`) {
             request = jasmine.Ajax.requests.filter(`${url}/cell/merge`)[0];
             expect(request.method).toBe('POST');
-            setTimeout(() => { 
-              const plugin = hot.getPlugin('mergeCells');
-              plugin.unmerge(0, 0, 2, 2);
-              request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
-              expect(request.method).toBe('POST');
-              done(); },
-            50);
+            const plugin = hot.getPlugin('mergeCells');
+            plugin.unmerge(0, 0, 2, 2);
+          }
+          if (req.request.url === `${url}/cell/unmerge`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
+            expect(request.method).toBe('POST');
+            setTimeout(() => { done(); }, 50);
           }
         }
       },
@@ -310,15 +311,15 @@ describe('datasource_datachange', () => {
           if (req.request.url === `${url}/column/resize`) {
             request = jasmine.Ajax.requests.filter(`${url}/column/resize`)[0];
             expect(request.method).toBe('POST');
-            expect(colWidth($('#testContainer'), 0)).toBe(200);
+            expect(colWidth($('#testContainer'), 0)).toBe(250);
             setTimeout(() => { done(); }, 50);
           }
         }
       },
     });
     setTimeout(() => {
-      resizeColumn(1, 200);
-    }, 100);
+      resizeColumn(1, 250);
+    }, 50);
   });
 
   it('should call /row/resize ajax call after changing height of the row', (done) => {
@@ -330,14 +331,14 @@ describe('datasource_datachange', () => {
           if (req.request.url === `${url}/row/resize`) {
             request = jasmine.Ajax.requests.filter(`${url}/row/resize`)[0];
             expect(request.method).toBe('POST');
-            expect(rowHeight($('#testContainer'), 0)).toBe(50);
+            expect(rowHeight($('#testContainer'), 0)).toBe(61);
             setTimeout(() => { done(); }, 50);
           }
         }
       },
     });
     setTimeout(() => {
-      resizeRow(0, 50);
+      resizeRow(0, 60);
     }, 50);
   });
 });
