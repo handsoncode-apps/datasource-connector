@@ -117,6 +117,9 @@ module.exports = window;
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (immutable) */ __webpack_exports__["spec"] = spec;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__asciiTable__ = __webpack_require__(129);
+
+
 /* eslint-disable import/prefer-default-export */
 var currentSpec;
 
@@ -127,6 +130,8 @@ function spec() {
 function hot() {
   return spec().$container.data('handsontable');
 };
+
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
 
 // http://stackoverflow.com/questions/986937/how-can-i-get-the-browsers-scrollbar-sizes
 const scrollbarWidth = function calculateScrollbarWidth() {
@@ -204,6 +209,9 @@ beforeEach(function () {
         }
       };
     },
+    /**
+     * The matcher checks if the passed cell element is contained in the table viewport.
+     */
     toBeVisibleInViewport() {
       return {
         compare(actual) {
@@ -220,6 +228,9 @@ beforeEach(function () {
         }
       };
     },
+    /**
+     * The matcher checks if the viewport is scrolled in the way that the cell is visible at the top of the viewport.
+     */
     toBeVisibleAtTopOfViewport() {
       return {
         compare(actual) {
@@ -233,6 +244,9 @@ beforeEach(function () {
         }
       };
     },
+    /**
+     * The matcher checks if the viewport is scrolled in the way that the cell is visible at the bottom of the viewport.
+     */
     toBeVisibleAtBottomOfViewport() {
       return {
         compare(actual) {
@@ -246,6 +260,9 @@ beforeEach(function () {
         }
       };
     },
+    /**
+     * The matcher checks if the viewport is scrolled in the way that the cell is visible on the left of the viewport.
+     */
     toBeVisibleAtLeftOfViewport() {
       return {
         compare(actual) {
@@ -259,6 +276,9 @@ beforeEach(function () {
         }
       };
     },
+    /**
+     * The matcher checks if the viewport is scrolled in the way that the cell is visible on the right of the viewport.
+     */
     toBeVisibleAtRightOfViewport() {
       return {
         compare(actual) {
@@ -309,59 +329,86 @@ beforeEach(function () {
         }
       };
     },
+    /**
+     * The matcher checks if the provided selection pattern matches to the rendered cells by checking if
+     * the appropriate CSS class name was added.
+     *
+     * The provided structure should be passed as an array of arrays, for instance:
+     * ```
+     * // Non-contiguous selection (with enabled top and left headers)
+     * expect(`
+     *   |   ║   :   : * : * |
+     *   |===:===:===:===:===|
+     *   | - ║   :   : A : 0 |
+     *   | - ║   : 1 : 0 : 0 |
+     *   | - ║   : 2 : 1 : 0 |
+     *   | - ║   : 2 : 1 : 0 |
+     *   | - ║   : 1 : 1 : 0 |
+     *   | - ║   :   : 0 : 0 |
+     *   `).toBeMatchToSelectionPattern();
+     * // Single cell selection (with fixedRowsTop: 1 and fixedColumnsLeft: 2)
+     * expect(`
+     *   |   :   |   :   :   |
+     *   |---:---:---:---:---|
+     *   |   :   |   :   :   |
+     *   |   :   |   :   :   |
+     *   |   :   | # :   :   |
+     *   |   :   |   :   :   |
+     *   |   :   |   :   :   |
+     *   |   :   |   :   :   |
+     *   `).toBeMatchToSelectionPattern();
+     * ```
+     *
+     * The meaning of the symbol used to describe the cells:
+     * ' ' - An empty space indicates cell which doesn't have added any selection classes.
+     * '0' - The number (from 0 to 7) indicates selected layer level.
+     * 'A' - The letters (from A to H) indicates the position of the cell which contains the hidden editor
+     *       (which `current` class name). The letter `A` indicates the currently selected cell with
+     *       a background of the first layer and `H` as the latest layer (most dark).
+     * '#' - The hash symbol indicates the currently selected cell without changed background color.
+     *
+     * The meaning of the symbol used to describe the table:
+     * ':'   - Column separator (only for better visual looks).
+     * '║'   - This symbol separates the row headers from the table content.
+     * '===' - This symbol separates the column headers from the table content.
+     * '|'   - The symbol which indicates the left overlay edge.
+     * '---' - The symbol which indicates the top overlay edge.
+     */
     toBeMatchToSelectionPattern() {
-      const symbols = new Map([['C', 'current']]);
-
       return {
         compare(actualPattern) {
-          const currentState = [];
-          const rowsCount = hot().countRows();
-          const colsCount = hot().countCols();
-          const message = 'Expected the pattern selection to match to the visual state of the rendered selection.';
+          const asciiTable = Object(__WEBPACK_IMPORTED_MODULE_0__asciiTable__["a" /* generateASCIITable */])(hot().rootElement);
 
-          if (!Array.isArray(actualPattern)) {
-            return {
-              pass: false,
-              message
-            };
-          }
+          const patternParts = (actualPattern || '').split(/\n/);
+          const redundantPadding = patternParts.reduce((padding, line) => {
+            const trimmedLine = line.trim();
 
-          for (let r = 0; r < rowsCount; r++) {
-            const currentRowState = [];
+            if (trimmedLine) {
+              const currentPadding = line.search(/\S|$/);
 
-            for (let c = 0; c < colsCount; c++) {
-              if (!actualPattern[r] || !actualPattern[r][c]) {
-                break;
-              }
-
-              const actualCell = actualPattern[r][c];
-
-              if (actualCell === ' ') {
-                currentRowState.push(' ');
-              } else {
-                const cell = hot().getCell(r, c);
-                const layerName = parseInt(actualCell, 10);
-                const isLayerChecking = !isNaN(layerName);
-                let className;
-
-                if (isLayerChecking) {
-                  className = layerName === 0 ? 'area' : `area-${layerName <= 7 ? layerName : 7}`;
-                } else {
-                  className = symbols.get(actualCell);
-                }
-
-                if (cell.classList.contains(className)) {
-                  currentRowState.push(actualCell);
-                } else {
-                  currentRowState.push('x');
-                }
+              if (currentPadding < padding) {
+                padding = currentPadding;
               }
             }
-            currentState.push(currentRowState);
-          }
+
+            return padding;
+          }, Infinity);
+
+          const normalizedPattern = patternParts.reduce((acc, line) => {
+            const trimmedLine = line.trim();
+
+            if (trimmedLine) {
+              acc.push(line.substr(redundantPadding));
+            }
+
+            return acc;
+          }, []);
+
+          const actualAsciiTable = normalizedPattern.join('\n');
+          const message = `Expected the pattern selection \n${actualAsciiTable}\nto match to the visual state of the rendered selection \n${asciiTable}\n`;
 
           return {
-            pass: JSON.stringify(currentState) === JSON.stringify(actualPattern),
+            pass: asciiTable === actualAsciiTable,
             message
           };
         }
@@ -385,12 +432,227 @@ afterEach(() => {
 
 /***/ }),
 
+/***/ 129:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = generateASCIITable;
+/* eslint-disable import/prefer-default-export */
+const $ = (selector, context = document) => context.querySelector(selector);
+
+/**
+ * Return ASCII symbol for headers depends on what the class name HTMLTableCellElement has.
+ *
+ * @param {HTMLTableCellElement} cell
+ * @return {String} Returns '   ', ` * ` or ' - '.
+ */
+function getSelectionSymbolForHeader(cell) {
+  const hasActiveHeader = cell.classList.contains('ht__active_highlight');
+  const hasHighlight = cell.classList.contains('ht__highlight');
+
+  let symbol = '   ';
+
+  if (hasActiveHeader) {
+    symbol = ' * ';
+  } else if (hasHighlight) {
+    symbol = ' - ';
+  }
+
+  return symbol;
+}
+
+/**
+ * Return ASCII symbol for cells depends on what the class name HTMLTableCellElement has.
+ *
+ * @param {HTMLTableCellElement} cell
+ * @return {String} Returns valid symbol for the pariticaul cell.
+ */
+function getSelectionSymbolForCell(cell) {
+  const hasCurrent = cell.classList.contains('current');
+  const hasArea = cell.classList.contains('area');
+  let areaLevel = new Array(7).fill().map((_, i, arr) => `area-${arr.length - i}`).find(className => cell.classList.contains(className));
+
+  areaLevel = areaLevel ? parseInt(areaLevel.replace('area-', ''), 10) : areaLevel;
+
+  let symbol = '   ';
+
+  if (hasCurrent && hasArea && areaLevel) {
+    symbol = ` ${String.fromCharCode(65 + areaLevel)} `;
+  } else if (hasCurrent && hasArea && areaLevel === void 0) {
+    symbol = ' A ';
+  } else if (hasCurrent && !hasArea && areaLevel === void 0) {
+    symbol = ' # ';
+  } else if (!hasCurrent && hasArea && areaLevel === void 0) {
+    symbol = ' 0 ';
+  } else if (!hasCurrent && hasArea && areaLevel) {
+    symbol = ` ${areaLevel} `;
+  }
+
+  return symbol;
+}
+
+/**
+ * Generate ASCII symbol for passed cell element.
+ *
+ * @param {HTMLTableCellElement} cell
+ * @return {String}
+ */
+function getSelectionSymbol(cell) {
+  if (isLeftHeader(cell) || isTopHeader(cell)) {
+    return getSelectionSymbolForHeader(cell);
+  }
+
+  return getSelectionSymbolForCell(cell);
+}
+
+/**
+ * Check if passed element belong to the left header.
+ *
+ * @param {HTMLTableCellElement} cell
+ * @return {Boolean}
+ */
+function isLeftHeader(cell) {
+  return cell.tagName === 'TH' && cell.parentElement.parentElement.tagName === 'TBODY';
+}
+
+/**
+ * Check if passed element belong to the rop header.
+ *
+ * @param {HTMLTableCellElement} cell
+ * @return {Boolean}
+ */
+function isTopHeader(cell) {
+  return cell.tagName === 'TH' && cell.parentElement.parentElement.tagName === 'THEAD';
+}
+
+/**
+ * @param {HTMLTableElement} overlay
+ * @return {Function}
+ */
+function cellFactory(overlay) {
+  return (row, column) => overlay && overlay.rows[row] && overlay.rows[row].cells[column];
+}
+
+/**
+ * Generates table based on Handsontable structure.
+ *
+ * @param {HTMLElement} context The root element of the Handsontable instance to be generated.
+ * @return {String}
+ */
+function generateASCIITable(context) {
+  const TABLE_EDGES_SYMBOL = '|';
+  const COLUMN_SEPARATOR = ':';
+  const ROW_HEADER_SEPARATOR = '\u2551';
+  const COLUMN_HEADER_SEPARATOR = '===';
+  const ROW_OVERLAY_SEPARATOR = '|';
+  const COLUMN_OVERLAY_SEPARATOR = '---';
+
+  const cornerOverlayTable = $('.ht_clone_top_left_corner .htCore', context);
+  const leftOverlayTable = $('.ht_clone_left .htCore', context);
+  const topOverlayTable = $('.ht_clone_top .htCore', context);
+  const masterTable = $('.ht_master .htCore', context);
+  const stringRows = [];
+
+  const cornerOverlayCells = cellFactory(cornerOverlayTable);
+  const leftOverlayCells = cellFactory(leftOverlayTable);
+  const topOverlayCells = cellFactory(topOverlayTable);
+  const masterCells = cellFactory(masterTable);
+
+  const hasLeftHeader = leftOverlayCells(1, 0) ? isLeftHeader(leftOverlayCells(1, 0)) : false;
+  const hasTopHeader = topOverlayCells(0, 1) ? isTopHeader(topOverlayCells(0, 1)) : false;
+  const hasCornerHeader = hasLeftHeader && hasTopHeader;
+  const hasFixedLeftCells = leftOverlayCells(1, 1) ? !isLeftHeader(leftOverlayCells(1, 1)) : false;
+  const hasFixedTopCells = topOverlayCells(1, 1) ? !isTopHeader(topOverlayCells(1, 1)) : false;
+
+  const consumedFlags = new Map([['hasLeftHeader', hasLeftHeader], ['hasTopHeader', hasTopHeader], ['hasCornerHeader', hasCornerHeader], ['hasFixedLeftCells', hasFixedLeftCells], ['hasFixedTopCells', hasLeftHeader]]);
+
+  const rowsLength = masterTable.rows.length;
+
+  for (let r = 0; r < rowsLength; r++) {
+    const stringCells = [];
+    const columnsLength = masterTable.rows[0].cells.length;
+    let isLastColumn = false;
+    let insertTopOverlayRowSeparator = false;
+
+    for (let c = 0; c < columnsLength; c++) {
+      let cellSymbol;
+      let separatorSymbol = COLUMN_SEPARATOR;
+
+      isLastColumn = c === columnsLength - 1;
+
+      if (cornerOverlayCells(r, c)) {
+        const cell = cornerOverlayCells(r, c);
+        const nextCell = cornerOverlayCells(r, c + 1);
+
+        cellSymbol = getSelectionSymbol(cell);
+
+        if (isLeftHeader(cell) && (!nextCell || !isLeftHeader(nextCell))) {
+          separatorSymbol = ROW_HEADER_SEPARATOR;
+        }
+        if (!isLeftHeader(cell) && !nextCell) {
+          separatorSymbol = ROW_OVERLAY_SEPARATOR;
+        }
+        if (r === 0 && c === 0 && hasCornerHeader) {
+          // Fix for header symbol
+          separatorSymbol = ROW_HEADER_SEPARATOR;
+        }
+      } else if (leftOverlayCells(r, c)) {
+        const cell = leftOverlayCells(r, c);
+        const nextCell = leftOverlayCells(r, c + 1);
+
+        cellSymbol = getSelectionSymbol(cell);
+
+        if (isLeftHeader(cell) && (!nextCell || !isLeftHeader(nextCell))) {
+          separatorSymbol = ROW_HEADER_SEPARATOR;
+        }
+        if (!isLeftHeader(cell) && !nextCell) {
+          separatorSymbol = ROW_OVERLAY_SEPARATOR;
+        }
+      } else if (topOverlayCells(r, c)) {
+        const cell = topOverlayCells(r, c);
+
+        cellSymbol = getSelectionSymbol(cell);
+
+        if (hasFixedTopCells && isLastColumn && !topOverlayCells(r + 1, c)) {
+          insertTopOverlayRowSeparator = true;
+        }
+      } else if (masterCells(r, c)) {
+        const cell = masterCells(r, c);
+
+        cellSymbol = getSelectionSymbol(cell);
+      }
+
+      stringCells.push(cellSymbol);
+
+      if (!isLastColumn) {
+        stringCells.push(separatorSymbol);
+      }
+    }
+
+    stringRows.push(TABLE_EDGES_SYMBOL + stringCells.join('') + TABLE_EDGES_SYMBOL);
+
+    if (consumedFlags.get('hasTopHeader')) {
+      consumedFlags.delete('hasTopHeader');
+      stringRows.push(TABLE_EDGES_SYMBOL + new Array(columnsLength).fill(COLUMN_HEADER_SEPARATOR).join(COLUMN_SEPARATOR) + TABLE_EDGES_SYMBOL);
+    }
+    if (insertTopOverlayRowSeparator) {
+      insertTopOverlayRowSeparator = false;
+      stringRows.push(TABLE_EDGES_SYMBOL + new Array(columnsLength).fill(COLUMN_OVERLAY_SEPARATOR).join(COLUMN_SEPARATOR) + TABLE_EDGES_SYMBOL);
+    }
+  }
+
+  return stringRows.join('\n');
+}
+
+/***/ }),
+
 /***/ 64:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (immutable) */ __webpack_exports__["sleep"] = sleep;
+/* harmony export (immutable) */ __webpack_exports__["promisfy"] = promisfy;
 /* harmony export (immutable) */ __webpack_exports__["hot"] = hot;
 /* harmony export (immutable) */ __webpack_exports__["handsontable"] = handsontable;
 /* harmony export (immutable) */ __webpack_exports__["getHtCore"] = getHtCore;
@@ -438,6 +700,10 @@ function sleep(delay = 100) {
       setTimeout(resolve, delay);
     }
   });
+};
+
+function promisfy(fn) {
+  return new Promise((resolve, reject) => fn(resolve, reject));
 };
 
 function hot() {
@@ -704,6 +970,10 @@ function handsontableKeyTriggerFactory(type) {
           ev.keyCode = 86;
           break;
 
+        case 'a':
+          ev.keyCode = 65;
+          break;
+
         default:
           throw new Error(`Unrecognised key name: ${key}`);
       }
@@ -967,6 +1237,9 @@ const removeCellMeta = handsontableMethodFactory('removeCellMeta');
 
 const render = handsontableMethodFactory('render');
 /* harmony export (immutable) */ __webpack_exports__["render"] = render;
+
+const selectAll = handsontableMethodFactory('selectAll');
+/* harmony export (immutable) */ __webpack_exports__["selectAll"] = selectAll;
 
 const selectCell = handsontableMethodFactory('selectCell');
 /* harmony export (immutable) */ __webpack_exports__["selectCell"] = selectCell;

@@ -9,14 +9,14 @@ info:
    # name: "Apache 2.0"
    # url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 #host: "petstore.swagger.io"
-#basePath: "/v2"
+basePath: "/controllerName"
 tags:
 - name: "ControllerName"
   description: "It's your custom controller where all endpoint definitions are."
 schemes:
 - "http"
 paths:
-  /controllerName/data:
+  /data:
     post:
       tags:
       - "ControllerName"
@@ -35,7 +35,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/DataResponseModel"
-  /controllerName/update:
+  /update:
     post:
       tags:
       - "ControllerName"
@@ -55,7 +55,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/SimpleResponseModel"
-  /controllerName/row:
+  /row:
     put:
       tags:
         - "ControllerName"
@@ -74,7 +74,6 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/CreateRowResponseModel"
-  /controllerName/row:
     delete:
       tags:
       - "ControllerName"
@@ -97,7 +96,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/SimpleResponseModel"
-  /controllerName/row/move:
+  /row/move:
     post:
       tags:
       - "ControllerName"
@@ -116,7 +115,26 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/SimpleResponseModel"
-  /controllerName/column:
+  /row/resize:
+    post:
+      tags:
+        - "ControllerName"
+      summary: "Method that should be used for setting new size of the row"
+      operationId: "resizeRowControllerName"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ResizeRowModel"
+          in: "body"
+          schema:
+            $ref: "#/definitions/ResizeRowModel"
+          required: true
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/SimpleResponseModel"
+  /column:
     put:
       tags:
         - "ControllerName"
@@ -135,7 +153,6 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/CreateColumnResponseModel"
-  /controllerName/column:
     delete:
       tags:
       - "ControllerName"
@@ -158,7 +175,7 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/SimpleResponseModel"
-  /controllerName/column/move:
+  /column/move:
     post:
       tags:
       - "ControllerName"
@@ -177,7 +194,83 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/MoveColumnResponseModel"
-  /controllerName/settings:
+  /column/resize:
+    post:
+      tags:
+        - "ControllerName"
+      summary: "Method that should be used for setting new size of column"
+      operationId: "resizeColumnControllerName"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "ResizeColumnModel"
+          in: body
+          schema:
+            $ref: "#/definitions/ResizeColumnModel"
+          required: true
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/SimpleResponseModel"
+  /cell/meta:
+    post:
+      tags:
+        - "ControllerName"
+      summary: "Method that should handle change of cell meta"
+      operationId: "cellMetaControllerName"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "CellMetaModel"
+          in: "body"
+          schema:
+            $ref: "#/definitions/CellMetaModel"
+          required: true
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/SimpleResponseModel"
+  /cell/merge:
+    post:
+      tags:
+        - "ControllerName"
+      summary: "Method that should be used for merging selected cells"
+      operationId: "mergeCellsControllerName"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "MergeCellsModel"
+          in: "body"
+          schema:
+            $ref: "#/definitions/MergeCellsModel"
+          required: true
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/MergeCellsResponseModel"
+  /cell/unmerge:
+    post:
+      tags:
+        - "ControllerName"
+      summary: "Method that should be used for spliting merged cells"
+      operationId: "unmergeCellsControllerName"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "UnmergeCellsModel"
+          in: "body"
+          schema:
+            $ref: "#/definitions/UnmergeCellsModel"
+          required: true
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/UnmergeCellsResponseModel"
+  /settings:
     get:
       tags:
       - "ControllerName"
@@ -197,6 +290,26 @@ paths:
           schema:
             $ref: "#/definitions/MoveColumnResponseModel"
 definitions:
+  CellMetaModel:
+    type: "object"
+    required:
+      - row
+      - column
+      - key
+      - value
+    properties:
+      row:
+        type: "number"
+        description: "rowId from database"
+      column:
+        type: "string"
+        description: "colId from database"
+      key:
+        type: "string"
+        description: "Updated meta key"
+      value:
+        type: "object"
+        description: "Updated meta value"
   ChangeModel:
     type: "object"
     description: "Object containg all changes made by Handsontable user"
@@ -224,15 +337,7 @@ definitions:
       name:
         type: "string"
         description: >
-            Name of filtering type. 
-             * `eq` - equal to
-             * `neq` - not equal to
-             * `empty` - is empty
-             * `not_empty` - is not empty
-             * `begins_with` - begins with
-             * `ends_with` - ends with
-             * `contains` - contains
-             * `not_contains` - does not contains
+            Name of filtering type. <br>* `eq` - equal to <br>* `neq` - not equal to <br>* `empty` - is empty <br>* `not_empty` - is not empty <br>* `begins_with` - begins with <br>* `ends_with` - ends with <br>* `contains` - contains <br>* `not_contains` - does not contains <br>
         enum:
           - "eq"
           - "neq"
@@ -290,7 +395,7 @@ definitions:
       - data
       - id
     properties:
-      order:
+      sort:
         $ref: "#/definitions/OrderModel"
       filters:
         type: "array"
@@ -315,7 +420,12 @@ definitions:
         type: "object"
         additionalProperties: true
         example:
-          colOrder: [id, first_name, last_name, age, sex]
+          colOrder:
+            - id
+            - first_name
+            - last_name
+            - age
+            - sex
         description: "Additional meta properties. Can contains order of columns."
   FilterModel:
     type: "object"
@@ -327,7 +437,43 @@ definitions:
         type: "array"
         items: 
           $ref: "#/definitions/ConditionModel"
-  MoveColModel:
+  MergeCellsModel:
+    type: "object"
+    required:
+      - rows
+      - columns
+    properties:
+      rows:
+        type: "array"
+        items:
+          type: "string"
+          description: "Unique Id fo a row"
+        description: "Array that contains rowIds"
+      columns:
+        type: "array"
+        items:
+          type: "string"
+          description: "Unique name of the column"
+        description: "Array that contains column names"
+  MergeCellsResponseModel:
+    type: "object"
+    required:
+      - rows
+      - columns
+    properties:
+      rows:
+        type: "array"
+        items:
+          type: "string"
+          description: "Unique Id fo a row"
+        description: "Array that contains rowId's"
+      columns:
+        type: "array"
+        items:
+          type: "string"
+          description: ''
+        description: ''
+  MoveColumnModel:
     type: "object"
     required:
       - columnNames
@@ -380,10 +526,31 @@ definitions:
             - "ASC"
             - "DESC"
         description: >
-            Specifies ascending or descending order of column values. 
-            Sort order
-             * `asc` - Ascending, from A to Z 
-             * `desc` - Descending, from Z to A
+            Specifies ascending or descending order of column values. <br>Sort order <br>* `asc` - Ascending, from A to Z <br>* `desc` - Descending, from Z to A <br>
+  ResizeColumnModel:
+    type: "object"
+    required:
+      - column
+      - size
+    properties:
+      column:
+        type: "string"
+        description: "The unique name of the column."
+      size:
+        type: "number"
+        description: "New column width."
+  ResizeRowModel:
+    type: "object"
+    required:
+      - row
+      - size
+    properties:
+      row:
+        type: "number"
+        description: "Unique row Id."
+      size:
+        type: "number"
+        description: "New row height."      
   SettingsModel:
     type: "object"
     required: 
@@ -400,6 +567,22 @@ definitions:
       data:
         type: "string"
         description: "Response message."
+  UnmergeCellsModel:
+    type: "object"
+    required:
+      - cellRange
+    properties:
+      cellRange:
+        type: "string"
+        description: "todo"
+  UnmergeCellsResponseModel:
+    type: "object"
+    required:
+      - data
+    properties:
+      data:
+        type: "string"
+        description: "Response message."
   UpdateModel:
     type: "object"
     required: 
@@ -410,7 +593,7 @@ definitions:
       changes:
         type: array
         items:
-          $ref: '#/definitions/ChangeModel'
+          $ref: "#/definitions/ChangeModel"
         description: "todo"
       meta:
         type: "object"

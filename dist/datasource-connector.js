@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 12/04/2018 12:41:57)
+ * Release date: 01/03/2018 (built at 16/04/2018 11:22:32)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -102,7 +102,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.http = {};
     this.colHeaders = [];
     this.filters = [];
-    this.order = {};
+    this.sort = {};
   }
 
   /**
@@ -141,7 +141,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
-    this.addHook('afterColumnSort', (column, order) => this.onAfterColumnSort(column, order));
+    this.addHook('afterColumnSort', (column, sort) => this.onAfterColumnSort(column, sort));
 
     this.addHook('afterCreateRow', (index, amount, source) => this.onAfterCreateRow(index, amount, source));
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
@@ -168,7 +168,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     });
 
     this.filters = conditions;
-    let uri = { order: this.order, filters: this.filters };
+    let uri = { sort: this.sort, filters: this.filters };
     this.http.post('/data', uri).then(response => {
       this._loadData(response);
     });
@@ -285,6 +285,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     });
   }
 
+  /**
+   * Method called after resizing column.
+   *
+   * @param {number} currentColumn
+   * @param {number} newSize
+   * @param {boolean} isDoubleClick
+   */
   onColumnResize(currentColumn, newSize, isDoubleClick) {
     let uri = {
       column: this.hot.getCellMeta(1, currentColumn).col_id,
@@ -352,9 +359,9 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {boolean} order
    */
   onAfterColumnSort(column, order) {
-    this.order = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
+    this.sort = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
 
-    let uri = { order: this.order, filters: this.filters };
+    let uri = { sort: this.sort, filters: this.filters };
     this.http.post('/data', uri).then(response => {
       this._loadData(response);
     });
