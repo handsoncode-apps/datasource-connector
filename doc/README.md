@@ -8,7 +8,7 @@ To receive HOT events on backend you should implement methods listed below. Each
 
 You may get the [OpenAPI Specification](swagger.yaml) for this communication endpoint and models (for view it please use swagger editor).
 
-**controllerName** is the custom name given to your controller, where all endpoints definitions.
+**controllerName** is the custom name given to your controller, where all endpoints definitions are.
 
 ### /controllerName/data
 ---
@@ -45,9 +45,9 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/create/row
+### /controllerName/row
 ---
-##### ***POST***
+##### ***PUT***
 **Summary:** Method that should handle creating a new row on a server side
 
 **Parameters**
@@ -62,9 +62,9 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 | ---- | ----------- | ------ |
 | 200 | successful operation | [CreateRowResponseModel](#createrowresponsemodel) |
 
-### /controllerName/remove/row
+### /controllerName/row
 ---
-##### ***POST***
+##### ***DELETE***
 **Summary:** Method that should handle removing row on a server side
 
 **Parameters**
@@ -79,7 +79,7 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/move/row
+### /controllerName/row/move
 ---
 ##### ***POST***
 **Summary:** Method that should be used for moving row to different position in dataset
@@ -96,9 +96,26 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/create/column
----
+### /controllerName/row/resize
+
 ##### ***POST***
+**Summary:** Method that should be used for setting new size of the row
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| ResizeRowModel | body |  | Yes | [ResizeRowModel](#resizerowmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
+
+### /controllerName/column
+---
+##### ***PUT***
 **Summary:** Method that should handle creating a new column on a server side
 
 **Parameters**
@@ -113,9 +130,9 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 | ---- | ----------- | ------ |
 | 200 | successful operation | [CreateColumnResponseModel](#createcolumnresponsemodel) |
 
-### /controllerName/remove/column
+### /controllerName/column
 ---
-##### ***POST***
+##### ***DELETE***
 **Summary:** Method that should handle removing column on a server side
 
 **Parameters**
@@ -130,7 +147,7 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 | ---- | ----------- | ------ |
 | 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
 
-### /controllerName/move/column
+### /controllerName/column/move
 ---
 ##### ***POST***
 **Summary:** Method that should be used for moving column to different position in dataset
@@ -146,6 +163,74 @@ You may get the [OpenAPI Specification](swagger.yaml) for this communication end
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
 | 200 | successful operation | [MoveColumnResponseModel](#movecolumnresponsemodel) |
+
+### /controllerName/column/resize
+---
+##### ***POST***
+**Summary:** Method that should be used for setting new size of column
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| ResizeColumnModel | body |  | Yes | [ResizeColumnModel](#resizecolumnmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
+
+### /controllerName/cell/meta
+---
+##### ***POST***
+**Summary:** Method that should handle change of cell meta
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| CellMetaModel | body |  | Yes | [CellMetaModel](#cellmetamodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [SimpleResponseModel](#simpleresponsemodel) |
+
+### /controllerName/cell/merge
+---
+##### ***POST***
+**Summary:** Method that should be used for merging selected cells
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| MergeCellsModel | body |  | Yes | [MergeCellsModel](#mergecellsmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [MergeCellsResponseModel](#mergecellsresponsemodel) |
+
+### /controllerName/cell/unmerge
+---
+##### ***POST***
+**Summary:** Method that should be used for spliting merged cells
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| UnmergeCellsModel | body |  | Yes | [UnmergeCellsModel](#unmergecellsmodel) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | successful operation | [UnmergeCellsResponseModel](#unmergecellsresponsemodel) |
 
 ### /controllerName/settings
 ---
