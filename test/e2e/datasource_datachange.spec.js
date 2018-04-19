@@ -286,7 +286,6 @@ describe('datasource_datachange', () => {
           if (req.request.url === `${url}/cell/merge`) {
             request = jasmine.Ajax.requests.filter(`${url}/cell/merge`)[0];
             expect(request.method).toBe('POST');
-<<<<<<< HEAD
             const plugin = hot.getPlugin('mergeCells');
             plugin.unmerge(0, 0, 2, 2);
           }
@@ -294,16 +293,6 @@ describe('datasource_datachange', () => {
             request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
             expect(request.method).toBe('POST');
             setTimeout(() => { done(); }, 50);
-=======
-            setTimeout(() => {
-              const plugin = hot.getPlugin('mergeCells');
-              plugin.unmerge(0, 0, 2, 2);
-              request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
-              expect(request.method).toBe('POST');
-              done();
-            },
-            50);
->>>>>>> HOTC-180
           }
         }
       },
@@ -340,20 +329,16 @@ describe('datasource_datachange', () => {
             request = jasmine.Ajax.requests.filter(`${url}/column/resize`)[0];
             console.log(request.body);
             expect(request.method).toBe('POST');
-<<<<<<< HEAD
-            expect(colWidth($('#testContainer'), 0)).toBe(250);
-=======
             expect(colWidth($('#testContainer'), 0)).toBe(200);
             var val = validator.validate(request.body, schema);
             val.should.be.true;
->>>>>>> HOTC-180
             setTimeout(() => { done(); }, 50);
           }
         }
       },
     });
     setTimeout(() => {
-      resizeColumn(1, 250);
+      resizeColumn(1, 200);
     }, 50);
   });
 
