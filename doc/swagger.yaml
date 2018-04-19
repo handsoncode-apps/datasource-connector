@@ -3,12 +3,6 @@ info:
   description: "API description for Handsontable backend"
   version: "1.0.0"
   title: "Handsontable Datasource Node"
-  # contact:
-    # email: "apiteam@swagger.io"
-  #license:
-   # name: "Apache 2.0"
-   # url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-#host: "petstore.swagger.io"
 basePath: "/controllerName"
 tags:
 - name: "ControllerName"
@@ -184,10 +178,10 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - name: "MoveRowModel"
+      - name: "MoveColumnModel"
         in: "body"
         schema:
-          $ref: "#/definitions/MoveColModel"
+          $ref: "#/definitions/MoveColumnModel"
         required: true
       responses:
         200:
@@ -391,9 +385,6 @@ definitions:
         description: "Id granted by backend server to that row."
   DataModel:
     type: "object"
-    required:
-      - data
-      - id
     properties:
       sort:
         $ref: "#/definitions/OrderModel"
@@ -479,11 +470,11 @@ definitions:
       - columnNames
       - target
     properties:
-      rowsMoved:
+      columnNames:
         type: "array"
         items: 
           type: "string"
-          description: "Unique name of moved column. Could be either integer or string type."
+          description: "Unique name columns. Could be either integer or string type."
         description: "Array that contains unique names of moved columns."
       target:
         type: "integer"

@@ -1,6 +1,7 @@
 import { selectCell, mouseDown, resizeColumn, colWidth } from '../helpers/common';
 
 require('jasmine-ajax');
+var ZSchema = require('z-schema');
 
 describe('datasource_datachange', () => {
   var id = 'testContainer';
@@ -285,6 +286,7 @@ describe('datasource_datachange', () => {
           if (req.request.url === `${url}/cell/merge`) {
             request = jasmine.Ajax.requests.filter(`${url}/cell/merge`)[0];
             expect(request.method).toBe('POST');
+<<<<<<< HEAD
             const plugin = hot.getPlugin('mergeCells');
             plugin.unmerge(0, 0, 2, 2);
           }
@@ -292,6 +294,16 @@ describe('datasource_datachange', () => {
             request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
             expect(request.method).toBe('POST');
             setTimeout(() => { done(); }, 50);
+=======
+            setTimeout(() => {
+              const plugin = hot.getPlugin('mergeCells');
+              plugin.unmerge(0, 0, 2, 2);
+              request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
+              expect(request.method).toBe('POST');
+              done();
+            },
+            50);
+>>>>>>> HOTC-180
           }
         }
       },
@@ -303,6 +315,22 @@ describe('datasource_datachange', () => {
   });
 
   it('should call /column/resize ajax call after changing width of the column', (done) => {
+    var validator = new ZSchema();
+    var schema = {
+      type: 'object',
+      required: [
+        'column',
+        'size'
+      ],
+      properties: {
+        column: {
+          type: 'string'
+        },
+        size: {
+          type: 'number'
+        }
+      }
+    };
     var hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
@@ -310,8 +338,15 @@ describe('datasource_datachange', () => {
         onDataSend: (req) => {
           if (req.request.url === `${url}/column/resize`) {
             request = jasmine.Ajax.requests.filter(`${url}/column/resize`)[0];
+            console.log(request.body);
             expect(request.method).toBe('POST');
+<<<<<<< HEAD
             expect(colWidth($('#testContainer'), 0)).toBe(250);
+=======
+            expect(colWidth($('#testContainer'), 0)).toBe(200);
+            var val = validator.validate(request.body, schema);
+            val.should.be.true;
+>>>>>>> HOTC-180
             setTimeout(() => { done(); }, 50);
           }
         }
