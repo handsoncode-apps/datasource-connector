@@ -2,6 +2,9 @@ import { selectCell, mouseDown, resizeColumn, colWidth } from '../helpers/common
 
 require('jasmine-ajax');
 var ZSchema = require('z-schema');
+var chai = require('chai');
+
+var should = chai.should();
 
 describe('datasource_datachange', () => {
   var id = 'testContainer';
@@ -332,7 +335,6 @@ describe('datasource_datachange', () => {
         onDataSend: (req) => {
           if (req.request.url === `${url}/column/resize`) {
             request = jasmine.Ajax.requests.filter(`${url}/column/resize`)[0];
-            console.log(request.body);
             expect(request.method).toBe('POST');
             expect(colWidth($('#testContainer'), 0)).toBe(200);
             var val = validator.validate(request.body, schema);
