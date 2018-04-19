@@ -81,9 +81,11 @@
   },
   "dependencies": {
     "handsontable": "^0.37.0",
+    "json-schema-test-data-generator": "^0.1.1",
     "moment": "^2.21.0",
     "pikaday": "^1.7.0",
-    "require": "^2.4.20"
+    "require": "^2.4.20",
+    "z-schema": "^3.19.1"
   },
   "jest": {
     "roots": [
