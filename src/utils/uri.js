@@ -4,15 +4,14 @@ export default class URI {
   }
 
   _serialize(object, prefix) {
-    let queryStrings = [],
-      property;
-    for (property in object) {
-      if (Object.prototype.hasOwnProperty.call(object, property)) {
+    let queryStrings = [];
+    Object.keys(object).forEach(
+      (property) => {
         let key = prefix ? `${prefix}[${property}]` : property;
         let value = object[property];
         queryStrings.push((value !== null && typeof value === 'object') ? this._serialize(value, key) : `${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
       }
-    }
+    );
     return queryStrings.join('&');
   }
 
