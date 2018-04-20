@@ -63,7 +63,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
     this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
     this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
-    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick))
+    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick));
     this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
@@ -208,7 +208,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} newSize
    * @param {boolean} isDoubleClick
    */
-  onColumnResize(currentColumn, newSize, isDoubleClick) {
+  onColumnResize(currentColumn, newSize) {
     let uri = {
       column: this.hot.getCellMeta(1, currentColumn).col_id,
       size: newSize
@@ -259,9 +259,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    *
    * @param {number} currentRow
    * @param {number} newSize
-   * @param {boolean} isDoubleClick
    */
-  onRowResize(currentRow, newSize, isDoubleClick) {
+  onRowResize(currentRow, newSize) {
     let uri = {
       row: this.hot.getCellMeta(currentRow, 1).row_id,
       size: newSize
@@ -292,7 +291,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {mergeParent} Object
    * @param {auto} boolean
    */
-  onMergeCell(cellRange, mergeParent, auto) {
+  onMergeCell(cellRange, mergeParent) {
     let mergedParent = {
       column: this.hot.getCellMeta(mergeParent.row, mergeParent.col).col_id,
       row: this.hot.getCellMeta(mergeParent.row, mergeParent.col).row_id
@@ -311,10 +310,10 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       mergedCells
     });
   }
-  
+
   /**
    * Normalize cell range
-   * @param {*} cellRange 
+   * @param {*} cellRange
    */
   _normalizeRange(cellRange) {
     let from;
@@ -337,7 +336,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     return {from, to};
   }
 
-  onUnmergeCells(cellRange, auto) {
+  onUnmergeCells(cellRange) {
     let mergedParent = {
       column: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).col_id,
       row: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).row_id
@@ -349,35 +348,21 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       }
     }
     this.http.post('/cell/unmerge', {
-      mergedParent: mergedParent,
-      mergedCells: mergedCells
+      mergedParent,
+      mergedCells
     });
   }
-  
+
   /**
    * Load data and setup all dedicated metadata for backend sync
    * @param {object} response
    */
   _loadData(response) {
     let responseData = response.data;
-    let normalizedData = [];
-    for (let row = 0; row < responseData.length; row++) {
-      let item = [];
-      // eslint-disable-next-line guard-for-in
-      for (let columnName in responseData[row]) {
-        item.push(responseData[row][columnName]);
-      }
-      normalizedData.push(item);
-    }
-
+    let normalizedData = responseData.map((value) => Object.values(value));
     this.hot.loadData(normalizedData);
 
-    let columnNames = [];
-
-    // eslint-disable-next-line guard-for-in
-    for (let columnName in responseData[0]) {
-      columnNames.push(columnName);
-    }
+    let columnNames = Object.keys(responseData[0]);
 
     this.colHeaders = columnNames;
 
