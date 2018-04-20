@@ -430,7 +430,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
         delete item.meta.instance;
         changeItems.push(item);
       }
-      this.http.post('/update', {
+      this.http.post('/cell', {
         changes: changeItems,
         source
       });
