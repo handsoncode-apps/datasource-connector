@@ -66,6 +66,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick));
     this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
 
+    this.addHook('afterSetCellMeta', (row, col, key, value) => this.onSetMeta(row, col, key, value));
+
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
   }
@@ -386,6 +388,19 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       .then((response) => {
         this._loadData(response);
       });
+  }
+
+  /**
+  * Called after cell meta is changed.
+  *
+  * @param {Number} row
+  * @param {Number} col
+  * @param {String} key
+  * @param {*} value
+  */
+  onSetMeta(row, col, key, value) {
+    let uri = {row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key: key, value: value};
+    this.http.post('/cell/meta', uri);
   }
 
   /**
