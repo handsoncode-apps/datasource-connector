@@ -182,7 +182,7 @@ describe('datasource_datachange', () => {
         type: 'array',
         items: {
           column: {
-            type: string
+            type: 'string'
           },
           conditions: {
             type: 'array',
