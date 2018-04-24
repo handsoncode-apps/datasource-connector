@@ -45,7 +45,7 @@ export default class Http {
    * @param {any} data
    */
   delete(url, data) {
-    var request = new Request(this.defaultHeaders);
+    let request = new Request(this.defaultHeaders);
     request.url = this.controllerUrl + url;
     request.method = 'DELETE';
     request.body = JSON.stringify(data);
@@ -65,7 +65,7 @@ export default class Http {
      * @param {any} data
      */
   put(url, data) {
-    var request = new Request(this.defaultHeaders);
+    let request = new Request(this.defaultHeaders);
     request.url = this.controllerUrl + url;
     request.method = 'PUT';
     request.body = JSON.stringify(data);
@@ -85,7 +85,7 @@ export default class Http {
      * @param {any} data
      */
   post(url, data) {
-    var request = new Request(this.defaultHeaders);
+    let request = new Request(this.defaultHeaders);
     request.url = this.controllerUrl + url;
     request.method = 'POST';
     request.body = JSON.stringify(data);
@@ -104,7 +104,7 @@ export default class Http {
      * @param {string} url
      */
   get(url) {
-    var request = new Request(this.defaultHeaders);
+    let request = new Request(this.defaultHeaders);
     request.url = this.controllerUrl + url;
 
     return this.request(request).then(
