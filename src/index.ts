@@ -1,7 +1,6 @@
 import Http from './utils/http';
 
-import { _plugins } from "handsontable"
-import Handsontable from 'handsontable';
+import Handsontable, { _plugins } from 'handsontable';
 import Data from './utils/data';
 /** 
 * @plugin DataSourceConnector
@@ -11,16 +10,20 @@ import Data from './utils/data';
  * This plugin enable the backend side data management for handsontable instance
  */
 class DataSourceConnector extends _plugins.Base {
-  public http!: Http;
+  public http: Http;
   public colHeaders: Array<string>;
   public filters: Array<object>;
-  public order: Object;
+  public sort: Object;
+  private hot: Handsontable;
+
   // The argument passed to the constructor is the currently processed Handsontable instance object.
   constructor(public hotInstance: Handsontable) {
     super(hotInstance);
+    this.hot = hotInstance;
     this.colHeaders = [];
     this.filters = [];
     this.sort = {};
+    this.http = new Http('/');
   }
 
   /**
@@ -36,6 +39,7 @@ class DataSourceConnector extends _plugins.Base {
       this.http = new Http(controllerUrl);
       this.http.defaultHeaders = (this.hotInstance.getSettings() as any).dataSourceConnector.requestHeaders;
       const hotInstance = this.hot;
+      let that = this;
       this.http.addListener((...args: Data[]) => {
         if (that.hotInstance !== undefined) {
           that.hotInstance.runHooks('onDataSend', args[0]);
@@ -66,10 +70,10 @@ class DataSourceConnector extends _plugins.Base {
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
     this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
-    this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
-    this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
-    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick));
-    this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
+    this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize));
+    this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent));
+    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize));
+    this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange));
 
     this.addHook('afterSetCellMeta', (row, col, key, value) => this.onSetMeta(row, col, key, value));
 
@@ -82,7 +86,7 @@ class DataSourceConnector extends _plugins.Base {
    * @param {array} conditionsStack
    */
   public onAfterFilter(conditionsStack: Array<any>) {
-    let conditions = hot.getPlugin('filters').conditionCollection.exportAllConditions();
+    let conditions = this.hot.getPlugin('filters').conditionCollection.exportAllConditions();
     conditions.forEach((item: any, index: any) => {
       conditions[index].column = this.colHeaders[conditionsStack[index].column];
     });
@@ -215,7 +219,7 @@ class DataSourceConnector extends _plugins.Base {
    * @param {number} newSize
    * @param {boolean} isDoubleClick
    */
-  onColumnResize(currentColumn, newSize) {
+  onColumnResize(currentColumn: number, newSize: number) {
     let uri = {
       column: this.hot.getCellMeta(1, currentColumn).col_id,
       size: newSize
@@ -267,7 +271,7 @@ class DataSourceConnector extends _plugins.Base {
    * @param {number} currentRow
    * @param {number} newSize
    */
-  onRowResize(currentRow, newSize) {
+  onRowResize(currentRow: number, newSize: number) {
     let uri = {
       row: this.hot.getCellMeta(currentRow, 1).row_id,
       size: newSize
@@ -296,9 +300,8 @@ class DataSourceConnector extends _plugins.Base {
    *
    * @param {cellRange} CellRange
    * @param {mergeParent} Object
-   * @param {auto} boolean
    */
-  onMergeCell(cellRange, mergeParent) {
+  onMergeCell(cellRange: any, mergeParent: any) {
     let mergedParent = {
       column: this.hot.getCellMeta(mergeParent.row, mergeParent.col).col_id,
       row: this.hot.getCellMeta(mergeParent.row, mergeParent.col).row_id
@@ -366,7 +369,7 @@ class DataSourceConnector extends _plugins.Base {
    */
   private loadData(response: any) {
     let responseData = response.data;
-    let normalizedData = responseData.map((value) => Object.values(value));
+    let normalizedData = responseData.map((value: any) => Object.keys(value).map(key=>value[key]));
     this.hotInstance.loadData(normalizedData);
 
     let columnNames = Object.keys(responseData[0]);

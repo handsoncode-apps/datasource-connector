@@ -1,5 +1,6 @@
 import Request from './request';
 import Data from './data';
+import {Promise} from 'es6-promise';
 
 /**
  * Send the xhr request to server
@@ -86,7 +87,7 @@ export default class Http {
      * @param {string} url
      * @param {any} data
      */
-  public post(url: string, data: any) {
+  public post(url: string, data?: any) {
     let request = new Request(this.defaultHeaders);
     request.url = this.controllerUrl + url;
     request.method = 'POST';
