@@ -7,11 +7,11 @@ This connector allows you connect to the backend.
 
 ![overview](doc/overview.png)
 
-Components diagram shows the conection between frontend of your web app, where you have Handsontable and the backend.Datasouceconnector plugin is the communication link between HOT instance and the controller, that stores methods coressponding to events, in backend.
+Components diagram shows the connection between HTML frontend of your web app, where you have Handsontable and the REST backend. Datasouce-connector plugin is the communication link between Handsontable instance and the backend. On the backend side you may sore your data in the database you like.
 
 Supported events:
 
-- afterinit
+- afterInit
 - afterChange
 - afterColumnMove
 - afterColumnSort
@@ -20,14 +20,23 @@ Supported events:
 - afterCreateRow
 - afterRemoveRow
 - afterFilter
+- afterSetCellMeta
 
 Supported features:
 
-| Supported feature | Description |
-|:-----------------:|:----------:|
+| Supported feature | Description    |
+|:-----------------:|:---------------|
 | Filtering | Display rows that meet your criteria and hide the rest. |
 | Moving | Drag rows or columns to swap them within the table |
 | Sortting data | Sort data in ascending or descending order throughout the column. |
+| Alignment |	Decide where the content is placed within the cell or a range of cells. |
+| Comments	|Provide an additional note about the cell to help better understand its content. |
+| Conditional formatting	| Define how specific cells are formatted depending on their values. |
+| Merge cells	| Display cells across multiple rows or columns. |
+| Moving |	Drag rows or columns to swap them within the table. |
+| Read-only	| Lock the cell or a range of cells to disallow altering them. |
+| Resizing	| Drag the sizing handle to change the size of column or row. |
+| Sorting data |	Sort data in ascending or descending order throughout the column. | 
 
 
 ## Basic usage 
@@ -36,8 +45,8 @@ Supported features:
 Embed this code inside your HTML file: 
 ```html
 <script src="handsontable.full.js"></script>
-<script src="dataSourceConnectorPlugin.js"></script>
-<link rel="stylesheet" media="screen" href="/dist/handsontable.full.css">
+<script src="datasource-connector.js"></script>
+<link rel="stylesheet" media="screen" href="handsontable.full.css">
 ```
 
 ### Spreadsheet container
