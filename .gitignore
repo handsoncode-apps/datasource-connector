@@ -1,3 +1,4 @@
 node_modules
 /test/dist/
 package-lock.json
+/test/E2ERunner.html

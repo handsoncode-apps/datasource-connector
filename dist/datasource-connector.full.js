@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 23/04/2018 11:10:14)
+ * Release date: 01/03/2018 (built at 24/04/2018 12:29:33)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -479,8 +479,10 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
   * @param {*} value
   */
   onSetMeta(row, col, key, value) {
-    let uri = { row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key, value };
-    this.http.post('/cell/meta', uri);
+    if (key !== 'col_id' && key !== 'row_id') {
+      let uri = { row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key, value };
+      this.http.post('/cell/meta', uri);
+    }
   }
 
   /**

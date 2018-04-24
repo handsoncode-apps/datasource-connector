@@ -233,11 +233,11 @@ describe('datasource_datachange', () => {
       target: {
         type: 'integer'
       },
-      required: [
-        'columnNames',
-        'target'
-      ]
-    }
+    },
+    required: [
+      'columnNames',
+      'target'
+    ]
   };
 
   const changeSchema = {
@@ -484,11 +484,10 @@ describe('datasource_datachange', () => {
             expect(val).toBe(true);
             setTimeout(() => {
               done();
-            }, 50);
+            }, 150);
           } else {
             jasmine.Ajax.requests.reset();
           }
-
         }
       },
     });
@@ -502,9 +501,7 @@ describe('datasource_datachange', () => {
       $rowsHeaders.eq(1).simulate('mouseover');
       $rowsHeaders.eq(1).simulate('mousemove');
       $rowsHeaders.eq(1).simulate('mouseup');
-    }, 10);
-
-  // }, 50);
+    }, 50);
   });
 
   it('should call PUT /column ajax call after create column', (done) => {
@@ -520,11 +517,10 @@ describe('datasource_datachange', () => {
             expect(val).toBe(true);
             setTimeout(() => {
               done();
-            }, 50);
+            }, 150);
           } else {
             jasmine.Ajax.requests.reset();
           }
-
         }
       },
     });
@@ -537,7 +533,7 @@ describe('datasource_datachange', () => {
         .eq(3)
         .simulate('mousedown');
 
-    }, 10);
+    }, 150);
   });
 
   it('should call POST /cell ajax call on change cell value', (done) => {
@@ -550,7 +546,7 @@ describe('datasource_datachange', () => {
             request = jasmine.Ajax.requests.mostRecent();
             let data = JSON.parse(request.params);
             expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/update`);
+            expect(request.url).toBe(`${url}/cell`);
             expect(data.changes[0].column).toBe('last_name');
             expect(data.changes[0].newValue).toBe('test');
             expect(data.changes[0].oldValue).toBe('Sandwich');
@@ -667,10 +663,13 @@ describe('datasource_datachange', () => {
         }
       },
     });
+    contextMenu();
+    let item = $('.htContextMenu .ht_master .htCore').find('tbody td').not('.htSeparator').eq(9);
+    item.simulate('mouseover');
     setTimeout(() => {
       selectCell(2, 3);
       let contextSubMenu = $(`.htContextMenuSub_${item.text()}`);
-      let button = contextSubMenu.find('.ht_master .htCore tbody td').not('.htSeparator').eq(9);
+      let button = contextSubMenu.find('.ht_master .htCore tbody td').not('.htSeparator').eq(0);
       button.simulate('mousedown');
       deselectCell();
     }, 50);

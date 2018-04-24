@@ -407,8 +407,10 @@ class DataSourceConnector extends _plugins.Base {
   * @param {*} value
   */
   onSetMeta(row, col, key, value) {
-    let uri = {row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key, value};
-    this.http.post('/cell/meta', uri);
+    if (key !== 'col_id' && key !== 'row_id') {
+      let uri = {row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key, value};
+      this.http.post('/cell/meta', uri);
+    }
   }
 
   /**
