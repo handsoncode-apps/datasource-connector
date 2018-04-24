@@ -663,10 +663,13 @@ describe('datasource_datachange', () => {
         }
       },
     });
+    contextMenu();
+    let item = $('.htContextMenu .ht_master .htCore').find('tbody td').not('.htSeparator').eq(9);
+    item.simulate('mouseover');
     setTimeout(() => {
       selectCell(2, 3);
       let contextSubMenu = $(`.htContextMenuSub_${item.text()}`);
-      let button = contextSubMenu.find('.ht_master .htCore tbody td').not('.htSeparator').eq(9);
+      let button = contextSubMenu.find('.ht_master .htCore tbody td').not('.htSeparator').eq(0);
       button.simulate('mousedown');
       deselectCell();
     }, 50);
