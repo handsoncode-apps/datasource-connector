@@ -479,7 +479,7 @@ describe('datasource_datachange', () => {
         onDataSend: (req) => {
           if (req.request.url === `${url}/column/move`) {
             request = jasmine.Ajax.requests.filter(`${url}/column/move`)[0];
-            expect(req.request.method).toBe('POST');
+            expect(request.method).toBe('POST');
             let val = validator.validate(request.body, columnMoveSchema);
             expect(val).toBe(true);
             setTimeout(() => {
@@ -504,365 +504,365 @@ describe('datasource_datachange', () => {
     }, 50);
   });
 
-  // it('should call PUT /column ajax call after create column', (done) => {
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/column`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/column`)[0];
-  //           expect(request.method).toBe('PUT');
-  //           let val = validator.validate(request.body, createSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 150);
-  //         } else {
-  //           jasmine.Ajax.requests.reset();
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     selectCell(2, 2);
-  //     contextMenu();
-  //     $('.htContextMenu .ht_master .htCore')
-  //       .find('tbody td')
-  //       .not('.htSeparator')
-  //       .eq(3)
-  //       .simulate('mousedown');
+  it('should call PUT /column ajax call after create column', (done) => {
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/column`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column`)[0];
+            expect(request.method).toBe('PUT');
+            let val = validator.validate(request.body, createSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 150);
+          } else {
+            jasmine.Ajax.requests.reset();
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      selectCell(2, 2);
+      contextMenu();
+      $('.htContextMenu .ht_master .htCore')
+        .find('tbody td')
+        .not('.htSeparator')
+        .eq(3)
+        .simulate('mousedown');
 
-  //   }, 150);
-  // });
+    }, 150);
+  });
 
-  // it('should call POST /cell ajax call on change cell value', (done) => {
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/data`) {
-  //           setDataAtCell(1, 2, 'test');
-  //           request = jasmine.Ajax.requests.mostRecent();
-  //           let data = JSON.parse(request.params);
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/update`);
-  //           expect(data.changes[0].column).toBe('last_name');
-  //           expect(data.changes[0].newValue).toBe('test');
-  //           expect(data.changes[0].oldValue).toBe('Sandwich');
-  //           expect(data.changes[0].row).toBe(2);
-  //           let val = validator.validate(request.body, changeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  // });
+  it('should call POST /cell ajax call on change cell value', (done) => {
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/data`) {
+            setDataAtCell(1, 2, 'test');
+            request = jasmine.Ajax.requests.mostRecent();
+            let data = JSON.parse(request.params);
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell`);
+            expect(data.changes[0].column).toBe('last_name');
+            expect(data.changes[0].newValue).toBe('test');
+            expect(data.changes[0].oldValue).toBe('Sandwich');
+            expect(data.changes[0].row).toBe(2);
+            let val = validator.validate(request.body, changeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+  });
 
-  // it('should call POST /cell/merge ajax call after merging cells and /cell/unmerge ajax after spliting merged cells', (done) => {
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       mergeCells: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/merge`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/merge`)[0];
-  //           expect(request.method).toBe('POST');
-  //           let val = validator.validate(request.body, mergeSchema);
-  //           expect(val).toBe(true);
-  //           const plugin = hot.getPlugin('mergeCells');
-  //           plugin.unmerge(0, 0, 2, 2);
-  //         }
-  //         if (req.request.url === `${url}/cell/unmerge`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
-  //           expect(request.method).toBe('POST');
-  //           let val = validator.validate(request.body, mergeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     const plugin = hot.getPlugin('mergeCells');
-  //     plugin.merge(0, 0, 2, 2);
-  //   }, 100);
-  // });
+  it('should call POST /cell/merge ajax call after merging cells and /cell/unmerge ajax after spliting merged cells', (done) => {
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        mergeCells: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/merge`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/merge`)[0];
+            expect(request.method).toBe('POST');
+            let val = validator.validate(request.body, mergeSchema);
+            expect(val).toBe(true);
+            const plugin = hot.getPlugin('mergeCells');
+            plugin.unmerge(0, 0, 2, 2);
+          }
+          if (req.request.url === `${url}/cell/unmerge`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/unmerge`)[0];
+            expect(request.method).toBe('POST');
+            let val = validator.validate(request.body, mergeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      const plugin = hot.getPlugin('mergeCells');
+      plugin.merge(0, 0, 2, 2);
+    }, 100);
+  });
 
-  // it('should call POST /column/resize ajax call after changing width of the column', (done) => {
+  it('should call POST /column/resize ajax call after changing width of the column', (done) => {
 
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/column/resize`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/column/resize`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(colWidth($('#testContainer'), 0)).toBe(200);
-  //           let val = validator.validate(request.body, columnResizeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     resizeColumn(1, 200);
-  //   }, 50);
-  // });
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/column/resize`) {
+            request = jasmine.Ajax.requests.filter(`${url}/column/resize`)[0];
+            expect(request.method).toBe('POST');
+            expect(colWidth($('#testContainer'), 0)).toBe(200);
+            let val = validator.validate(request.body, columnResizeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      resizeColumn(1, 200);
+    }, 50);
+  });
 
-  // it('should call POST /row/resize ajax call after changing height of the row', (done) => {
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/row/resize`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/row/resize`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(rowHeight($('#testContainer'), 0)).toBe(61);
-  //           let val = validator.validate(request.body, rowResizeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     resizeRow(0, 60);
-  //   }, 50);
-  // });
+  it('should call POST /row/resize ajax call after changing height of the row', (done) => {
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/row/resize`) {
+            request = jasmine.Ajax.requests.filter(`${url}/row/resize`)[0];
+            expect(request.method).toBe('POST');
+            expect(rowHeight($('#testContainer'), 0)).toBe(61);
+            let val = validator.validate(request.body, rowResizeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      resizeRow(0, 60);
+    }, 50);
+  });
 
-  // it('should call POST /cell/meta ajax call when aligning text', (done) => {
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/meta`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/cell/meta`);
-  //           let val = validator.validate(request.body, metaChangeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     selectCell(2, 3);
-  //     let contextSubMenu = $(`.htContextMenuSub_${item.text()}`);
-  //     let button = contextSubMenu.find('.ht_master .htCore tbody td').not('.htSeparator').eq(9);
-  //     button.simulate('mousedown');
-  //     deselectCell();
-  //   }, 50);
-  // });
+  it('should call POST /cell/meta ajax call when aligning text', (done) => {
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/meta`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/meta`);
+            let val = validator.validate(request.body, metaChangeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      selectCell(2, 3);
+      let contextSubMenu = $(`.htContextMenuSub_${item.text()}`);
+      let button = contextSubMenu.find('.ht_master .htCore tbody td').not('.htSeparator').eq(9);
+      button.simulate('mousedown');
+      deselectCell();
+    }, 50);
+  });
 
-  // it('should call POST /cell/meta ajax call while setting read-only property to the cell', (done) => {
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       readOnly: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/meta`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/cell/meta`);
-  //           expect(getCellMeta(0, 0).readOnly).toBe(true);
-  //           let val = validator.validate(request.body, metaChangeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     selectCell(1, 1);
-  //     contextMenu();
-  //     let menu = $('.htContextMenu .ht_master .htCore tbody');
-  //     menu.find('td').not('.htSeparator').eq(8).simulate('mousedown');
-  //   }, 50);
-  // });
+  it('should call POST /cell/meta ajax call while setting read-only property to the cell', (done) => {
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        readOnly: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/meta`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/meta`);
+            expect(getCellMeta(0, 0).readOnly).toBe(true);
+            let val = validator.validate(request.body, metaChangeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      selectCell(1, 1);
+      contextMenu();
+      let menu = $('.htContextMenu .ht_master .htCore tbody');
+      menu.find('td').not('.htSeparator').eq(8).simulate('mousedown');
+    }, 50);
+  });
 
-  // it('should call POST /cell/meta ajax call while adding comment to the cell ', (done) => {
+  it('should call POST /cell/meta ajax call while adding comment to the cell ', (done) => {
 
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       comments: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/meta`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/cell/meta`);
-  //           let val = validator.validate(request.body, metaChangeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     selectCell(1, 1);
-  //     const plugin = hot.getPlugin('comments');
-  //     plugin.setCommentAtCell(1, 1, 'Added comment');
-  //   }, 50);
-  // });
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        comments: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/meta`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/meta`);
+            let val = validator.validate(request.body, metaChangeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      selectCell(1, 1);
+      const plugin = hot.getPlugin('comments');
+      plugin.setCommentAtCell(1, 1, 'Added comment');
+    }, 50);
+  });
 
-  // it('should call POST /cell/meta ajax call when freezing column', (done) => {
+  it('should call POST /cell/meta ajax call when freezing column', (done) => {
 
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       manualColumnFreeze: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/meta`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/cell/meta`);
-  //           let val = validator.validate(request.body, metaChangeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     const plugin = hot.getPlugin('manualColumnFreeze');
-  //     plugin.freezeColumn(1);
-  //   }, 50);
-  // });
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        manualColumnFreeze: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/meta`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/meta`);
+            let val = validator.validate(request.body, metaChangeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      const plugin = hot.getPlugin('manualColumnFreeze');
+      plugin.freezeColumn(1);
+    }, 50);
+  });
 
-  // it('should call POST /cell/meta ajax call when hiding columns', (done) => {
+  it('should call POST /cell/meta ajax call when hiding columns', (done) => {
 
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       hiddenColumns: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/meta`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/cell/meta`);
-  //           let val = validator.validate(request.body, metaChangeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     hot.getPlugin('hiddenColumns').hideColumn(2);
-  //     hot.render();
-  //   }, 50);
-  // });
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        hiddenColumns: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/meta`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/meta`);
+            let val = validator.validate(request.body, metaChangeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      hot.getPlugin('hiddenColumns').hideColumn(2);
+      hot.render();
+    }, 50);
+  });
 
-  // it('should call POST /cell/meta ajax call after show hidden colums', (done) => {
+  it('should call POST /cell/meta ajax call after show hidden colums', (done) => {
 
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       hiddenColumns: {
-  //         columns: [2]
-  //       },
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/meta`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/cell/meta`);
-  //           let val = validator.validate(request.body, metaChangeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     hot.getPlugin('hiddenColumns').showColumn(2);
-  //     hot.render();
-  //   }, 50);
-  // });
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        hiddenColumns: {
+          columns: [2]
+        },
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/meta`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/meta`);
+            let val = validator.validate(request.body, metaChangeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      hot.getPlugin('hiddenColumns').showColumn(2);
+      hot.render();
+    }, 50);
+  });
 
-  // it('should call POST /cell/meta ajax call when hiding rows', (done) => {
+  it('should call POST /cell/meta ajax call when hiding rows', (done) => {
 
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       hiddenRows: true,
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/meta`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/cell/meta`);
-  //           let val = validator.validate(request.body, metaChangeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     hot.getPlugin('hiddenRows').hideRow(2);
-  //     hot.render();
-  //   }, 50);
-  // });
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        hiddenRows: true,
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/meta`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/meta`);
+            let val = validator.validate(request.body, metaChangeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      hot.getPlugin('hiddenRows').hideRow(2);
+      hot.render();
+    }, 50);
+  });
 
-  // it('should call POST /cell/meta ajax call after show hidden rows', (done) => {
+  it('should call POST /cell/meta ajax call after show hidden rows', (done) => {
 
-  //   let hot = handsontable({
-  //     dataSourceConnector: {
-  //       controllerUrl: url,
-  //       contextMenu: true,
-  //       hiddenRows: [2],
-  //       onDataSend: (req) => {
-  //         if (req.request.url === `${url}/cell/meta`) {
-  //           request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
-  //           expect(request.method).toBe('POST');
-  //           expect(request.url).toBe(`${url}/cell/meta`);
-  //           let val = validator.validate(request.body, metaChangeSchema);
-  //           expect(val).toBe(true);
-  //           setTimeout(() => {
-  //             done();
-  //           }, 50);
-  //         }
-  //       }
-  //     },
-  //   });
-  //   setTimeout(() => {
-  //     hot.getPlugin('hiddenRows').showRow(2);
-  //     hot.render();
-  //   }, 50);
-  // });
+    let hot = handsontable({
+      dataSourceConnector: {
+        controllerUrl: url,
+        contextMenu: true,
+        hiddenRows: [2],
+        onDataSend: (req) => {
+          if (req.request.url === `${url}/cell/meta`) {
+            request = jasmine.Ajax.requests.filter(`${url}/cell/meta`)[0];
+            expect(request.method).toBe('POST');
+            expect(request.url).toBe(`${url}/cell/meta`);
+            let val = validator.validate(request.body, metaChangeSchema);
+            expect(val).toBe(true);
+            setTimeout(() => {
+              done();
+            }, 50);
+          }
+        }
+      },
+    });
+    setTimeout(() => {
+      hot.getPlugin('hiddenRows').showRow(2);
+      hot.render();
+    }, 50);
+  });
 });
