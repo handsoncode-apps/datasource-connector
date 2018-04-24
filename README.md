@@ -65,7 +65,7 @@ var container = document.getElementById('container');
 var hot = new Handsontable(container, {
   rowHeaders: true,
   colHeaders: true,
-  datasourceConnector: {
+  dataSourceConnector: {
     controllerUrl: 'http://yourdomain.com/controller',
     requestHeaders: { 'Content-Type': 'application/json' }
   }
