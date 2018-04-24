@@ -45,6 +45,7 @@ module.exports.create = function create(envArgs) {
           '../test/helpers/common.css',
         ],
         externalJsFiles: [
+          '../test/helpers/jasmine-bridge-reporter.js',
           '../test/lib/phantom-reporter.js',
           '../test/lib/jquery.min.js',
           '../test/lib/jquery.simulate.js',

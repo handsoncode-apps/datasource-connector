@@ -1,408 +1,582 @@
-swagger: "2.0"
+swagger: '2.0'
 info:
-  description: "API description for Handsontable backend"
-  version: "1.0.0"
-  title: "Handsontable Datasource Node"
-  # contact:
-    # email: "apiteam@swagger.io"
-  #license:
-   # name: "Apache 2.0"
-   # url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-#host: "petstore.swagger.io"
-#basePath: "/v2"
+  description: API description for Handsontable backend. To receive HOT events on backend you should implement methods listed below. Each method has it's own request and response schema that is described with examples in [Models section](#models). You may get the [OpenAPI Specification](swagger.yaml) for this communication endpoint and models (for view it please use swagger editor). 
+  version: 1.0.0
+  title: Handsontable Datasource Node
+basePath: /controllerName
 tags:
-- name: "ControllerName"
-  description: "It's your custom controller where all endpoint definitions are."
+  - name: ControllerName
+    description: It's your custom controller where all endpoint definitions are.
 schemes:
-- "http"
+  - http
 paths:
-  /controllerName/data:
+  /cell:
     post:
       tags:
-      - "ControllerName"
-      summary: "Method that should return sorted and filtered data"
-      operationId: "dataControllerName"
+        - ControllerName
+      summary: Method that should be used for update specific cell value
+      operationId: updateControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "DataModel"
-        in: "body"
-        schema:
-          $ref: "#/definitions/DataModel"
-        required: false
-      responses:
-        200:
-          description: "successful operation"
+        - name: UpdateModel
+          in: body
+          description: Object containg all changes made by Handsontable user
           schema:
-            $ref: "#/definitions/DataResponseModel"
-  /controllerName/update:
+            $ref: '#/definitions/UpdateModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SimpleResponseModel'
+  /cell/meta:
     post:
       tags:
-      - "ControllerName"
-      summary: "Method that should be used for update specific cell value"
-      operationId: "updateControllerName"
+        - ControllerName
+      summary: Method that should handle change of cell meta
+      operationId: cellMetaControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "UpdateModel"
-        in: "body"
-        description: "Object containg all changes made by Handsontable user"
-        schema:
-          $ref: "#/definitions/UpdateModel"
-        required: true
-      responses:
-        200:
-          description: "successful operation"
+        - name: CellMetaModel
+          in: body
           schema:
-            $ref: "#/definitions/SimpleResponseModel"
-  /controllerName/row:
+            $ref: '#/definitions/CellMetaModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SimpleResponseModel'
+  /cell/merge:
+    post:
+      tags:
+        - ControllerName
+      summary: Method that should be used for merging selected cells
+      operationId: mergeCellsControllerName
+      produces:
+        - application/json
+      parameters:
+        - name: MergeCellsModel
+          in: body
+          schema:
+            $ref: '#/definitions/MergeCellsModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SimpleResponseModel'
+  /cell/unmerge:
+    post:
+      tags:
+        - ControllerName
+      summary: Method that should be used for spliting merged cells
+      operationId: unmergeCellsControllerName
+      produces:
+        - application/json
+      parameters:
+        - name: UnmergeCellsModel
+          in: body
+          schema:
+            $ref: '#/definitions/UnmergeCellsModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UnmergeCellsResponseModel'
+  /column:
     put:
       tags:
-        - "ControllerName"
-      summary: "Method that should handle creating a new row on a server side"
-      operationId: "createRowControllerName"
+        - ControllerName
+      summary: Method that should handle creating a new column on a server side
+      operationId: createColumnControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "CreateModel"
-        in: "body"
-        schema:
-          $ref: "#/definitions/CreateModel"
-        required: true
-      responses:
-        200:
-          description: "successful operation"
+        - name: CreateModel
+          in: body
           schema:
-            $ref: "#/definitions/CreateRowResponseModel"
-  /controllerName/row:
+            $ref: '#/definitions/CreateModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/CreateColumnResponseModel'
     delete:
       tags:
-      - "ControllerName"
-      summary: "Method that should handle removing row on a server side"
-      operationId: "removeRowControllerName"
+        - ControllerName
+      summary: Method that should handle removing column on a server side
+      operationId: removeColControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "RemoveRowModel"
-        in: "body"
-        description: "Array that contains ids of removed rows"
-        schema:
-          type: "array"
-          items: 
-            type: "string"
-            description: "Id of removed row. Could be either number or string type."
-        required: true
-      responses:
-        200:
-          description: "successful operation"
+        - name: RemoveRowModel
+          in: body
+          description: Array that contains unique names of removed columns
           schema:
-            $ref: "#/definitions/SimpleResponseModel"
-  /controllerName/row/move:
+            type: array
+            items:
+              type: string
+              description: >-
+                Unique name of removed column. Could be either number or string
+                type.
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SimpleResponseModel'
+  /column/move:
     post:
       tags:
-      - "ControllerName"
-      summary: "Method that should be used for moving row to different position in dataset"
-      operationId: "moveRowControllerName"
+        - ControllerName
+      summary: >-
+        Method that should be used for moving column to different position in
+        dataset
+      operationId: moveColControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "MoveRowModel"
-        in: "body"
-        schema:
-          $ref: "#/definitions/MoveRowModel"
-        required: true
-      responses:
-        200:
-          description: "successful operation"
+        - name: MoveColumnModel
+          in: body
           schema:
-            $ref: "#/definitions/SimpleResponseModel"
-  /controllerName/column:
+            $ref: '#/definitions/MoveColumnModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/MoveColumnResponseModel'
+  /column/resize:
+    post:
+      tags:
+        - ControllerName
+      summary: Method that should be used for setting new size of column
+      operationId: resizeColumnControllerName
+      produces:
+        - application/json
+      parameters:
+        - name: ResizeColumnModel
+          in: body
+          schema:
+            $ref: '#/definitions/ResizeColumnModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SimpleResponseModel'
+  /data:
+    post:
+      tags:
+        - ControllerName
+      summary: Method that should return sorted and filtered data
+      operationId: dataControllerName
+      produces:
+        - application/json
+      parameters:
+        - name: DataModel
+          in: body
+          schema:
+            $ref: '#/definitions/DataModel'
+          required: false
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/DataResponseModel'
+  /row:
     put:
       tags:
-        - "ControllerName"
-      summary: "Method that should handle creating a new column on a server side"
-      operationId: "createColumnControllerName"
+        - ControllerName
+      summary: Method that should handle creating a new row on a server side
+      operationId: createRowControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "CreateModel"
-        in: "body"
-        schema:
-          $ref: "#/definitions/CreateModel"
-        required: true
-      responses:
-        200:
-          description: "successful operation"
+        - name: CreateModel
+          in: body
           schema:
-            $ref: "#/definitions/CreateColumnResponseModel"
-  /controllerName/column:
+            $ref: '#/definitions/CreateModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/CreateRowResponseModel'
     delete:
       tags:
-      - "ControllerName"
-      summary: "Method that should handle removing column on a server side"
-      operationId: "removeColControllerName"
+        - ControllerName
+      summary: Method that should handle removing row on a server side
+      operationId: removeRowControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "RemoveRowModel"
-        in: "body"
-        description: "Array that contains unique names of removed columns"
-        schema:
-          type: "array"
-          items: 
-            type: "string"
-            description: "Unique name of removed column. Could be either number or string type."
-        required: true
-      responses:
-        200:
-          description: "successful operation"
+        - name: RemoveRowModel
+          in: body
+          description: Array that contains ids of removed rows
           schema:
-            $ref: "#/definitions/SimpleResponseModel"
-  /controllerName/column/move:
+            type: array
+            items:
+              type: string
+              description: Id of removed row. Could be either number or string type.
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SimpleResponseModel'
+  /row/move:
     post:
       tags:
-      - "ControllerName"
-      summary: "Method that should be used for moving column to different position in dataset"
-      operationId: "moveColControllerName"
+        - ControllerName
+      summary: >-
+        Method that should be used for moving row to different position in
+        dataset
+      operationId: moveRowControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "MoveRowModel"
-        in: "body"
-        schema:
-          $ref: "#/definitions/MoveColModel"
-        required: true
-      responses:
-        200:
-          description: "successful operation"
+        - name: MoveRowModel
+          in: body
           schema:
-            $ref: "#/definitions/MoveColumnResponseModel"
-  /controllerName/settings:
+            $ref: '#/definitions/MoveRowModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SimpleResponseModel'
+  /row/resize:
+    post:
+      tags:
+        - ControllerName
+      summary: Method that should be used for setting new size of the row
+      operationId: resizeRowControllerName
+      produces:
+        - application/json
+      parameters:
+        - name: ResizeRowModel
+          in: body
+          schema:
+            $ref: '#/definitions/ResizeRowModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/SimpleResponseModel'
+  /settings:
     get:
       tags:
-      - "ControllerName"
-      summary: "Method that should return all set options for Handsontable."
-      operationId: "settingsControllerName"
+        - ControllerName
+      summary: Method that should return all set options for Handsontable.
+      operationId: settingsControllerName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "SettingsModel"
-        in: "body"
-        schema:
-          $ref: "#/definitions/SettingsModel"
-        required: true
-      responses:
-        200:
-          description: "successful operation"
+        - name: SettingsModel
+          in: body
           schema:
-            $ref: "#/definitions/MoveColumnResponseModel"
+            $ref: '#/definitions/SettingsModel'
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/MoveColumnResponseModel'
 definitions:
+  CellMetaModel:
+    type: object
+    required:
+      - row
+      - column
+      - key
+      - value
+    properties:
+      row:
+        type: number
+        description: rowId from database
+      column:
+        type: string
+        description: colId from database
+      key:
+        type: string
+        description: Updated meta key
+      value:
+        type: string
+        description: Updated meta value
   ChangeModel:
-    type: "object"
-    description: "Object containg all changes made by Handsontable user"
-    required: 
+    type: object
+    description: Object containg all changes made by Handsontable user
+    required:
       - row
       - column
       - oldValue
       - newValue
     properties:
       row:
-        type: "string"
-        description: "Specifies the row unique name. Could be either number or string type."
+        type: string
+        description: Specifies the row unique name. Could be either number or string type.
       column:
-        type: "string"
-        description: "Specifies the column unique name. Could be either number or string type."
+        type: string
+        description: >-
+          Specifies the column unique name. Could be either number or string
+          type.
       oldValue:
-        type: "string"
-        description: "Previous value of the cell"
+        type: string
+        description: Previous value of the cell
       newValue:
-        type: "string"
-        description: "New value of the cell"
+        type: string
+        description: New value of the cell
   ConditionModel:
-    type: "object"
+    type: object
     properties:
       name:
-        type: "string"
+        type: string
         description: >
-            Name of filtering type. 
-             * `eq` - equal to
-             * `neq` - not equal to
-             * `empty` - is empty
-             * `not_empty` - is not empty
-             * `begins_with` - begins with
-             * `ends_with` - ends with
-             * `contains` - contains
-             * `not_contains` - does not contains
+          Name of filtering type. <br>* `eq` - equal to <br>* `neq` - not equal
+          to <br>* `empty` - is empty <br>* `not_empty` - is not empty <br>*
+          `begins_with` - begins with <br>* `ends_with` - ends with <br>*
+          `contains` - contains <br>* `not_contains` - does not contains <br>
         enum:
-          - "eq"
-          - "neq"
-          - "empty"
-          - "not_empty"
-          - "begins_with"
-          - "ends_with"
-          - "contains"
-          - "not_contains"
-          - "by_value"
+          - eq
+          - neq
+          - empty
+          - not_empty
+          - begins_with
+          - ends_with
+          - contains
+          - not_contains
+          - by_value
       args:
-        type: "array"
+        type: array
         items:
-          type: "string"
-          description: "Values based on which dataset will be filtered."
+          type: string
+          description: Values based on which dataset will be filtered.
   CreateColumnResponseModel:
-    type: "object"
+    type: object
     required:
       - name
     properties:
       name:
-        type: "object"
-        description: "Name of column granted by backend server."
+        type: object
+        description: Name of column granted by backend server.
   CreateModel:
-    type: "object"
-    required: 
+    type: object
+    required:
       - index
       - amount
       - source
     properties:
       index:
-        type: "integer"
-        description: "Index of the created row/column."
+        type: integer
+        description: Index of the created row/column.
       amount:
-        type: "integer"
-        description: "Amount of created rows/columns."
+        type: integer
+        description: Amount of created rows/columns.
       source:
-        type: "string"
-        description: "Defines the source of the change. F.e \"ContextMenu.rowBelow\""
+        type: string
+        description: Defines the source of the change. F.e "ContextMenu.rowBelow"
   CreateRowResponseModel:
-    type: "object"
+    type: object
     required:
       - data
       - id
     properties:
       data:
-        type: "object"
-        description: "Object of your dataset scheme. Contains values of created row."
+        type: object
+        description: Object of your dataset scheme. Contains values of created row.
       id:
-        type: "string"
-        description: "Id granted by backend server to that row."
+        type: string
+        description: Id granted by backend server to that row.
   DataModel:
-    type: "object"
-    required:
-      - data
-      - id
+    type: object
     properties:
-      order:
-        $ref: "#/definitions/OrderModel"
+      sort:
+        $ref: '#/definitions/OrderModel'
       filters:
-        type: "array"
+        type: array
         items:
-          $ref: "#/definitions/FilterModel"
+          $ref: '#/definitions/FilterModel'
   DataResponseModel:
-    type: "object"
+    type: object
     required:
       - data
       - rowId
     properties:
       data:
-        type: "array"
+        type: array
         items:
-          type: "object"
-          description: "Object of your dataset scheme. Contains values of all (or filtered) dataset"
-        description: "Object of your dataset scheme. Contains values of created row."
+          type: object
+          description: >-
+            Object of your dataset scheme. Contains values of all (or filtered)
+            dataset
+        description: Object of your dataset scheme. Contains values of created row.
       rowId:
-        type: "string"
-        description: "Unique name of key column."
+        type: string
+        description: Unique name of key column.
       meta:
-        type: "object"
+        type: object
         additionalProperties: true
         example:
-          colOrder: [id, first_name, last_name, age, sex]
-        description: "Additional meta properties. Can contains order of columns."
+          colOrder:
+            - id
+            - first_name
+            - last_name
+            - age
+            - sex
+        description: Additional meta properties. Can contains order of columns.
   FilterModel:
-    type: "object"
+    type: object
     properties:
       column:
-        type: "string"
-        description: "Unique column name."
+        type: string
+        description: Unique column name.
       conditions:
-        type: "array"
-        items: 
-          $ref: "#/definitions/ConditionModel"
-  MoveColModel:
-    type: "object"
+        type: array
+        items:
+          $ref: '#/definitions/ConditionModel'
+  MergeCellsModel:
+    type: object
+    required:
+      - rows
+      - columns
+    properties:
+      rows:
+        type: array
+        items:
+          type: string
+          description: Unique Id fo a row
+        description: Array that contains rowIds
+      columns:
+        type: array
+        items:
+          type: string
+          description: Unique name of the column
+        description: Array that contains column names
+  MoveColumnModel:
+    type: object
     required:
       - columnNames
       - target
     properties:
-      rowsMoved:
-        type: "array"
-        items: 
-          type: "string"
-          description: "Unique name of moved column. Could be either integer or string type."
-        description: "Array that contains unique names of moved columns."
+      columnNames:
+        type: array
+        items:
+          type: string
+          description: Unique name columns. Could be either integer or string type.
+        description: Array that contains unique names of moved columns.
       target:
-        type: "integer"
-        description: "Target index in dataset for moved column."
+        type: integer
+        description: Target index in dataset for moved column.
   MoveColumnResponseModel:
-    type: "object"
+    type: object
     required:
       - data
     properties:
       data:
-        type: "array"
-        items: 
-          type: "string"
-          description: "Unique name of column. Could be either integer or string type."
-        description: "Array that contains a current sequence of columns."
+        type: array
+        items:
+          type: string
+          description: Unique name of column. Could be either integer or string type.
+        description: Array that contains a current sequence of columns.
   MoveRowModel:
-    type: "object"
+    type: object
     required:
       - rowsMoved
       - target
     properties:
       rowsMoved:
-        type: "array"
-        items: 
-          type: "integer"
-          description: "id of moved row"
-        description: "Array that contains Ids of moved rows"
+        type: array
+        items:
+          type: integer
+          description: id of moved row
+        description: Array that contains Ids of moved rows
       target:
-        type: "integer"
-        description: "Target index in dataset for moved row."
+        type: integer
+        description: Target index in dataset for moved row.
   OrderModel:
-    type: "object"
+    type: object
     properties:
       column:
-        type: "string"
-        description: "Unique column name."
+        type: string
+        description: Unique column name.
       order:
-        type: "string"
+        type: string
         enum:
-            - "ASC"
-            - "DESC"
+          - ASC
+          - DESC
         description: >
-            Specifies ascending or descending order of column values. 
-            Sort order
-             * `asc` - Ascending, from A to Z 
-             * `desc` - Descending, from Z to A
+          Specifies ascending or descending order of column values. <br>Sort
+          order <br>* `asc` - Ascending, from A to Z <br>* `desc` - Descending,
+          from Z to A <br>
+  ResizeColumnModel:
+    type: object
+    required:
+      - column
+      - size
+    properties:
+      column:
+        type: string
+        description: The unique name of the column.
+      size:
+        type: number
+        description: New column width.
+  ResizeRowModel:
+    type: object
+    required:
+      - row
+      - size
+    properties:
+      row:
+        type: number
+        description: Unique row Id.
+      size:
+        type: number
+        description: New row height.
   SettingsModel:
-    type: "object"
-    required: 
+    type: object
+    required:
       - data
     properties:
       data:
-        type: "object"
-        description: "Object contaings all set options for Handsontable. For all available option properties go to https://docs.handsontable.com/0.38.1/Options.html"
+        type: object
+        description: >-
+          Object contaings all set options for Handsontable. For all available
+          option properties go to
+          https://docs.handsontable.com/0.38.1/Options.html
   SimpleResponseModel:
-    type: "object"
-    required: 
+    type: object
+    required:
       - data
     properties:
       data:
-        type: "string"
-        description: "Response message."
+        type: string
+        description: Response message.
+  UnmergeCellsModel:
+    type: object
+    required:
+      - cellRange
+    properties:
+      cellRange:
+        type: string
+        description: Selection cell range
+  UnmergeCellsResponseModel:
+    type: object
+    required:
+      - data
+    properties:
+      data:
+        type: string
+        description: Response message.
   UpdateModel:
-    type: "object"
-    required: 
+    type: object
+    required:
       - changes
       - source
       - meta
@@ -411,11 +585,11 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/ChangeModel'
-        description: "todo"
+        description: Object containg all changes made by Handsontable user
       meta:
-        type: "object"
+        type: object
         additionalProperties: true
-        description: "Additional meta properties"
+        description: Additional meta properties
         example:
           row: 1
           col: 1
@@ -423,11 +597,10 @@ definitions:
           visualCol: 1
           prop: 1
           row_id: 2
-          col_id: "first_name"
+          col_id: first_name
       source:
-        type: "string"
-        description: "Defines the source of the changes. F.e. \"edit\""
-      
+        type: string
+        description: Defines the source of the changes. F.e. "edit"
 externalDocs:
-  description: "Find out more about Handsontable"
-  url: "https://docs.handsontable.com/pro/1.18.1/tutorial-introduction.html"
+  description: Find out more about Handsontable
+  url: 'https://docs.handsontable.com/pro/1.18.1/tutorial-introduction.html'

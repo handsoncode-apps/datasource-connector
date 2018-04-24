@@ -20,7 +20,7 @@ class DataSourceConnector extends _plugins.Base {
     super(hotInstance);
     this.colHeaders = [];
     this.filters = [];
-    this.order = {};
+    this.sort = {};
   }
 
   /**
@@ -35,7 +35,7 @@ class DataSourceConnector extends _plugins.Base {
       }
       this.http = new Http(controllerUrl);
       this.http.defaultHeaders = (this.hotInstance.getSettings() as any).dataSourceConnector.requestHeaders;
-      var that = this;
+      const hotInstance = this.hot;
       this.http.addListener((...args: Data[]) => {
         if (that.hotInstance !== undefined) {
           that.hotInstance.runHooks('onDataSend', args[0]);
@@ -59,13 +59,19 @@ class DataSourceConnector extends _plugins.Base {
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
-    this.addHook('afterColumnSort', (column, order) => this.onAfterColumnSort(column, order));
+    this.addHook('afterColumnSort', (column, sort) => this.onAfterColumnSort(column, sort));
 
     this.addHook('afterCreateRow', (index, amount, source) => this.onAfterCreateRow(index, amount, source));
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', (conditionsStack) => this.onAfterFilter(conditionsStack));
     this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
+    this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
+    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
+
+    this.addHook('afterSetCellMeta', (row, col, key, value) => this.onSetMeta(row, col, key, value));
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
@@ -76,13 +82,13 @@ class DataSourceConnector extends _plugins.Base {
    * @param {array} conditionsStack
    */
   public onAfterFilter(conditionsStack: Array<any>) {
-    var conditions = this.hotInstance.getPlugin('filters').conditionCollection.exportAllConditions();
+    let conditions = hot.getPlugin('filters').conditionCollection.exportAllConditions();
     conditions.forEach((item: any, index: any) => {
       conditions[index].column = this.colHeaders[conditionsStack[index].column];
     });
 
     this.filters = conditions;
-    let uri = { order: this.order, filters: this.filters};
+    let uri = { sort: this.sort, filters: this.filters};
     this.http.post('/data', uri).then((response: any) => {
       this.loadData(response);
     });
@@ -94,10 +100,10 @@ class DataSourceConnector extends _plugins.Base {
       return array;
     }
 
-    var target = array[from];
-    var increment = to < from ? -1 : 1;
+    let target = array[from];
+    let increment = to < from ? -1 : 1;
 
-    for (var k = from; k !== to; k += increment) {
+    for (let k = from; k !== to; k += increment) {
       array[k] = array[k + increment];
     }
     array[to] = target;
@@ -112,13 +118,13 @@ class DataSourceConnector extends _plugins.Base {
    */
   public onAfterColumnMove(columns: Array<number>, target: number) {
 
-    var columnNames = [];
-    var i = 0;
+    let columnNames = [];
+    let i = 0;
     for (i = 0; i < columns.length; i++) {
       columnNames.push(this.colHeaders[columns[i]]);
     }
 
-    var colMoved = {
+    let colMoved = {
       columnNames,
       target
     };
@@ -137,16 +143,16 @@ class DataSourceConnector extends _plugins.Base {
    * @param {string} source
    */
   public onAfterCreateCol(index: number, amount: number, source: string) {
-    var payload = {
+    let payload = {
       index,
       amount,
       source
     };
-    var sourceIndex = index === 0 ? 1 : 0;
+    let sourceIndex = index === 0 ? 1 : 0;
     this.http.put('/column', payload)
       .then((value: CreateColumnResponse) => {
-        var noOfRows = this.hotInstance.getData().length;
-        for (var row = 0; row < noOfRows; row++) {
+        let noOfRows = this.hot.getData().length;
+        for (let row = 0; row < noOfRows; row++) {
           this.hotInstance.setCellMeta(row, index, 'row_id', (this.hotInstance.getCellMeta(row, sourceIndex) as any).row_id);
           this.hotInstance.setCellMeta(row, index, 'col_id', value.name);
         }
@@ -159,14 +165,14 @@ class DataSourceConnector extends _plugins.Base {
    * @param {number} amount
    * */
   public async onRemoveCol(index: number, amount: number) {
-    var removedCol = [];
-    for (var i = 0; i < amount; i++) {
+    let removedCol = [];
+    for (let i = 0; i < amount; i++) {
       removedCol.push(this.colHeaders[i + index]);
     }
     try {
-      var value = await this.http.delete('/column', removedCol);
+      let value = await this.http.delete('/column', removedCol);
       if (value.data) {
-        var response = await this.http.post('/data', null);
+        let response = await this.http.post('/data');
         this.loadData(response);
         return true;
       }
@@ -184,22 +190,37 @@ class DataSourceConnector extends _plugins.Base {
    * @param {string} source
    */
   public onAfterCreateRow(index: number, amount: number, source: string) {
-    var payload = {
+    let payload = {
       index,
       amount,
       source
     };
     this.http.put('/row', payload)
       .then((value: CreateRowResponse) => {
-        var row = this.hotInstance.getData()[index];
-        var sourceIndex = index === 1 ? 2 : 1;
-        for (var col = 0; col < row.length; col++) {
-          var column = (this.hotInstance.getCellMeta(sourceIndex, col)as any).col_id;
+        let row = this.hot.getData()[index];
+        let sourceIndex = index === 1 ? 2 : 1;
+        for (let col = 0; col < row.length; col++) {
+          let column = this.hot.getCellMeta(sourceIndex, col).col_id;
           this.hotInstance.setCellMeta(index, col, 'row_id', value.id);
           this.hotInstance.setCellMeta(index, col, 'col_id', column);
           this.hotInstance.setDataAtCell(index, col, value.data[column]);
         }
       });
+  }
+
+  /**
+   * Method called after resizing column.
+   *
+   * @param {number} currentColumn
+   * @param {number} newSize
+   * @param {boolean} isDoubleClick
+   */
+  onColumnResize(currentColumn, newSize) {
+    let uri = {
+      column: this.hot.getCellMeta(1, currentColumn).col_id,
+      size: newSize
+    };
+    this.http.post('/column/resize', uri);
   }
 
   /**
@@ -209,8 +230,8 @@ class DataSourceConnector extends _plugins.Base {
    * @param {number} amount
    */
   public onRemoveRow(index: number, amount: number) {
-    var rowsRemoved = [];
-    for (var i = 0; i < amount; i++) {
+    let rowsRemoved = [];
+    for (let i = 0; i < amount; i++) {
       rowsRemoved.push((this.hotInstance.getCellMeta(i + index, 1) as any).row_id);
     }
     this.http.delete('/row', rowsRemoved)
@@ -229,15 +250,29 @@ class DataSourceConnector extends _plugins.Base {
   * @param {number} target
   */
   public onRowMove(rows: Array<number>, target: number) {
-    var rowsMoved = [];
-    for (var i = 0; i < rows.length; i++) {
+    let rowsMoved = [];
+    for (let i = 0; i < rows.length; i++) {
       rowsMoved.push((this.hotInstance.getCellMeta(rows[i], 1) as any).row_id);
     };
-    var payload = {
+    let payload = {
       rowsMoved,
       target
     };
     this.http.post('/row/move', payload);
+  }
+
+  /**
+   * Method called after resizing row, event will be passed to backend.
+   *
+   * @param {number} currentRow
+   * @param {number} newSize
+   */
+  onRowResize(currentRow, newSize) {
+    let uri = {
+      row: this.hot.getCellMeta(currentRow, 1).row_id,
+      size: newSize
+    };
+    this.http.post('/row/resize', uri);
   }
 
   /**
@@ -247,13 +282,82 @@ class DataSourceConnector extends _plugins.Base {
    * @param {boolean} order
    */
   public onAfterColumnSort(column: number, order: boolean) {
-    this.order = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
+    this.sort = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
 
-    let uri = { order: this.order, filters: this.filters};
+    let uri = { sort: this.sort, filters: this.filters};
     this.http.post('/data', uri)
       .then((response: any) => {
         this.loadData(response);
       });
+  }
+
+  /**
+   * Method called after merging cells, event will be passed to backend.
+   *
+   * @param {cellRange} CellRange
+   * @param {mergeParent} Object
+   * @param {auto} boolean
+   */
+  onMergeCell(cellRange, mergeParent) {
+    let mergedParent = {
+      column: this.hot.getCellMeta(mergeParent.row, mergeParent.col).col_id,
+      row: this.hot.getCellMeta(mergeParent.row, mergeParent.col).row_id
+    };
+    let mergedCells = [];
+
+    let range = this._normalizeRange(cellRange);
+
+    for (let i = range.from.row; i <= range.to.row; i++) {
+      for (let j = range.from.col; j <= range.to.col; j++) {
+        mergedCells.push({column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id});
+      }
+    }
+    this.http.post('/cell/merge', {
+      mergedParent,
+      mergedCells
+    });
+  }
+
+  /**
+   * Normalize cell range
+   * @param {*} cellRange
+   */
+  _normalizeRange(cellRange) {
+    let from;
+    let to;
+    if (cellRange.from.row < cellRange.to.row) {
+      from = cellRange.from;
+      to = cellRange.to;
+    } else if (cellRange.from.row > cellRange.to.row) {
+      from = cellRange.to;
+      to = cellRange.from;
+    } else if (cellRange.from.row === cellRange.to.row) {
+      if (cellRange.from.col > cellRange.to.col) {
+        from = cellRange.to;
+        to = cellRange.from;
+      } else {
+        from = cellRange.from;
+        to = cellRange.to;
+      }
+    }
+    return {from, to};
+  }
+
+  onUnmergeCells(cellRange) {
+    let mergedParent = {
+      column: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).col_id,
+      row: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).row_id
+    };
+    let mergedCells = [];
+    for (let i = cellRange.from.row; i <= cellRange.to.row; i++) {
+      for (let j = cellRange.from.col; j <= cellRange.to.col; j++) {
+        mergedCells.push({column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id});
+      }
+    }
+    this.http.post('/cell/unmerge', {
+      mergedParent,
+      mergedCells
+    });
   }
 
   /**
@@ -262,24 +366,10 @@ class DataSourceConnector extends _plugins.Base {
    */
   private loadData(response: any) {
     let responseData = response.data;
-    let normalizedData = [];
-    for (let row = 0; row < responseData.length; row++) {
-      let item = [];
-      // eslint-disable-next-line guard-for-in
-      for (let columnName in responseData[row]) {
-        item.push(responseData[row][columnName]);
-      }
-      normalizedData.push(item);
-    }
-
+    let normalizedData = responseData.map((value) => Object.values(value));
     this.hotInstance.loadData(normalizedData);
 
-    let columnNames = [];
-
-    // eslint-disable-next-line guard-for-in
-    for (let columnName in responseData[0]) {
-      columnNames.push(columnName);
-    }
+    let columnNames = Object.keys(responseData[0]);
 
     this.colHeaders = columnNames;
 
@@ -303,6 +393,19 @@ class DataSourceConnector extends _plugins.Base {
       .then((response: any) => {
         this.loadData(response);
       });
+  }
+
+  /**
+  * Called after cell meta is changed.
+  *
+  * @param {Number} row
+  * @param {Number} col
+  * @param {String} key
+  * @param {*} value
+  */
+  onSetMeta(row, col, key, value) {
+    let uri = {row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key, value};
+    this.http.post('/cell/meta', uri);
   }
 
   /**
@@ -347,7 +450,7 @@ class DataSourceConnector extends _plugins.Base {
         delete (item.meta as any).instance;
         changeItems.push(item);
       }
-      this.http.post('/update', {
+      this.http.post('/cell', {
         changes: changeItems,
         source
       });

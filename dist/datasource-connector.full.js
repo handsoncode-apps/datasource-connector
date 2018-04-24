@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 10/04/2018 19:19:20)
+ * Release date: 01/03/2018 (built at 23/04/2018 11:10:14)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -102,7 +102,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.http = {};
     this.colHeaders = [];
     this.filters = [];
-    this.order = {};
+    this.sort = {};
   }
 
   /**
@@ -117,7 +117,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       }
       this.http = new __WEBPACK_IMPORTED_MODULE_0__utils_http__["a" /* default */](controllerUrl);
       this.http.defaultHeaders = this.hot.getSettings().dataSourceConnector.requestHeaders;
-      var hotInstance = this.hot;
+      const hotInstance = this.hot;
       this.http.addListener((...args) => {
         if (hotInstance !== undefined) {
           hotInstance.runHooks('onDataSend', args[0]);
@@ -141,13 +141,19 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
 
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
-    this.addHook('afterColumnSort', (column, order) => this.onAfterColumnSort(column, order));
+    this.addHook('afterColumnSort', (column, sort) => this.onAfterColumnSort(column, sort));
 
     this.addHook('afterCreateRow', (index, amount, source) => this.onAfterCreateRow(index, amount, source));
     this.addHook('afterCreateCol', (index, amount, source) => this.onAfterCreateCol(index, amount, source));
     this.addHook('afterColumnMove', (columns, target) => this.onAfterColumnMove(columns, target));
     this.addHook('afterFilter', conditionsStack => this.onAfterFilter(conditionsStack));
     this.addHook('beforeRowMove', (rows, target) => this.onRowMove(rows, target));
+    this.addHook('afterRowResize', (currentColumn, newSize, isDoubleClick) => this.onRowResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('afterMergeCells', (cellRange, mergeParent, auto) => this.onMergeCell(cellRange, mergeParent, auto));
+    this.addHook('afterColumnResize', (currentColumn, newSize, isDoubleClick) => this.onColumnResize(currentColumn, newSize, isDoubleClick));
+    this.addHook('beforeUnmergeCells', (cellRange, auto) => this.onUnmergeCells(cellRange, auto));
+
+    this.addHook('afterSetCellMeta', (row, col, key, value) => this.onSetMeta(row, col, key, value));
 
     // The super method assigns the this.enabled property to true, which can be later used to check if plugin is already enabled.
     super.enablePlugin();
@@ -158,13 +164,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {array} conditionsStack
    */
   onAfterFilter(conditionsStack) {
-    var conditions = hot.getPlugin('filters').conditionCollection.exportAllConditions();
+    let conditions = hot.getPlugin('filters').conditionCollection.exportAllConditions();
     conditions.forEach((item, index) => {
       conditions[index].column = this.colHeaders[conditionsStack[index].column];
     });
 
     this.filters = conditions;
-    let uri = { order: this.order, filters: this.filters };
+    let uri = { sort: this.sort, filters: this.filters };
     this.http.post('/data', uri).then(response => {
       this._loadData(response);
     });
@@ -176,10 +182,10 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
       return array;
     }
 
-    var target = array[from];
-    var increment = to < from ? -1 : 1;
+    let target = array[from];
+    let increment = to < from ? -1 : 1;
 
-    for (var k = from; k !== to; k += increment) {
+    for (let k = from; k !== to; k += increment) {
       array[k] = array[k + increment];
     }
     array[to] = target;
@@ -194,13 +200,13 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    */
   onAfterColumnMove(columns, target) {
 
-    var columnNames = [];
-    var i = 0;
+    let columnNames = [];
+    let i = 0;
     for (i = 0; i < columns.length; i++) {
       columnNames.push(this.colHeaders[columns[i]]);
     }
 
-    var colMoved = {
+    let colMoved = {
       columnNames,
       target
     };
@@ -218,15 +224,15 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {string} source
    */
   onAfterCreateCol(index, amount, source) {
-    var payload = {
+    let payload = {
       index,
       amount,
       source
     };
-    var sourceIndex = index === 0 ? 1 : 0;
+    let sourceIndex = index === 0 ? 1 : 0;
     this.http.put('/column', payload).then(value => {
-      var noOfRows = this.hot.getData().length;
-      for (var row = 0; row < noOfRows; row++) {
+      let noOfRows = this.hot.getData().length;
+      for (let row = 0; row < noOfRows; row++) {
         this.hot.setCellMeta(row, index, 'row_id', this.hot.getCellMeta(row, sourceIndex).row_id);
         this.hot.setCellMeta(row, index, 'col_id', value.name);
       }
@@ -239,14 +245,14 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} amount
    * */
   async onRemoveCol(index, amount) {
-    var removedCol = [];
-    for (var i = 0; i < amount; i++) {
+    let removedCol = [];
+    for (let i = 0; i < amount; i++) {
       removedCol.push(this.colHeaders[i + index]);
     }
     try {
-      var value = await this.http.delete('/column', removedCol);
+      let value = await this.http.delete('/column', removedCol);
       if (value.data) {
-        var response = await this.http.post('/data');
+        let response = await this.http.post('/data');
         this._loadData(response);
         return true;
       }
@@ -264,21 +270,36 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {string} source
    */
   onAfterCreateRow(index, amount, source) {
-    var payload = {
+    let payload = {
       index,
       amount,
       source
     };
     this.http.put('/row', payload).then(value => {
-      var row = this.hot.getData()[index];
-      var sourceIndex = index === 1 ? 2 : 1;
-      for (var col = 0; col < row.length; col++) {
-        var column = this.hot.getCellMeta(sourceIndex, col).col_id;
+      let row = this.hot.getData()[index];
+      let sourceIndex = index === 1 ? 2 : 1;
+      for (let col = 0; col < row.length; col++) {
+        let column = this.hot.getCellMeta(sourceIndex, col).col_id;
         this.hot.setCellMeta(index, col, 'row_id', value.id);
         this.hot.setCellMeta(index, col, 'col_id', column);
         this.hot.setDataAtCell(index, col, value.data[column]);
       }
     });
+  }
+
+  /**
+   * Method called after resizing column.
+   *
+   * @param {number} currentColumn
+   * @param {number} newSize
+   * @param {boolean} isDoubleClick
+   */
+  onColumnResize(currentColumn, newSize) {
+    let uri = {
+      column: this.hot.getCellMeta(1, currentColumn).col_id,
+      size: newSize
+    };
+    this.http.post('/column/resize', uri);
   }
 
   /**
@@ -288,8 +309,8 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {number} amount
    */
   onRemoveRow(index, amount) {
-    var rowsRemoved = [];
-    for (var i = 0; i < amount; i++) {
+    let rowsRemoved = [];
+    for (let i = 0; i < amount; i++) {
       rowsRemoved.push(this.hot.getCellMeta(i + index, 1).row_id);
     }
     this.http.delete('/row', rowsRemoved).then(value => {
@@ -307,15 +328,29 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
   * @param {number} target
   */
   onRowMove(rows, target) {
-    var rowsMoved = [];
-    for (var i = 0; i < rows.length; i++) {
+    let rowsMoved = [];
+    for (let i = 0; i < rows.length; i++) {
       rowsMoved.push(this.hot.getCellMeta(rows[i], 1).row_id);
     };
-    var payload = {
+    let payload = {
       rowsMoved,
       target
     };
     this.http.post('/row/move', payload);
+  }
+
+  /**
+   * Method called after resizing row, event will be passed to backend.
+   *
+   * @param {number} currentRow
+   * @param {number} newSize
+   */
+  onRowResize(currentRow, newSize) {
+    let uri = {
+      row: this.hot.getCellMeta(currentRow, 1).row_id,
+      size: newSize
+    };
+    this.http.post('/row/resize', uri);
   }
 
   /**
@@ -325,11 +360,80 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    * @param {boolean} order
    */
   onAfterColumnSort(column, order) {
-    this.order = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
+    this.sort = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
 
-    let uri = { order: this.order, filters: this.filters };
+    let uri = { sort: this.sort, filters: this.filters };
     this.http.post('/data', uri).then(response => {
       this._loadData(response);
+    });
+  }
+
+  /**
+   * Method called after merging cells, event will be passed to backend.
+   *
+   * @param {cellRange} CellRange
+   * @param {mergeParent} Object
+   * @param {auto} boolean
+   */
+  onMergeCell(cellRange, mergeParent) {
+    let mergedParent = {
+      column: this.hot.getCellMeta(mergeParent.row, mergeParent.col).col_id,
+      row: this.hot.getCellMeta(mergeParent.row, mergeParent.col).row_id
+    };
+    let mergedCells = [];
+
+    let range = this._normalizeRange(cellRange);
+
+    for (let i = range.from.row; i <= range.to.row; i++) {
+      for (let j = range.from.col; j <= range.to.col; j++) {
+        mergedCells.push({ column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id });
+      }
+    }
+    this.http.post('/cell/merge', {
+      mergedParent,
+      mergedCells
+    });
+  }
+
+  /**
+   * Normalize cell range
+   * @param {*} cellRange
+   */
+  _normalizeRange(cellRange) {
+    let from;
+    let to;
+    if (cellRange.from.row < cellRange.to.row) {
+      from = cellRange.from;
+      to = cellRange.to;
+    } else if (cellRange.from.row > cellRange.to.row) {
+      from = cellRange.to;
+      to = cellRange.from;
+    } else if (cellRange.from.row === cellRange.to.row) {
+      if (cellRange.from.col > cellRange.to.col) {
+        from = cellRange.to;
+        to = cellRange.from;
+      } else {
+        from = cellRange.from;
+        to = cellRange.to;
+      }
+    }
+    return { from, to };
+  }
+
+  onUnmergeCells(cellRange) {
+    let mergedParent = {
+      column: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).col_id,
+      row: this.hot.getCellMeta(cellRange.highlight.row, cellRange.highlight.col).row_id
+    };
+    let mergedCells = [];
+    for (let i = cellRange.from.row; i <= cellRange.to.row; i++) {
+      for (let j = cellRange.from.col; j <= cellRange.to.col; j++) {
+        mergedCells.push({ column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id });
+      }
+    }
+    this.http.post('/cell/unmerge', {
+      mergedParent,
+      mergedCells
     });
   }
 
@@ -339,24 +443,10 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
    */
   _loadData(response) {
     let responseData = response.data;
-    let normalizedData = [];
-    for (let row = 0; row < responseData.length; row++) {
-      let item = [];
-      // eslint-disable-next-line guard-for-in
-      for (let columnName in responseData[row]) {
-        item.push(responseData[row][columnName]);
-      }
-      normalizedData.push(item);
-    }
-
+    let normalizedData = responseData.map(value => Object.values(value));
     this.hot.loadData(normalizedData);
 
-    let columnNames = [];
-
-    // eslint-disable-next-line guard-for-in
-    for (let columnName in responseData[0]) {
-      columnNames.push(columnName);
-    }
+    let columnNames = Object.keys(responseData[0]);
 
     this.colHeaders = columnNames;
 
@@ -378,6 +468,19 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
     this.http.post('/data').then(response => {
       this._loadData(response);
     });
+  }
+
+  /**
+  * Called after cell meta is changed.
+  *
+  * @param {Number} row
+  * @param {Number} col
+  * @param {String} key
+  * @param {*} value
+  */
+  onSetMeta(row, col, key, value) {
+    let uri = { row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key, value };
+    this.http.post('/cell/meta', uri);
   }
 
   /**
@@ -422,7 +525,7 @@ class DataSourceConnector extends Handsontable.plugins.BasePlugin {
         delete item.meta.instance;
         changeItems.push(item);
       }
-      this.http.post('/update', {
+      this.http.post('/cell', {
         changes: changeItems,
         source
       });
@@ -498,7 +601,7 @@ class Http {
    * @param {any} data
    */
   delete(url, data) {
-    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    let request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
     request.url = this.controllerUrl + url;
     request.method = 'DELETE';
     request.body = JSON.stringify(data);
@@ -516,7 +619,7 @@ class Http {
      * @param {any} data
      */
   put(url, data) {
-    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    let request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
     request.url = this.controllerUrl + url;
     request.method = 'PUT';
     request.body = JSON.stringify(data);
@@ -534,7 +637,7 @@ class Http {
      * @param {any} data
      */
   post(url, data) {
-    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    let request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
     request.url = this.controllerUrl + url;
     request.method = 'POST';
     request.body = JSON.stringify(data);
@@ -551,7 +654,7 @@ class Http {
      * @param {string} url
      */
   get(url) {
-    var request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
+    let request = new __WEBPACK_IMPORTED_MODULE_0__request__["a" /* default */](this.defaultHeaders);
     request.url = this.controllerUrl + url;
 
     return this.request(request).then(value => {
