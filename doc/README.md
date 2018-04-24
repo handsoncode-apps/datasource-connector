@@ -1,6 +1,6 @@
 Handsontable Datasource Node
 ============================
-API description for Handsontable backend. To receive HOT events on backend you should implement methods listed below. Each method has it's own request and response schema that is described with examples in [Models section](#models). You may get the [OpenAPI Specification](swagger.yaml) for this communication endpoint and models (for view it please use swagger editor).
+API description for Handsontable backend. To receive HOT events on backend you should implement methods listed below. <br>Each method has it's own request and response schema that is described with examples in [Models section](#models). You may get the [OpenAPI Specification](swagger.json) for this communication endpoint and models (for view it please use Swagger UI tool).
 
 **Version:** 1.0.0
 
