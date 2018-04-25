@@ -25,6 +25,18 @@ module.exports.create = function create(envArgs) {
     c.devtool = 'source-map';
     // Exclude all external dependencies from 'base' bundle (handsontable.js and handsontable.css files)
     c.externals = {
+      'es6-promise':{
+        root: 'es6-promise',
+        commonjs2: 'es6-promise',
+        commonjs: 'es6-promise',
+        amd: 'es6-promise'
+      },
+      Handsontable: {
+        root: 'Handsontable',
+        commonjs2: 'Handsontable',
+        commonjs: 'Handsontable',
+        amd: 'Handsontable',
+      },
       numbro: {
         root: 'numbro',
         commonjs2: 'numbro',
@@ -58,6 +70,14 @@ module.exports.create = function create(envArgs) {
 
   configFull.forEach(function(c) {
     c.output.filename = PACKAGE_FILENAME + '.full.js';
+    c.externals = { 
+      handsontable: {
+        root: 'Handsontable',
+        commonjs2: 'Handsontable',
+        commonjs: 'Handsontable',
+        amd: 'Handsontable',
+      }
+    }
     c.module.rules.unshift({
       test: /numbro/,
       use: [

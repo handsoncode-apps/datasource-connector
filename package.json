@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint --rule \"no-restricted-globals: 0\"  src/",
     "build": "cross-env BABEL_ENV=commonjs_dist env-cmd ./hot.config.js babel src --out-dir commonjs",
-    "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development env-cmd ./hot.config.js webpack --hide-modules ./src/index.js",
+    "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development env-cmd ./hot.config.js webpack --hide-modules ./src/index.ts",
     "test": "npm run lint &&  npm run test:e2e && npm run test:production",
     "test:walkontable": "npm run build:walkontable && npm run test:walkontable.dump && grunt test-walkontable",
     "test:production": "npm run build:umd.min && npm run test:production.dump && grunt test-handsontable",
@@ -56,7 +56,7 @@
     "eslint": "^4.3.0",
     "eslint-config-airbnb-base": "^11.3.1",
     "eslint-plugin-import": "^2.7.0",
-    "extract-text-webpack-plugin": "^3.0.0",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "fs-extra": "^4.0.2",
     "glob": "^7.1.2",
     "grunt": "^1.0.1",
@@ -81,8 +81,10 @@
     "style-loader": "^0.18.2",
     "supports-color": "^4.2.1",
     "tree-kill": "^1.1.0",
+    "ts-loader": "^4.2.0",
     "typescript": "^2.8.3",
-    "webpack": "^3.5.6",
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.0.15",
     "z-schema": "^3.19.1"
   },
   "dependencies": {
