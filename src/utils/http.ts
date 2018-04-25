@@ -1,6 +1,6 @@
 import Request from './request';
-import Data from './data';
-import {Promise} from 'es6-promise';
+import { Data } from './data';
+import { Promise } from 'es6-promise';
 
 /**
  * Send the xhr request to server
@@ -48,14 +48,14 @@ export default class Http {
    * @param {any} data
    */
   public delete(url: string, data: any) {
-    let request = new Request(this.defaultHeaders);
-    request.url = this.controllerUrl + url;
-    request.method = 'DELETE';
-    request.body = JSON.stringify(data);
+    let requestData = new Request(this.defaultHeaders);
+    requestData.url = this.controllerUrl + url;
+    requestData.method = 'DELETE';
+    requestData.body = JSON.stringify(data);
 
-    return this.request(request).then(
+    return this.request(requestData).then(
       (value: any) => {
-        this.onDataSend(new Data(request, JSON.parse(value)));
+        this.onDataSend(new Data(requestData, JSON.parse(value)));
         return JSON.parse(value);
       }
     );
@@ -68,14 +68,14 @@ export default class Http {
      * @param {any} data
      */
   put(url: string, data: object) {
-    let request = new Request(this.defaultHeaders);
-    request.url = this.controllerUrl + url;
-    request.method = 'PUT';
-    request.body = JSON.stringify(data);
+    let requestData = new Request(this.defaultHeaders);
+    requestData.url = this.controllerUrl + url;
+    requestData.method = 'PUT';
+    requestData.body = JSON.stringify(data);
 
-    return this.request(request).then(
+    return this.request(requestData).then(
       (value: any) => {
-        this.onDataSend(new Data(request, JSON.parse(value)));
+        this.onDataSend(new Data(requestData, JSON.parse(value)));
         return JSON.parse(value);
       }
     );
@@ -88,14 +88,14 @@ export default class Http {
      * @param {any} data
      */
   public post(url: string, data?: any) {
-    let request = new Request(this.defaultHeaders);
-    request.url = this.controllerUrl + url;
-    request.method = 'POST';
-    request.body = JSON.stringify(data);
+    let requestData = new Request(this.defaultHeaders);
+    requestData.url = this.controllerUrl + url;
+    requestData.method = 'POST';
+    requestData.body = JSON.stringify(data? data : {});
 
-    return this.request(request).then(
+    return this.request(requestData).then(
       (value: any) => {
-        this.onDataSend(new Data(request, JSON.parse(value)));
+        this.onDataSend(new Data(requestData, JSON.parse(value)));
         return JSON.parse(value);
       }
     );
@@ -107,12 +107,12 @@ export default class Http {
      * @param {string} url
      */
   public get(url: string) {
-    let request = new Request(this.defaultHeaders);
-    request.url = this.controllerUrl + url;
+    let requestData = new Request(this.defaultHeaders);
+    requestData.url = this.controllerUrl + url;
 
-    return this.request(request).then(
+    return this.request(requestData).then(
       (value: any) => {
-        this.onDataSend(new Data(request, JSON.parse(value)));
+        this.onDataSend(new Data(requestData, JSON.parse(value)));
         return JSON.parse(value);
       }
     );

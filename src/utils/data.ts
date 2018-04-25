@@ -1,5 +1,5 @@
-export default class Data {
-    constructor(public response: any, public request: Request) {
-  
+import Request from './request';
+export class Data {
+    constructor(public request: Request, public response: any) {  
     }
-  }
+}

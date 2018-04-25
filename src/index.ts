@@ -1,7 +1,11 @@
 import Http from './utils/http';
 
-import Handsontable, { _plugins } from 'handsontable';
-import Data from './utils/data';
+import {plugins, Core} from 'Handsontable';
+
+import { Data } from './utils/data';
+
+declare var Handsontable: any; 
+
 /** 
 * @plugin DataSourceConnector
  * Note: keep in mind, that Handsontable instance creates one instance of the plugin class.
@@ -9,21 +13,18 @@ import Data from './utils/data';
  * @description
  * This plugin enable the backend side data management for handsontable instance
  */
-class DataSourceConnector extends _plugins.Base {
+class DataSourceConnector extends plugins.BasePlugin {
   public http: Http;
   public colHeaders: Array<string>;
   public filters: Array<object>;
   public sort: Object;
-  private hot: Handsontable;
 
   // The argument passed to the constructor is the currently processed Handsontable instance object.
-  constructor(public hotInstance: Handsontable) {
+  constructor(public hotInstance: Core) {
     super(hotInstance);
-    this.hot = hotInstance;
     this.colHeaders = [];
     this.filters = [];
     this.sort = {};
-    this.http = new Http('/');
   }
 
   /**
@@ -473,9 +474,6 @@ class DataSourceConnector extends _plugins.Base {
 
 export default DataSourceConnector;
 
-// register plugin
-Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
-
 class SimpleResponse {
   constructor(public data: string) { }
 }
@@ -498,3 +496,5 @@ class CreateRowResponse {
   */
   constructor(public data: { [index: string]: any }, public id: string) { }
 }
+
+Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);

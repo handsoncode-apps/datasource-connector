@@ -20,7 +20,8 @@
     "test:production.dump": "cross-env BABEL_ENV=commonjs_e2e NODE_ENV=test-production webpack --hide-modules helpers=./test/helpers/index.js e2e=./test/e2e/index.js",
     "test:e2e.dump": "cross-env BABEL_ENV=commonjs_e2e NODE_ENV=test-e2e webpack --hide-modules --env.testPathPattern=$npm_config_testPathPattern helpers=./test/helpers/index.js e2e=./test/e2e/index.js",
     "test:unit.dump": "cross-env BABEL_ENV=commonjs NODE_ENV=test-unit webpack --hide-modules helpers=./test/helpers/index.js unit=./test/unit/index.js",
-    "test:types": "tsc -p ./test/types"
+    "test:types": "tsc -p ./test/types",
+    "postinstall": "cp handsontable.d.ts ./node_modules/handsontable/ -f"
   },
   "repository": {
     "type": "git",
@@ -56,7 +57,7 @@
     "eslint": "^4.3.0",
     "eslint-config-airbnb-base": "^11.3.1",
     "eslint-plugin-import": "^2.7.0",
-    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "extract-text-webpack-plugin": "^3.0.0",
     "fs-extra": "^4.0.2",
     "glob": "^7.1.2",
     "grunt": "^1.0.1",
@@ -81,10 +82,9 @@
     "style-loader": "^0.18.2",
     "supports-color": "^4.2.1",
     "tree-kill": "^1.1.0",
-    "ts-loader": "^4.2.0",
+    "ts-loader": "^3.5.0",
     "typescript": "^2.8.3",
-    "webpack": "^4.6.0",
-    "webpack-cli": "^2.0.15",
+    "webpack": "^3.5.6",
     "z-schema": "^3.19.1"
   },
   "dependencies": {
