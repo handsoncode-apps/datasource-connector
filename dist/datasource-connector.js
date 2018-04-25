@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 25/04/2018 20:21:53)
+ * Release date: 01/03/2018 (built at 25/04/2018 21:40:37)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -496,16 +496,28 @@ var DataSourceConnector = /** @class */ (function (_super) {
      * @param {object} response
      */
     DataSourceConnector.prototype.loadData = function (response) {
+        var _this = this;
         var responseData = response.data;
         var normalizedData = responseData.map(function (value) { return Object.keys(value).map(function (key) { return value[key]; }); });
         this.hotInstance.loadData(normalizedData);
         var columnNames = Object.keys(responseData[0]);
         this.colHeaders = columnNames;
-        for (var row = 0; row < responseData.length; row++) {
+        var _loop_1 = function (row) {
+            var _loop_2 = function (column) {
+                if (response.meta) {
+                    var meta = response.meta.filter(function (x) { return x.rowId == responseData[row][response.rowId] && x.colId === columnNames[column]; });
+                    meta.forEach(function (x) { _this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)); });
+                }
+                this_1.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
+                this_1.hotInstance.setCellMeta(row, column, 'col_id', columnNames[column]);
+            };
             for (var column = 0; column < columnNames.length; column++) {
-                this.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
-                this.hotInstance.setCellMeta(row, column, 'col_id', columnNames[column]);
+                _loop_2(column);
             }
+        };
+        var this_1 = this;
+        for (var row = 0; row < responseData.length; row++) {
+            _loop_1(row);
         }
     };
     /**
@@ -532,7 +544,7 @@ var DataSourceConnector = /** @class */ (function (_super) {
     */
     DataSourceConnector.prototype.onSetMeta = function (row, col, key, value) {
         if (key !== 'col_id' && key !== 'row_id') {
-            var uri = { row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key: key, value: value };
+            var uri = new MetaKeyValue(this.hot.getCellMeta(row, col).row_id, this.hot.getCellMeta(row, col).col_id, key, value);
             this.http.post('/cell/meta', uri);
         }
     };
@@ -610,6 +622,31 @@ var CreateColumnResponse = /** @class */ (function () {
         this.name = name;
     }
     return CreateColumnResponse;
+}());
+var LoadData = /** @class */ (function () {
+    function LoadData() {
+    }
+    return LoadData;
+}());
+var MetaData = /** @class */ (function () {
+    function MetaData() {
+    }
+    return MetaData;
+}());
+var MetaKeyValue = /** @class */ (function () {
+    /**
+     * @param row row id
+     * @param column column name
+     * @param key meta key name
+     * @param value meta value
+     */
+    function MetaKeyValue(row, column, key, value) {
+        this.row = row;
+        this.column = column;
+        this.key = key;
+        this.value = value;
+    }
+    return MetaKeyValue;
 }());
 var CreateRowResponse = /** @class */ (function () {
     /**

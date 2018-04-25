@@ -368,7 +368,7 @@ class DataSourceConnector extends plugins.BasePlugin {
    * Load data and setup all dedicated metadata for backend sync
    * @param {object} response
    */
-  private loadData(response: any) {
+  private loadData(response: LoadData) {
     let responseData = response.data;
     let normalizedData = responseData.map((value: any) => Object.keys(value).map(key=>value[key]));
     this.hotInstance.loadData(normalizedData);
@@ -379,6 +379,10 @@ class DataSourceConnector extends plugins.BasePlugin {
 
     for (let row = 0; row < responseData.length; row++) {
       for (let column = 0; column < columnNames.length; column++) {
+        if (response.meta) {
+          let meta = response.meta.filter(x => x.rowId == responseData[row][response.rowId] && x.colId === columnNames[column]);
+          meta.forEach(x => { this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)) } );
+        }
         this.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
         this.hotInstance.setCellMeta(row, column, 'col_id', columnNames[column]);
       }
@@ -409,8 +413,8 @@ class DataSourceConnector extends plugins.BasePlugin {
   */
   onSetMeta(row, col, key, value) {
     if (key !== 'col_id' && key !== 'row_id') {
-      let uri = {row: this.hot.getCellMeta(row, col).row_id, column: this.hot.getCellMeta(row, col).col_id, key, value};
-      this.http.post('/cell/meta', uri);
+      let uri = new MetaKeyValue(this.hot.getCellMeta(row, col).row_id, this.hot.getCellMeta(row, col).col_id, key, value);
+      this.http.post('/cell/meta', uri);    
     }
   }
 
@@ -489,6 +493,28 @@ class CreateColumnResponse {
   constructor(public name: any) { }
 }
 
+class LoadData {
+  public data : Array<any>;
+  public rowId : string;
+  public meta : Array<MetaData>;
+}
+
+class MetaData {
+  public id: any;
+  public rowId: any;
+  public colId: string;
+  public meta: string;
+}
+
+class MetaKeyValue {
+  /**
+   * @param row row id
+   * @param column column name
+   * @param key meta key name
+   * @param value meta value
+   */
+  constructor(public row: any, public column: string, public key: string, public value:any){}
+}
 class CreateRowResponse {
   /**
   * @property {any} data Object of your dataset scheme. Contains values of created row.
