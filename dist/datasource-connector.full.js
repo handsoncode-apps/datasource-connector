@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 26/04/2018 11:02:35)
+ * Release date: 01/03/2018 (built at 26/04/2018 13:08:24)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -257,8 +257,6 @@ var DataSourceConnector = /** @class */ (function (_super) {
         this.http.post('/column/move', colMoved)
             .then(function (value) {
             _this.colHeaders = value.data;
-            console.log("/column/mv", value);
-            console.log(_this.hot.getData());
         });
     };
     /**
@@ -500,8 +498,6 @@ var DataSourceConnector = /** @class */ (function (_super) {
     DataSourceConnector.prototype.loadData = function (response) {
         var _this = this;
         var responseData = response.data;
-        // response.colOrder = ["phone", "id", "first_name", "age", "last_name", "sex"];
-        console.log("colOrder", response.colOrder);
         var reorderedData = [];
         var _loop_1 = function (i) {
             var row = {};
@@ -520,7 +516,7 @@ var DataSourceConnector = /** @class */ (function (_super) {
         var _loop_2 = function (row) {
             var _loop_3 = function (column) {
                 if (response.meta) {
-                    var meta = response.meta.filter(function (x) { return x.rowId == responseData[row][response.rowId] && x.colId === columnNames[column]; });
+                    var meta = response.meta.filter(function (x) { return x.row_id == responseData[row][response.rowId] && x.col_id === columnNames[column]; });
                     meta.forEach(function (x) { _this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)); });
                 }
                 this_1.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);

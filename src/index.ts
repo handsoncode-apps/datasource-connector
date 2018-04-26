@@ -390,7 +390,7 @@ class DataSourceConnector extends plugins.BasePlugin {
     for (let row = 0; row < responseData.length; row++) {
       for (let column = 0; column < columnNames.length; column++) {
         if (response.meta) {
-          let meta = response.meta.filter(x => x.rowId == responseData[row][response.rowId] && x.colId === columnNames[column]);
+          let meta = response.meta.filter(x => x.row_id == responseData[row][response.rowId] && x.col_id === columnNames[column]);
           meta.forEach(x => { this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)) } );
         }
         this.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
@@ -512,8 +512,8 @@ class LoadData {
 
 class MetaData {
   public id: any;
-  public rowId: any;
-  public colId: string;
+  public row_id: any;
+  public col_id: string;
   public meta: string;
 }
 
