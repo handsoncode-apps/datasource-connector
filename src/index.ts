@@ -370,7 +370,17 @@ class DataSourceConnector extends plugins.BasePlugin {
    */
   private loadData(response: LoadData) {
     let responseData = response.data;
-    let normalizedData = responseData.map((value: any) => Object.keys(value).map(key=>value[key]));
+
+    let reorderedData = []
+    for (let i = 0; i < responseData.length; i++) {
+      let row = {}
+      response.colOrder.forEach((col) => {
+        row[col] = responseData[i][col];
+      })
+      reorderedData.push(row)
+    }
+
+    let normalizedData = reorderedData.map((value: any) => Object.keys(value).map(key=>value[key]));
     this.hotInstance.loadData(normalizedData);
 
     let columnNames = Object.keys(responseData[0]);
@@ -497,6 +507,7 @@ class LoadData {
   public data : Array<any>;
   public rowId : string;
   public meta : Array<MetaData>;
+  public colOrder: Array<string>;
 }
 
 class MetaData {

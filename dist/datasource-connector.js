@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 25/04/2018 21:40:37)
+ * Release date: 01/03/2018 (built at 26/04/2018 11:02:35)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -257,6 +257,8 @@ var DataSourceConnector = /** @class */ (function (_super) {
         this.http.post('/column/move', colMoved)
             .then(function (value) {
             _this.colHeaders = value.data;
+            console.log("/column/mv", value);
+            console.log(_this.hot.getData());
         });
     };
     /**
@@ -498,12 +500,25 @@ var DataSourceConnector = /** @class */ (function (_super) {
     DataSourceConnector.prototype.loadData = function (response) {
         var _this = this;
         var responseData = response.data;
-        var normalizedData = responseData.map(function (value) { return Object.keys(value).map(function (key) { return value[key]; }); });
+        // response.colOrder = ["phone", "id", "first_name", "age", "last_name", "sex"];
+        console.log("colOrder", response.colOrder);
+        var reorderedData = [];
+        var _loop_1 = function (i) {
+            var row = {};
+            response.colOrder.forEach(function (col) {
+                row[col] = responseData[i][col];
+            });
+            reorderedData.push(row);
+        };
+        for (var i = 0; i < responseData.length; i++) {
+            _loop_1(i);
+        }
+        var normalizedData = reorderedData.map(function (value) { return Object.keys(value).map(function (key) { return value[key]; }); });
         this.hotInstance.loadData(normalizedData);
         var columnNames = Object.keys(responseData[0]);
         this.colHeaders = columnNames;
-        var _loop_1 = function (row) {
-            var _loop_2 = function (column) {
+        var _loop_2 = function (row) {
+            var _loop_3 = function (column) {
                 if (response.meta) {
                     var meta = response.meta.filter(function (x) { return x.rowId == responseData[row][response.rowId] && x.colId === columnNames[column]; });
                     meta.forEach(function (x) { _this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)); });
@@ -512,12 +527,12 @@ var DataSourceConnector = /** @class */ (function (_super) {
                 this_1.hotInstance.setCellMeta(row, column, 'col_id', columnNames[column]);
             };
             for (var column = 0; column < columnNames.length; column++) {
-                _loop_2(column);
+                _loop_3(column);
             }
         };
         var this_1 = this;
         for (var row = 0; row < responseData.length; row++) {
-            _loop_1(row);
+            _loop_2(row);
         }
     };
     /**
