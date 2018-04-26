@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 26/04/2018 11:02:35)
+ * Release date: 01/03/2018 (built at 26/04/2018 11:42:54)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -12,7 +12,7 @@
 		exports["DatasourceConector"] = factory(require("Handsontable"));
 	else
 		root["DatasourceConector"] = factory(root["Handsontable"]);
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_5__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -75,11 +75,17 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_0__;
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -133,8 +139,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-var http_1 = __importDefault(__webpack_require__(1));
-var Handsontable_1 = __webpack_require__(5);
+var http_1 = __importDefault(__webpack_require__(2));
+var Handsontable_1 = __webpack_require__(0);
+var Handsontable_2 = __importDefault(__webpack_require__(0));
 /**
 * @plugin DataSourceConnector
  * Note: keep in mind, that Handsontable instance creates one instance of the plugin class.
@@ -257,8 +264,6 @@ var DataSourceConnector = /** @class */ (function (_super) {
         this.http.post('/column/move', colMoved)
             .then(function (value) {
             _this.colHeaders = value.data;
-            console.log("/column/mv", value);
-            console.log(_this.hot.getData());
         });
     };
     /**
@@ -500,8 +505,6 @@ var DataSourceConnector = /** @class */ (function (_super) {
     DataSourceConnector.prototype.loadData = function (response) {
         var _this = this;
         var responseData = response.data;
-        // response.colOrder = ["phone", "id", "first_name", "age", "last_name", "sex"];
-        console.log("colOrder", response.colOrder);
         var reorderedData = [];
         var _loop_1 = function (i) {
             var row = {};
@@ -674,11 +677,11 @@ var CreateRowResponse = /** @class */ (function () {
     }
     return CreateRowResponse;
 }());
-Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
+Handsontable_2["default"].plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -687,9 +690,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-var request_1 = __importDefault(__webpack_require__(2));
-var data_1 = __webpack_require__(3);
-var es6_promise_1 = __webpack_require__(4);
+var request_1 = __importDefault(__webpack_require__(3));
+var data_1 = __webpack_require__(4);
+var es6_promise_1 = __webpack_require__(5);
 /**
  * Send the xhr request to server
  *
@@ -821,7 +824,7 @@ exports["default"] = Http;
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -844,7 +847,7 @@ exports["default"] = Request;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -861,7 +864,7 @@ exports.Data = Data;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -2044,12 +2047,6 @@ return Promise$1;
 
 //# sourceMappingURL=es6-promise.map
 
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
 
 /***/ })
 /******/ ])["default"];
