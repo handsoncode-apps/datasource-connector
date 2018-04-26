@@ -21,7 +21,7 @@
     "test:e2e.dump": "cross-env BABEL_ENV=commonjs_e2e NODE_ENV=test-e2e webpack --hide-modules --env.testPathPattern=$npm_config_testPathPattern helpers=./test/helpers/index.js e2e=./test/e2e/index.js",
     "test:unit.dump": "cross-env BABEL_ENV=commonjs NODE_ENV=test-unit webpack --hide-modules helpers=./test/helpers/index.js unit=./test/unit/index.js",
     "test:types": "tsc -p ./test/types",
-    "postinstall": "cp handsontable.d.ts ./node_modules/handsontable/ -f 2>/dev/null"
+    "postinstall": "cp handsontable.d.ts ./node_modules/handsontable/ -f 2>/dev/null || :"
   },
   "repository": {
     "type": "git",
