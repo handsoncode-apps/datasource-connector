@@ -1,10 +1,9 @@
 import Http from './utils/http';
 
 import {plugins, Core} from 'Handsontable';
+import Handsontable from 'Handsontable';
 
-import { Data } from './utils/data';
-
-declare var Handsontable: any; 
+import { Data } from './utils/data'; 
 
 /** 
 * @plugin DataSourceConnector
