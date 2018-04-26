@@ -1,6 +1,5 @@
 'use strict';
 
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const path = require('path');
 const fs = require('fs');
@@ -22,17 +21,12 @@ module.exports.create = function create(envArgs) {
       path: path.resolve(__dirname, '../dist'),
     },
     resolve: {
+      extensions: [ '.ts', '.js' ],
       alias: {},
     },
     module: {
       rules: [
-        {
-          test: /\.css$/,
-          loader: ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: 'css-loader',
-          }),
-        },
+        { test: /\.ts$/, loader: 'ts-loader', exclude: [ /node_modules/ ] },
         {
           test: [
             // Disable loading languages from numbro and moment into final bundle
