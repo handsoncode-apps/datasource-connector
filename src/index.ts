@@ -1,10 +1,10 @@
 import Http from './utils/http';
 
-import {plugins, Core} from 'Handsontable';
+import { plugins, Core } from 'Handsontable';
 
 import { Data } from './utils/data';
 
-declare var Handsontable: any; 
+declare var Handsontable: any;
 
 /** 
 * @plugin DataSourceConnector
@@ -18,6 +18,7 @@ class DataSourceConnector extends plugins.BasePlugin {
   public colHeaders: Array<string>;
   public filters: Array<object>;
   public sort: Object;
+  public mergeCells: Array<any>;
 
   // The argument passed to the constructor is the currently processed Handsontable instance object.
   constructor(public hotInstance: Core) {
@@ -93,7 +94,7 @@ class DataSourceConnector extends plugins.BasePlugin {
     });
 
     this.filters = conditions;
-    let uri = { sort: this.sort, filters: this.filters};
+    let uri = { sort: this.sort, filters: this.filters };
     this.http.post('/data', uri).then((response: any) => {
       this.loadData(response);
     });
@@ -289,7 +290,7 @@ class DataSourceConnector extends plugins.BasePlugin {
   public onAfterColumnSort(column: number, order: boolean) {
     this.sort = order !== undefined ? { column: this.colHeaders[column], order: order === true ? 'ASC' : 'DESC' } : {};
 
-    let uri = { sort: this.sort, filters: this.filters};
+    let uri = { sort: this.sort, filters: this.filters };
     this.http.post('/data', uri)
       .then((response: any) => {
         this.loadData(response);
@@ -313,7 +314,7 @@ class DataSourceConnector extends plugins.BasePlugin {
 
     for (let i = range.from.row; i <= range.to.row; i++) {
       for (let j = range.from.col; j <= range.to.col; j++) {
-        mergedCells.push({column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id});
+        mergedCells.push({ column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id });
       }
     }
     this.http.post('/cell/merge', {
@@ -344,7 +345,7 @@ class DataSourceConnector extends plugins.BasePlugin {
         to = cellRange.to;
       }
     }
-    return {from, to};
+    return { from, to };
   }
 
   onUnmergeCells(cellRange) {
@@ -355,7 +356,7 @@ class DataSourceConnector extends plugins.BasePlugin {
     let mergedCells = [];
     for (let i = cellRange.from.row; i <= cellRange.to.row; i++) {
       for (let j = cellRange.from.col; j <= cellRange.to.col; j++) {
-        mergedCells.push({column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id});
+        mergedCells.push({ column: this.hot.getCellMeta(i, j).col_id, row: this.hot.getCellMeta(i, j).row_id });
       }
     }
     this.http.post('/cell/unmerge', {
@@ -370,6 +371,7 @@ class DataSourceConnector extends plugins.BasePlugin {
    */
   private loadData(response: LoadData) {
     let responseData = response.data;
+    let mergeCells;
 
     let reorderedData = []
     for (let i = 0; i < responseData.length; i++) {
@@ -380,37 +382,82 @@ class DataSourceConnector extends plugins.BasePlugin {
       reorderedData.push(row)
     }
 
-    let normalizedData = reorderedData.map((value: any) => Object.keys(value).map(key=>value[key]));
+    let normalizedData = reorderedData.map((value: any) => Object.keys(value).map(key => value[key]));
     this.hotInstance.loadData(normalizedData);
 
     let columnNames = Object.keys(responseData[0]);
 
     this.colHeaders = columnNames;
+    mergeCells = this._normalizeMergeCells(response.merged)
 
     for (let row = 0; row < responseData.length; row++) {
       for (let column = 0; column < columnNames.length; column++) {
         if (response.meta) {
           let meta = response.meta.filter(x => x.row_id == responseData[row][response.rowId] && x.col_id === columnNames[column]);
-          meta.forEach(x => { this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)) } );
+          let tempMerge = []
+          mergeCells.forEach((cell) => {
+            if (cell.col === columnNames[column]) {
+              cell.col = column;
+            }
+            if (cell.row === responseData[row][response.rowId]) {
+              cell.row = row;
+            }
+            const {cell_col_id, cell_row_id, ...rest } = cell
+            tempMerge.push(rest)
+          })
+          mergeCells = tempMerge
+          meta.forEach(x => {
+            let parsedMeta = {}
+            parsedMeta['row_id'] = responseData[row][response.rowId];
+            parsedMeta['col_id'] = columnNames[column];           
+          });
         }
         this.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
         this.hotInstance.setCellMeta(row, column, 'col_id', columnNames[column]);
       }
     }
+    return mergeCells;
   }
 
   /**
    * Method called after Handsontable instance initiation
    */
   public onAfterInit() {
-    this.http.get('/settings')
-      .then((response: any) => {
-        this.hotInstance.updateSettings(response.data, false);
-      });
+    let mergedCells;
     this.http.post('/data', null)
       .then((response: any) => {
-        this.loadData(response);
-      });
+        mergedCells = this.loadData(response);
+        this.http.get('/settings')
+        .then((response: any) => {
+          response.data["mergeCells"] = mergedCells;
+          this.hotInstance.updateSettings(response.data, false);
+        })
+      })
+  }
+
+  _normalizeMergeCells(mergedCells) {
+    let tempMerge: Array<any> = [];
+    mergedCells.forEach((merged) => {
+      if (tempMerge.length === 0) {
+        tempMerge.push((<any>Object).assign(
+          {}, 
+          { row: merged.parent_row_id, col: merged.parent_col_id, cell_col_id: merged.cell_col_id, cell_row_id: merged.cell_row_id },
+          { colspan: 1, rowspan: 1 }
+        ));
+      } else {
+        let el = tempMerge.filter((o) => o.row === merged.parent_row_id && o.col === merged.parent_col_id)
+        if (el.length) {
+          el[0]["col"] === merged["cell_col_id"] ? el[0].rowspan += 1 : '';
+          el[0]["row"] === merged["cell_row_id"] ? el[0].colspan += 1 : ''
+        } else {
+          tempMerge.push((<any>Object).assign(
+            {}, 
+            { row: merged.parent_row_id, col: merged.parent_col_id, cell_col_id: merged.cell_col_id, cell_row_id: merged.cell_row_id },
+            { colspan: 1, rowspan: 1 }))
+        }
+      }
+    });
+    return tempMerge;
   }
 
   /**
@@ -424,7 +471,7 @@ class DataSourceConnector extends plugins.BasePlugin {
   onSetMeta(row, col, key, value) {
     if (key !== 'col_id' && key !== 'row_id') {
       let uri = new MetaKeyValue(this.hot.getCellMeta(row, col).row_id, this.hot.getCellMeta(row, col).col_id, key, value);
-      this.http.post('/cell/meta', uri);    
+      this.http.post('/cell/meta', uri);
     }
   }
 
@@ -459,15 +506,16 @@ class DataSourceConnector extends plugins.BasePlugin {
     if (changes) {
       let changeItems = [];
       for (let i = 0; i < changes.length; i++) {
+        console.log("changes[i]", changes[i])
         let cellMeta = this.hotInstance.getCellMeta(changes[i][0], changes[i][1]);
         let item = {
-          row: (cellMeta as any).row_id,
-          column: (cellMeta as any).col_id,
+          row: (cellMeta).row_id,
+          column: (cellMeta).col_id,
           oldValue: changes[i][2],
           newValue: changes[i][3],
           meta: cellMeta
         };
-        delete (item.meta as any).instance;
+        delete (item.meta).instance;
         changeItems.push(item);
       }
       this.http.post('/cell', {
@@ -504,10 +552,11 @@ class CreateColumnResponse {
 }
 
 class LoadData {
-  public data : Array<any>;
-  public rowId : string;
-  public meta : Array<MetaData>;
+  public data: Array<any>;
+  public rowId: string;
+  public meta: Array<MetaData>;
   public colOrder: Array<string>;
+  public merged : any;
 }
 
 class MetaData {
@@ -524,7 +573,7 @@ class MetaKeyValue {
    * @param key meta key name
    * @param value meta value
    */
-  constructor(public row: any, public column: string, public key: string, public value:any){}
+  constructor(public row: any, public column: string, public key: string, public value: any) { }
 }
 class CreateRowResponse {
   /**

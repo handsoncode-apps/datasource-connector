@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 26/04/2018 13:08:24)
+ * Release date: 01/03/2018 (built at 27/04/2018 15:12:15)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -128,6 +128,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
+};
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -496,8 +505,8 @@ var DataSourceConnector = /** @class */ (function (_super) {
      * @param {object} response
      */
     DataSourceConnector.prototype.loadData = function (response) {
-        var _this = this;
         var responseData = response.data;
+        var mergeCells;
         var reorderedData = [];
         var _loop_1 = function (i) {
             var row = {};
@@ -513,11 +522,28 @@ var DataSourceConnector = /** @class */ (function (_super) {
         this.hotInstance.loadData(normalizedData);
         var columnNames = Object.keys(responseData[0]);
         this.colHeaders = columnNames;
+        mergeCells = this._normalizeMergeCells(response.merged);
         var _loop_2 = function (row) {
             var _loop_3 = function (column) {
                 if (response.meta) {
                     var meta = response.meta.filter(function (x) { return x.row_id == responseData[row][response.rowId] && x.col_id === columnNames[column]; });
-                    meta.forEach(function (x) { _this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)); });
+                    var tempMerge_1 = [];
+                    mergeCells.forEach(function (cell) {
+                        if (cell.col === columnNames[column]) {
+                            cell.col = column;
+                        }
+                        if (cell.row === responseData[row][response.rowId]) {
+                            cell.row = row;
+                        }
+                        var cell_col_id = cell.cell_col_id, cell_row_id = cell.cell_row_id, rest = __rest(cell, ["cell_col_id", "cell_row_id"]);
+                        tempMerge_1.push(rest);
+                    });
+                    mergeCells = tempMerge_1;
+                    meta.forEach(function (x) {
+                        var parsedMeta = {};
+                        parsedMeta['row_id'] = responseData[row][response.rowId];
+                        parsedMeta['col_id'] = columnNames[column];
+                    });
                 }
                 this_1.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
                 this_1.hotInstance.setCellMeta(row, column, 'col_id', columnNames[column]);
@@ -530,20 +556,42 @@ var DataSourceConnector = /** @class */ (function (_super) {
         for (var row = 0; row < responseData.length; row++) {
             _loop_2(row);
         }
+        return mergeCells;
     };
     /**
      * Method called after Handsontable instance initiation
      */
     DataSourceConnector.prototype.onAfterInit = function () {
         var _this = this;
-        this.http.get('/settings')
-            .then(function (response) {
-            _this.hotInstance.updateSettings(response.data, false);
-        });
+        var mergedCells;
         this.http.post('/data', null)
             .then(function (response) {
-            _this.loadData(response);
+            mergedCells = _this.loadData(response);
+            _this.http.get('/settings')
+                .then(function (response) {
+                response.data["mergeCells"] = mergedCells;
+                _this.hotInstance.updateSettings(response.data, false);
+            });
         });
+    };
+    DataSourceConnector.prototype._normalizeMergeCells = function (mergedCells) {
+        var tempMerge = [];
+        mergedCells.forEach(function (merged) {
+            if (tempMerge.length === 0) {
+                tempMerge.push(Object.assign({}, { row: merged.parent_row_id, col: merged.parent_col_id, cell_col_id: merged.cell_col_id, cell_row_id: merged.cell_row_id }, { colspan: 1, rowspan: 1 }));
+            }
+            else {
+                var el = tempMerge.filter(function (o) { return o.row === merged.parent_row_id && o.col === merged.parent_col_id; });
+                if (el.length) {
+                    el[0]["col"] === merged["cell_col_id"] ? el[0].rowspan += 1 : '';
+                    el[0]["row"] === merged["cell_row_id"] ? el[0].colspan += 1 : '';
+                }
+                else {
+                    tempMerge.push(Object.assign({}, { row: merged.parent_row_id, col: merged.parent_col_id, cell_col_id: merged.cell_col_id, cell_row_id: merged.cell_row_id }, { colspan: 1, rowspan: 1 }));
+                }
+            }
+        });
+        return tempMerge;
     };
     /**
     * Called after cell meta is changed.
@@ -586,15 +634,16 @@ var DataSourceConnector = /** @class */ (function (_super) {
         if (changes) {
             var changeItems = [];
             for (var i = 0; i < changes.length; i++) {
+                console.log("changes[i]", changes[i]);
                 var cellMeta = this.hotInstance.getCellMeta(changes[i][0], changes[i][1]);
                 var item = {
-                    row: cellMeta.row_id,
-                    column: cellMeta.col_id,
+                    row: (cellMeta).row_id,
+                    column: (cellMeta).col_id,
                     oldValue: changes[i][2],
                     newValue: changes[i][3],
                     meta: cellMeta
                 };
-                delete item.meta.instance;
+                delete (item.meta).instance;
                 changeItems.push(item);
             }
             this.http.post('/cell', {
