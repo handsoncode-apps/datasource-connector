@@ -781,6 +781,8 @@ describe('datasource_datachange', () => {
       },
     });
     setTimeout(() => {
+
+      console.log('get plugin ', hot.getPlugin('hiddenColumns'));
       hot.getPlugin('hiddenColumns').hideColumn(2);
       hot.render();
     }, 50);

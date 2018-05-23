@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 25/04/2018 21:40:37)
+ * Release date: 01/03/2018 (built at 23/05/2018 09:23:38)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -12,7 +12,7 @@
 		exports["DatasourceConector"] = factory(require("Handsontable"));
 	else
 		root["DatasourceConector"] = factory(root["Handsontable"]);
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_5__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -75,11 +75,17 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_0__;
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -133,8 +139,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-var http_1 = __importDefault(__webpack_require__(1));
-var Handsontable_1 = __webpack_require__(5);
+var http_1 = __importDefault(__webpack_require__(2));
+var Handsontable_1 = __webpack_require__(0);
+var Handsontable_2 = __importDefault(__webpack_require__(0));
 /**
 * @plugin DataSourceConnector
  * Note: keep in mind, that Handsontable instance creates one instance of the plugin class.
@@ -498,26 +505,37 @@ var DataSourceConnector = /** @class */ (function (_super) {
     DataSourceConnector.prototype.loadData = function (response) {
         var _this = this;
         var responseData = response.data;
-        var normalizedData = responseData.map(function (value) { return Object.keys(value).map(function (key) { return value[key]; }); });
+        var reorderedData = [];
+        var _loop_1 = function (i) {
+            var row = {};
+            response.colOrder.forEach(function (col) {
+                row[col] = responseData[i][col];
+            });
+            reorderedData.push(row);
+        };
+        for (var i = 0; i < responseData.length; i++) {
+            _loop_1(i);
+        }
+        var normalizedData = reorderedData.map(function (value) { return Object.keys(value).map(function (key) { return value[key]; }); });
         this.hotInstance.loadData(normalizedData);
         var columnNames = Object.keys(responseData[0]);
         this.colHeaders = columnNames;
-        var _loop_1 = function (row) {
-            var _loop_2 = function (column) {
+        var _loop_2 = function (row) {
+            var _loop_3 = function (column) {
                 if (response.meta) {
-                    var meta = response.meta.filter(function (x) { return x.rowId == responseData[row][response.rowId] && x.colId === columnNames[column]; });
+                    var meta = response.meta.filter(function (x) { return x.row_id == responseData[row][response.rowId] && x.col_id === columnNames[column]; });
                     meta.forEach(function (x) { _this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)); });
                 }
                 this_1.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
                 this_1.hotInstance.setCellMeta(row, column, 'col_id', columnNames[column]);
             };
             for (var column = 0; column < columnNames.length; column++) {
-                _loop_2(column);
+                _loop_3(column);
             }
         };
         var this_1 = this;
         for (var row = 0; row < responseData.length; row++) {
-            _loop_1(row);
+            _loop_2(row);
         }
     };
     /**
@@ -659,11 +677,11 @@ var CreateRowResponse = /** @class */ (function () {
     }
     return CreateRowResponse;
 }());
-Handsontable.plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
+Handsontable_2["default"].plugins.registerPlugin('DataSourceConnector', DataSourceConnector);
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -672,9 +690,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 exports.__esModule = true;
-var request_1 = __importDefault(__webpack_require__(2));
-var data_1 = __webpack_require__(3);
-var es6_promise_1 = __webpack_require__(4);
+var request_1 = __importDefault(__webpack_require__(3));
+var data_1 = __webpack_require__(4);
+var es6_promise_1 = __webpack_require__(5);
 /**
  * Send the xhr request to server
  *
@@ -806,7 +824,7 @@ exports["default"] = Http;
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -829,7 +847,7 @@ exports["default"] = Request;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -846,7 +864,7 @@ exports.Data = Data;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -2029,12 +2047,6 @@ return Promise$1;
 
 //# sourceMappingURL=es6-promise.map
 
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_5__;
 
 /***/ })
 /******/ ])["default"];

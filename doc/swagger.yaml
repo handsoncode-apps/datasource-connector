@@ -421,16 +421,21 @@ definitions:
         type: string
         description: Unique name of key column.
       meta:
+        type: array
+        items: 
+          type: object
+          properties: 
+            colId: 
+              type: string
+            meta:
+              type: string
+            rowId:
+              type: [string, integer]       
+          description:  Cell meta data
+        description: Additional meta properties. Can contains order of columns.
+      colOrder:
         type: object
         additionalProperties: true
-        example:
-          colOrder:
-            - id
-            - first_name
-            - last_name
-            - age
-            - sex
-        description: Additional meta properties. Can contains order of columns.
   FilterModel:
     type: object
     properties:

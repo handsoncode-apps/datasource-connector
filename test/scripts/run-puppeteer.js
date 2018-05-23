@@ -2,12 +2,13 @@ const puppeteer = require('puppeteer');
 const http = require('http');
 const ecstatic = require('ecstatic');
 const JasmineReporter = require('jasmine-terminal-reporter');
+const pti = require('puppeteer-to-istanbul')
 
 const PORT = 8080;
 const DEFAULT_INACTIVITY_TIMEOUT = 10000;
 
-const [,, path] = process.argv;
 
+const [,, path] = process.argv;
 if (!path) {
   /* eslint-disable no-console */
   console.log('The `path` argument is missing.');
@@ -56,7 +57,7 @@ const cleanupFactory = (browser, server) => async (exitCode) => {
     isVerbose: false,
   });
   let errorCount = 0;
-
+  await page.coverage.startJSCoverage();
   await page.exposeFunction('jasmineStarted', (specInfo) => reporter.jasmineStarted(specInfo));
   await page.exposeFunction('jasmineSpecStarted', () => {});
   await page.exposeFunction('jasmineSuiteStarted', (suite) => reporter.suiteStarted(suite));
@@ -81,9 +82,12 @@ const cleanupFactory = (browser, server) => async (exitCode) => {
 
   try {
     await page.goto(`http://127.0.0.1:${PORT}/${path}`);
+    const jsCoverage = await page.coverage.stopJSCoverage();
+    pti.write(jsCoverage);
   } catch (error) {
     /* eslint-disable no-console */
     console.log(error);
     cleanup(1);
   }
+  
 })();

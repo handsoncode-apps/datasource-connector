@@ -1,10 +1,9 @@
 import Http from './utils/http';
 
 import {plugins, Core} from 'Handsontable';
+import Handsontable from 'Handsontable';
 
-import { Data } from './utils/data';
-
-declare var Handsontable: any; 
+import { Data } from './utils/data'; 
 
 /** 
 * @plugin DataSourceConnector
@@ -370,7 +369,17 @@ class DataSourceConnector extends plugins.BasePlugin {
    */
   private loadData(response: LoadData) {
     let responseData = response.data;
-    let normalizedData = responseData.map((value: any) => Object.keys(value).map(key=>value[key]));
+
+    let reorderedData = []
+    for (let i = 0; i < responseData.length; i++) {
+      let row = {}
+      response.colOrder.forEach((col) => {
+        row[col] = responseData[i][col];
+      })
+      reorderedData.push(row)
+    }
+
+    let normalizedData = reorderedData.map((value: any) => Object.keys(value).map(key=>value[key]));
     this.hotInstance.loadData(normalizedData);
 
     let columnNames = Object.keys(responseData[0]);
@@ -380,7 +389,7 @@ class DataSourceConnector extends plugins.BasePlugin {
     for (let row = 0; row < responseData.length; row++) {
       for (let column = 0; column < columnNames.length; column++) {
         if (response.meta) {
-          let meta = response.meta.filter(x => x.rowId == responseData[row][response.rowId] && x.colId === columnNames[column]);
+          let meta = response.meta.filter(x => x.row_id == responseData[row][response.rowId] && x.col_id === columnNames[column]);
           meta.forEach(x => { this.hotInstance.setCellMetaObject(row, column, JSON.parse(x.meta)) } );
         }
         this.hotInstance.setCellMeta(row, column, 'row_id', responseData[row][response.rowId]);
@@ -497,12 +506,13 @@ class LoadData {
   public data : Array<any>;
   public rowId : string;
   public meta : Array<MetaData>;
+  public colOrder: Array<string>;
 }
 
 class MetaData {
   public id: any;
-  public rowId: any;
-  public colId: string;
+  public row_id: any;
+  public col_id: string;
   public meta: string;
 }
 

@@ -1922,3 +1922,17 @@ namespace contextMenu {
     items: any;
   }
 }
+
+export default class Handsontable extends Core {
+  static baseVersion: string;
+  static buildDate: string;
+  static packageName: string;
+  static version: string;
+  static cellTypes: Handsontable.CellTypes;
+  static dom: Handsontable.Dom;
+  static editors: Handsontable.Editors;
+  static helper: Handsontable.Helper;
+  static hooks: Handsontable.Hooks;
+  static plugins: Handsontable.Plugins;
+  static renderers: Handsontable.Renderers;
+}
