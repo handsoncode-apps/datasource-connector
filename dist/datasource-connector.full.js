@@ -1,7 +1,7 @@
 /*!
  * 
  * Version: 1.0.0
- * Release date: 01/03/2018 (built at 26/04/2018 18:37:45)
+ * Release date: 01/03/2018 (built at 23/05/2018 09:23:38)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
