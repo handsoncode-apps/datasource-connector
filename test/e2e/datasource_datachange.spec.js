@@ -5,6 +5,10 @@ import {
   colWidth
 } from '../helpers/common';
 
+import {
+  conditionMenuRootElements
+} from '../helpers/utils';
+
 require('jasmine-ajax');
 let ZSchema = require('z-schema');
 
@@ -459,24 +463,23 @@ describe('datasource_datachange', () => {
                 done();
               }, 50);
             }
+          }else {
+            jasmine.Ajax.requests.reset();
           }
         }
       },
-    }); setTimeout(() => {
-      done();
-      // jasmine.Ajax.requests.reset();
-
-      // dropdownMenu(0);
-      // $('.htDropdownMenu .ht_master .htCore').find('tbody :nth-child(9) td').simulate('mousedown');
-
-      // setTimeout(() => {
-      //   // Begins with 'c'
-      //   document.activeElement.value = 'c';
-      //   $(document.activeElement).simulate('keyup');
-      //   $('.htDropdownMenu .ht_master .htCore').find('.htUIButton.htUIButtonOK input').simulate('click');
-      // }, 50);
-    }, 50);
-  });
+    });
+     setTimeout(() => {
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+      $(conditionMenuRootElements().first.querySelector('tbody :nth-child(9) td')).simulate('mousedown');
+      setTimeout(function () {
+        document.activeElement.value = 'K';
+        $(document.activeElement).simulate('keyup');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+      }, 200);
+  }, 150);
+});
 
   it('should call POST /column/move ajax call after column move', (done) => {
     let hot = handsontable({
@@ -759,9 +762,10 @@ describe('datasource_datachange', () => {
             expect(request.url).toBe(`${url}/cell/meta`);
             let val = validator.validate(request.body, metaChangeSchema);
             expect(val).toBe(true);
+            done();
             setTimeout(() => {
               done();
-            }, 50);
+            }, 250);
           }
         }
       },
@@ -770,7 +774,7 @@ describe('datasource_datachange', () => {
       const plugin = hot.getPlugin('manualColumnFreeze');
       plugin.freezeColumn(1);
       hot.render();
-    }, 50);
+    }, 250);
   });
 
   it('should call POST /cell/meta ajax call when hiding columns', (done) => {
@@ -794,7 +798,6 @@ describe('datasource_datachange', () => {
       },
     });
     setTimeout(() => {
-      console.log(hot);
       let plugin = hot.getPlugin('hiddenColumns');
       plugin.hideColumn(2);
       hot.render();
