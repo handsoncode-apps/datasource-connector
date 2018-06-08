@@ -5,6 +5,10 @@ import {
   colWidth
 } from '../helpers/common';
 
+import {
+  conditionMenuRootElements
+} from '../helpers/utils';
+
 require('jasmine-ajax');
 let ZSchema = require('z-schema');
 
@@ -37,6 +41,7 @@ describe('datasource_datachange', () => {
           readOnly: true,
           comments: true,
           hiddenColumns: true,
+          hiddenRows: true
         }
       })
     });
@@ -83,6 +88,10 @@ describe('datasource_datachange', () => {
       contentType: 'application/json',
       response: JSON.stringify({
         rowId: 'id',
+        meta: [],
+        colOrder : [
+          "id", "first_name", "last_name", "age", "sex", "phone"
+        ],
         data: [{
           id: 1,
           first_name: 'John',
@@ -147,6 +156,11 @@ describe('datasource_datachange', () => {
       })
     });
     jasmine.Ajax.stubRequest(`${url}/cell/meta`, '', 'POST').andReturn({
+      response: JSON.stringify({
+        data: 'ok'
+      })
+    });
+    jasmine.Ajax.stubRequest(`${url}/cell`, '', 'POST').andReturn({
       response: JSON.stringify({
         data: 'ok'
       })
@@ -405,8 +419,6 @@ describe('datasource_datachange', () => {
             request = jasmine.Ajax.requests.filter(`${url}/row`)[0];
             expect(request.method).toBe('PUT');
             expect(request.url).toBe(`${url}/row`);
-            selectCell(3, 0);
-            expect(getValue()).toBe(10);
             let val = validator.validate(request.body, createSchema);
             expect(val).toBe(true);
             setTimeout(() => {
@@ -451,24 +463,23 @@ describe('datasource_datachange', () => {
                 done();
               }, 50);
             }
+          }else {
+            jasmine.Ajax.requests.reset();
           }
         }
       },
-    }); setTimeout(() => {
-      done();
-      // jasmine.Ajax.requests.reset();
-
-      // dropdownMenu(0);
-      // $('.htDropdownMenu .ht_master .htCore').find('tbody :nth-child(9) td').simulate('mousedown');
-
-      // setTimeout(() => {
-      //   // Begins with 'c'
-      //   document.activeElement.value = 'c';
-      //   $(document.activeElement).simulate('keyup');
-      //   $('.htDropdownMenu .ht_master .htCore').find('.htUIButton.htUIButtonOK input').simulate('click');
-      // }, 50);
-    }, 50);
-  });
+    });
+     setTimeout(() => {
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+      $(conditionMenuRootElements().first.querySelector('tbody :nth-child(9) td')).simulate('mousedown');
+      setTimeout(function () {
+        document.activeElement.value = 'K';
+        $(document.activeElement).simulate('keyup');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+      }, 200);
+  }, 150);
+});
 
   it('should call POST /column/move ajax call after column move', (done) => {
     let hot = handsontable({
@@ -543,10 +554,11 @@ describe('datasource_datachange', () => {
         onDataSend: (req) => {
           if (req.request.url === `${url}/data`) {
             setDataAtCell(1, 2, 'test');
-            request = jasmine.Ajax.requests.mostRecent();
+          }
+          if (req.request.url === `${url}/cell`){
+            let request = jasmine.Ajax.requests.filter(`${url}/cell`)[0];
             let data = JSON.parse(request.params);
             expect(request.method).toBe('POST');
-            expect(request.url).toBe(`${url}/cell`);
             expect(data.changes[0].column).toBe('last_name');
             expect(data.changes[0].newValue).toBe('test');
             expect(data.changes[0].oldValue).toBe('Sandwich');
@@ -560,6 +572,7 @@ describe('datasource_datachange', () => {
         }
       },
     });
+
   });
 
   it('should call POST /cell/merge ajax call after merging cells and /cell/unmerge ajax after spliting merged cells', (done) => {
@@ -658,20 +671,23 @@ describe('datasource_datachange', () => {
             expect(val).toBe(true);
             setTimeout(() => {
               done();
-            }, 50);
+            }, 150);
           }
         }
       },
     });
-    contextMenu();
-    let item = $('.htContextMenu .ht_master .htCore').find('tbody td').not('.htSeparator').eq(9);
-    item.simulate('mouseover');
-    setTimeout(() => {
-      selectCell(2, 3);
-      let contextSubMenu = $(`.htContextMenuSub_${item.text()}`);
-      let button = contextSubMenu.find('.ht_master .htCore tbody td').not('.htSeparator').eq(0);
-      button.simulate('mousedown');
-      deselectCell();
+
+    setTimeout(()=>{
+      contextMenu();
+            let item = $('.htContextMenu .ht_master .htCore').find('tbody td').not('.htSeparator').eq(9);
+            item.simulate('mouseover');
+            setTimeout(() => {
+              selectCell(2, 3);
+              let contextSubMenu = $(`.htContextMenuSub_${item.text()}`);
+              let button = contextSubMenu.find('.ht_master .htCore tbody td').not('.htSeparator').eq(0);
+              button.simulate('mousedown');
+              deselectCell();
+            }, 350);
     }, 50);
   });
 
@@ -746,17 +762,19 @@ describe('datasource_datachange', () => {
             expect(request.url).toBe(`${url}/cell/meta`);
             let val = validator.validate(request.body, metaChangeSchema);
             expect(val).toBe(true);
+            done();
             setTimeout(() => {
               done();
-            }, 50);
+            }, 250);
           }
         }
       },
     });
-    setTimeout(() => {
+    setTimeout(() => { 
       const plugin = hot.getPlugin('manualColumnFreeze');
       plugin.freezeColumn(1);
-    }, 50);
+      hot.render();
+    }, 250);
   });
 
   it('should call POST /cell/meta ajax call when hiding columns', (done) => {
@@ -764,7 +782,6 @@ describe('datasource_datachange', () => {
     let hot = handsontable({
       dataSourceConnector: {
         controllerUrl: url,
-        contextMenu: true,
         hiddenColumns: true,
         onDataSend: (req) => {
           if (req.request.url === `${url}/cell/meta`) {
@@ -781,9 +798,10 @@ describe('datasource_datachange', () => {
       },
     });
     setTimeout(() => {
-      hot.getPlugin('hiddenColumns').hideColumn(2);
+      let plugin = hot.getPlugin('hiddenColumns');
+      plugin.hideColumn(2);
       hot.render();
-    }, 50);
+    }, 200);
   });
 
   it('should call POST /cell/meta ajax call after show hidden colums', (done) => {
@@ -810,7 +828,8 @@ describe('datasource_datachange', () => {
       },
     });
     setTimeout(() => {
-      hot.getPlugin('hiddenColumns').showColumn(2);
+      let plugin = hot.getPlugin('hiddenColumns');
+      plugin.showColumn(2)
       hot.render();
     }, 50);
   });
@@ -837,7 +856,8 @@ describe('datasource_datachange', () => {
       },
     });
     setTimeout(() => {
-      hot.getPlugin('hiddenRows').hideRow(2);
+      let plugin = hot.getPlugin('hiddenRows');
+      plugin.hideRow(2);
       hot.render();
     }, 50);
   });
@@ -864,7 +884,8 @@ describe('datasource_datachange', () => {
       },
     });
     setTimeout(() => {
-      hot.getPlugin('hiddenRows').showRow(2);
+      let plugin = hot.getPlugin('hiddenRows').showRow(2);
+      plugin.showRow(2)
       hot.render();
     }, 50);
   });
